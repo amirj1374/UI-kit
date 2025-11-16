@@ -1,0 +1,235 @@
+// Variables
+$stepper-header-height: 80px;
+$stepper-badge-size: 25px;
+$stepper-connector-width: 35px;
+$stepper-border-radius: 12px;
+$stepper-shadow: 0 2px 8px rgba(0,0,0,0.04);
+
+// Root container
+.app-stepper-root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  direction: rtl;
+}
+
+// Header section
+.app-stepper-header-card {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgb(var(--v-theme-borderLight));
+  border-radius: $stepper-border-radius;
+  box-shadow: $stepper-shadow;
+  margin-bottom: 20px;
+  padding: 0 8px;
+  width: 100%;
+  min-height: $stepper-header-height;
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+}
+
+.app-stepper-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 16px;
+  flex-wrap: nowrap;
+  padding: 17px 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: #bdbdbd #f5f5f5;
+  width: 100%;
+
+  // Scrollbar styling
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgb(var(--v-theme-borderLight));
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgb(var(--v-theme-lightprimary));
+  }
+}
+
+// Step styling
+.app-stepper-step {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 0 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 4px;
+
+  // Step states
+  &.active {
+    .app-stepper-title {
+      color: rgb(var(--v-theme-secondary));
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(var(--v-theme-secondary), 0.08);
+    }
+  }
+
+  &.resolved {
+    .app-stepper-title {
+      color: rgb(var(--v-theme-success));
+      font-weight: 500;
+      opacity: 0.85;
+    }
+  }
+
+  &.pending {
+    .app-stepper-title {
+      color: rgb(var(--v-theme-lightText));
+      font-weight: 400;
+    }
+  }
+}
+
+// Badge styling
+.app-stepper-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $stepper-badge-size;
+  height: $stepper-badge-size;
+  border-radius: 50%;
+  margin-left: 6px;
+  margin-right: 6px;
+  font-size: 14px;
+  background: rgb(var(--v-theme-borderLight));
+  color: rgb(var(--v-theme-lightText));
+  border: 2px solid rgb(var(--v-theme-borderLight));
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+// Badge states
+.badge-resolved {
+  background: rgb(var(--v-theme-success));
+  color: #fff;
+  border-color: rgb(var(--v-theme-success));
+}
+
+.badge-active {
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-secondary));
+  border-color: rgb(var(--v-theme-secondary));
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-secondary), 0.2);
+}
+
+.badge-pending {
+  background: rgb(var(--v-theme-borderLight));
+  color: rgb(var(--v-theme-lightText));
+  border-color: rgb(var(--v-theme-borderLight));
+}
+
+// Title styling
+.app-stepper-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-left: 2px;
+  margin-right: 2px;
+  transition: color 0.3s, font-weight 0.3s;
+  display: flex;
+  align-items: center;
+  min-width: 60px;
+}
+
+// Connector styling
+.app-stepper-connector {
+  display: inline-block;
+  width: $stepper-connector-width;
+  height: 3px;
+  background: rgb(var(--v-theme-borderLight));
+  margin: 0 12px 0 0;
+  border-radius: 2px;
+  transition: background 0.3s;
+
+  &.active {
+    background: rgb(var(--v-theme-secondary));
+  }
+
+  &.resolved {
+    background: rgb(var(--v-theme-success));
+  }
+}
+
+// Content section
+.app-stepper-content {
+  flex: 1 1 0;
+  width: 100%;
+  overflow-y: auto;
+  min-height: 60vh;
+}
+
+// Actions section
+.app-stepper-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 16px 16px;
+  background: rgb(var(--v-theme-surface));
+  border-top: 1px solid rgb(var(--v-theme-borderLight));
+  border-radius: 0 0 $stepper-border-radius $stepper-border-radius;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  position: relative;
+  z-index: 2;
+}
+
+// Button styling
+.app-stepper-btn {
+  min-width: 110px;
+  padding: 8px 18px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  background: rgb(var(--v-theme-lightprimary));
+  color: rgb(var(--v-theme-darkText));
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+
+  &:disabled {
+    background: rgb(var(--v-theme-borderLight));
+    color: rgb(var(--v-theme-lightText));
+    cursor: not-allowed;
+  }
+
+  &-submit {
+    background: rgb(var(--v-theme-success));
+    color: #fff;
+
+    &.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+  }
+
+  &-custom {
+    background: rgb(var(--v-theme-secondary));
+    color: #fff;
+  }
+}
+
+// Responsive styles
+@media (max-width: 600px) {
+  .app-stepper-actions {
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 8px 8px 8px;
+  }
+
+  .app-stepper-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}

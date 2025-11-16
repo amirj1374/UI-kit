@@ -1,0 +1,66 @@
+# Source files - only include dist/ for published package
+# Users can import from GitHub if they need source files
+src/
+
+# Build outputs - only include dist/ (source maps excluded)
+dist/*.map
+dist/**/*.map
+
+# Development files
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Documentation (keep README.md only)
+docs/
+*.md
+!README.md
+
+# Configuration files (not needed in package)
+eslint.config.js
+.prettierrc
+.prettierignore
+vite.config.ts
+vite.config.js
+tsconfig*.json
+
+# Scripts
+scripts/
+
+# Public assets (not needed in library)
+public/
+index.html
+
+# Dependencies
+node_modules/
+
+# Test files
+**/*.test.ts
+**/*.test.vue
+**/*.spec.ts
+**/*.spec.vue
+**/__tests__/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

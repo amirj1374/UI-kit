@@ -1,0 +1,128 @@
+// Global approval section styles
+.approval-section {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgb(var(--v-theme-borderLight));
+  border-radius: 10px;
+  padding: 25px 15px;
+  margin-bottom: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgb(var(--v-theme-darkText));
+  }
+
+  .group-title {
+    color: rgb(var(--v-theme-darkText));
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgb(var(--v-theme-primary));
+    display: inline-block;
+  }
+
+  .section-content {
+    min-height: 300px;
+  }
+
+  .approval-table {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 10px;
+    padding: 15px;
+  }
+}
+
+// Theme-aware table styles
+:deep(th) {
+  background: rgb(var(--v-theme-lightprimary)) !important;
+  color: rgb(var(--v-theme-darkText)) !important;
+  font-weight: 600;
+}
+
+:deep(.v-data-table__wrapper) {
+  background: rgb(var(--v-theme-surface));
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--v-theme-borderLight));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+:deep(.v-data-table__tbody tr:nth-child(even)) {
+  background: rgb(var(--v-theme-lightprimary)) !important;
+}
+
+:deep(.v-data-table__tbody tr:nth-child(odd)) {
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+:deep(.v-data-table__tbody tr:hover) {
+  background: rgb(var(--v-theme-lightsecondary)) !important;
+}
+
+// Theme-aware form field styles
+:deep(.v-text-field .v-field) {
+  background: rgb(var(--v-theme-surface));
+  border-color: rgb(var(--v-theme-borderLight));
+  transition: border-color 0.2s ease;
+}
+
+:deep(.v-text-field .v-field:hover) {
+  border-color: rgb(var(--v-theme-secondary));
+}
+
+:deep(.v-select .v-field) {
+  background: rgb(var(--v-theme-surface));
+  border-color: rgb(var(--v-theme-borderLight));
+  transition: border-color 0.2s ease;
+}
+
+:deep(.v-select .v-field:hover) {
+  border-color: rgb(var(--v-theme-secondary));
+}
+
+// Theme-aware button styles
+:deep(.v-btn--variant-outlined) {
+  border-color: rgb(var(--v-theme-borderLight));
+  color: rgb(var(--v-theme-darkText));
+}
+
+:deep(.v-btn--variant-outlined:hover) {
+  background: rgb(var(--v-theme-lightsecondary));
+}
+
+// Utility classes
+.customer-search-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+@media (forced-colors: active) {
+  .v-btn {
+    forced-color-adjust: none;
+  }
+
+  .v-text-field {
+    forced-color-adjust: none;
+  }
+} 

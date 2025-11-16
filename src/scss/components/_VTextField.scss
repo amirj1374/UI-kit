@@ -1,0 +1,40 @@
+.v-text-field input {
+  font-size: 0.85rem;
+}
+
+/* Smaller font size for outlined inputs */
+.v-field--variant-outlined .v-field__input {
+  font-size: 0.85rem;
+}
+
+.v-field--variant-outlined .v-label {
+  font-size: 0.85rem;
+}
+.v-input--density-default {
+  .v-field__input {
+    min-height: 51px;
+  }
+}
+
+.v-field__outline {
+  color: rgb(var(--v-theme-inputBorder));
+}
+.inputWithbg {
+  .v-field--variant-outlined {
+    background-color: rgba(0, 0, 0, 0.025);
+    border-radius: 12px !important;
+  }
+}
+
+/* Hide spinner buttons in number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

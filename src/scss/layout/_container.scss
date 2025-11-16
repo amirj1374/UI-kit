@@ -1,0 +1,147 @@
+html {
+  overflow-y: auto;
+}
+
+:root {
+  --font-theme: 'vazir', sans-serif; /* Default font */
+}
+.v-tab {
+  height: calc(30vh);
+}
+@media (max-width: 1279px) {
+  .v-main {
+    margin: 0 10px;
+  }
+}
+.spacer {
+  padding: 100px 0;
+}
+@media (max-width: 800px) {
+  .spacer {
+    padding: 40px 0;
+  }
+}
+
+.page-wrapper {
+  min-height: calc(100vh - 100px);
+  padding: 15px;
+  border-radius: $border-radius-root;
+  background: rgb(var(--v-theme-containerBg));
+}
+
+.customizer-loading {
+  backdrop-filter: blur(10px);
+}
+$sizes: (
+        'display-1': 44px,
+        'display-2': 40px,
+        'display-3': 30px,
+        'h1': 36px,
+        'h2': 30px,
+        'h3': 21px,
+        'h4': 18px,
+        'h5': 16px,
+        'h6': 14px,
+        'text-8': 8px,
+        'text-10': 10px,
+        'text-13': 13px,
+        'text-18': 18px,
+        'text-20': 20px,
+        'text-24': 24px,
+        'body-text-1': 10px
+);
+
+@each $pixel, $size in $sizes {
+  .#{$pixel} {
+    font-size: $size;
+    line-height: $size + 10;
+  }
+}
+
+.customizer-btn {
+  position: fixed;
+  top: 9%;
+  left: 0;
+  border-radius: 0 20px 20px 20px ;
+
+}
+
+.text-white {
+  color: rgb(255, 255, 255) !important;
+}
+
+// font family
+
+@font-face {
+  font-family: 'yekanLight';
+  src: url('/src/assets/fonts/BYekan.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'iranSans';
+  src: url('/src/assets/fonts/IRANSansWeb.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'kalamehLight';
+  src: url('/src/assets/fonts/kalamehRegular.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'vazir';
+  src: url('/src/assets/fonts/Vazir-Medium-FD.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'IranNastaliq';
+  src: url('/src/assets/fonts/IranNastaliq.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Massir';
+  src: url('/src/assets/fonts/A Massir Spray.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+body {
+  font-family: var(--font-theme), sans-serif;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes bounce {
+  0%,
+  20%,
+  53%,
+  to {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translateZ(0);
+  }
+  40%,
+  43% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -5px, 0);
+  }
+  70% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -7px, 0);
+  }
+  80% {
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translateZ(0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}

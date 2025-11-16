@@ -1,0 +1,282 @@
+.data-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, margin-top;
+}
+
+/* Grouped Table Styles */
+.grouped-table {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.group-controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
+.groups-scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.groups-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+}
+
+.group-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgb(var(--v-theme-lightprimary)) 0%, rgb(var(--v-theme-lightsecondary)) 100%);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid rgb(var(--v-theme-borderLight));
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.group-header:hover {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary200)) 0%, rgb(var(--v-theme-secondary200)) 100%);
+}
+
+.group-header.expanded {
+  background: rgb(var(--v-theme-lightsecondary))
+}
+
+.group-label {
+  font-weight: 600;
+  color: rgb(var(--v-theme-darksecondary));
+  flex: 1;
+}
+
+.group-items {
+  background: rgb(var(--v-theme-surface));
+  overflow: hidden;
+}
+
+/* Group expansion transitions */
+.group-expand-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
+  opacity: 0;
+}
+
+.group-expand-enter-to {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.group-expand-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.group-expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* Chevron icon rotation */
+.chevron-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group-header.expanded .chevron-icon {
+  transform: rotate(0deg);
+}
+
+.group-header:not(.expanded) .chevron-icon {
+  transform: rotate(-90deg);
+}
+
+.group-table {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.group-table :deep(.v-data-table__wrapper) {
+  border: none !important;
+  overflow: visible !important;
+}
+
+.group-table :deep(.v-data-table__thead) {
+  background: rgb(var(--v-theme-lightprimary)) !important;
+}
+
+.group-table :deep(.v-data-table__tbody tr:hover) {
+  background: rgb(var(--v-theme-primary200)) !important;
+}
+
+.group-table :deep(.v-data-table__tbody) {
+  overflow: visible !important;
+}
+
+.pagination-wrapper {
+  flex-shrink: 0;
+  border-top: 1px solid rgb(var(--v-theme-borderLight));
+  background: rgb(var(--v-theme-surface));
+  z-index: 2;
+}
+
+.page-title {
+  margin-bottom: 16px;
+  padding: 16px 0 8px 0;
+  border-bottom: 1px solid rgb(var(--v-theme-borderLight));
+}
+
+.title-text {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--v-primary-base);
+}
+
+.action-buttons {
+  margin-bottom: 16px;
+  padding: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: height, margin-bottom;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.selected-actions {
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 8px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+  flex-direction: row-reverse;
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity, height;
+}
+
+:deep(.v-data-table__wrapper table thead) {
+  position: sticky;
+  top: 0;
+  background: rgb(var(--v-theme-surface));
+  z-index: 1;
+  box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+}
+
+:deep(.v-data-table__wrapper tbody tr:nth-child(even)) {
+  background: rgb(var(--v-theme-lightprimary)) !important;
+}
+
+:deep(.v-data-table__wrapper tbody tr:nth-child(odd)) {
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+/* Smooth table content transitions */
+:deep(.v-data-table__wrapper) {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+:deep(.v-data-table__wrapper tbody tr) {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Enhanced slide transition for bulk mode actions */
+.slide-left-enter-active {
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slide-left-leave-active {
+  transition: all 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
+.slide-left-enter-from {
+  transform: translateX(-100%) scale(0.95);
+  opacity: 0;
+}
+
+.slide-left-leave-to {
+  transform: translateX(-100%) scale(0.95);
+  opacity: 0;
+}
+
+.slide-left-enter-to,
+.slide-left-leave-from {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+}
+
+/* Compact row height adjustments */
+.data-table-container .v-data-table .v-table__wrapper table tr {
+  height: 45px;
+}
+
+.data-table-container .v-data-table .v-table__wrapper table td,
+.data-table-container .v-data-table .v-table__wrapper table th {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 8px;
+  padding-right: 8px;
+  line-height: 1.2;
+}
+
+/* Even tighter density for group tables */
+.group-table .v-table__wrapper table tr {
+  height: 34px;
+}
+
+.group-table .v-table__wrapper table td,
+.group-table .v-table__wrapper table th {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* Checkbox/radio compact spacing */
+.data-table-container .v-selection-control {
+  --v-selection-control-size: 18px;
+}
+
+.data-table-container .v-selection-control .v-label {
+  margin: 0;
+}
+
+/* Buttons inside cells */
+.data-table-container td .v-btn {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 8px;
+}
+
+/* Chips inside headers or cells */
+.data-table-container .v-chip {
+  height: 22px;
+}
