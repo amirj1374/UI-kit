@@ -28,9 +28,9 @@
 // Note: Individual component exports would need index files in each directory
 
 // Re-export services
-export * from '../services/modules/approval';
-export * from '../services/modules/cartable';
-export * from '../services/modules/user';
+// export * from '../services/modules/approval';
+// export * from '../services/modules/cartable';
+// export * from '../services/modules/user';
 
 // Re-export types
 export * from '../types/approval/approvalType';

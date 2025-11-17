@@ -69,7 +69,9 @@ const props = withDefaults(defineProps<Props>(), {
   pageSize: 10,
   defaultExpanded: false,
   dateWithTimezone: false,
-  bulkMode: false
+  bulkMode: false,
+  enableTextTruncation: false, // Disabled by default to avoid layout issues
+  maxTextLength: 50 // Maximum characters to show before truncating
 });
 
 const emit = defineEmits<{
@@ -431,6 +433,7 @@ const getFieldInputType = (header: Header): string | undefined => {
 const resolveHeaderKey = (header: Header): string => header.key;
 const resolveHeaderTitle = (header: Header): string => header.title;
 const isHeaderDisabled = (header: Header): boolean => header.editable === false;
+const isTextareaHeader = (header: Header): boolean => header.textarea === true;
 
 // Helper function to get unique value from item
 const getUniqueValue = (item: any): string | number => {
@@ -696,6 +699,12 @@ const api = apiService(componentAxiosInstance, props.apiResource);
 const customActionDialog = ref(false);
 const customActionComponent = shallowRef<Component | null>(null);
 const customActionItem = ref<any>(null);
+
+// Text preview dialog state
+const textPreviewDialog = ref(false);
+const previewText = ref('');
+const previewTitle = ref('');
+const previewItem = ref<any>(null);
 
 // Add scroll event handler
 const handleScroll = async (event: Event) => {
@@ -1244,6 +1253,104 @@ const translateValue = (value: string) => {
 };
 
 /**
+ * Truncates text if it exceeds maxTextLength and adds ellipsis
+ */
+const truncateText = (text: any, maxLength: number = props.maxTextLength): string => {
+  if (text === null || text === undefined) return '';
+  const textStr = String(text);
+  if (textStr.length <= maxLength) return textStr;
+  return textStr.substring(0, maxLength) + '...';
+};
+
+/**
+ * Checks if text should be truncated for a specific column
+ */
+const shouldTruncate = (text: any, header: Header | null): boolean => {
+  if (text === null || text === undefined || !header) return false;
+  // If header explicitly disables truncation, don't truncate
+  if (header.truncate === false) return false;
+  // If global truncation is enabled and header doesn't explicitly disable it, check length
+  if (props.enableTextTruncation && (header.truncate === true || header.truncate === undefined)) {
+    return String(text).length > props.maxTextLength;
+  }
+  // If header explicitly enables truncation (even if global is off), check length
+  if (header.truncate === true) {
+    return String(text).length > props.maxTextLength;
+  }
+  return false;
+};
+
+/**
+ * Gets the header configuration for a column key
+ */
+const getHeaderForColumn = (columnKey: string): Header | null => {
+  return props.headers.find((h) => h.key === columnKey) || null;
+};
+
+/**
+ * Checks if copy button should be shown for a specific column
+ */
+const shouldShowCopyButton = (header: Header | null): boolean => {
+  return header?.showCopyButton === true;
+};
+
+/**
+ * Opens dialog to show full text with copy functionality
+ */
+const openTextPreview = (text: any, columnTitle: string, item: any) => {
+  previewText.value = text === null || text === undefined ? '' : String(text);
+  previewTitle.value = columnTitle;
+  previewItem.value = item;
+  textPreviewDialog.value = true;
+};
+
+/**
+ * Copies text to clipboard
+ */
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    snackbarMessage.value = '✅ متن با موفقیت کپی شد!';
+    snackbar.value = true;
+  } catch (err) {
+    console.error('Failed to copy text:', err);
+    // Fallback for older browsers
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      snackbarMessage.value = '✅ متن با موفقیت کپی شد!';
+      snackbar.value = true;
+    } catch (fallbackErr) {
+      snackbarMessage.value = '❌ خطا در کپی کردن متن!';
+      snackbar.value = true;
+    }
+  }
+};
+
+/**
+ * Copies the complete record (all fields) to clipboard
+ */
+const copyCompleteRecord = async () => {
+  if (!previewItem.value) return;
+  
+  try {
+    // Format the complete record as JSON
+    const recordText = JSON.stringify(previewItem.value, null, 2);
+    await copyToClipboard(recordText);
+  } catch (err) {
+    console.error('Failed to copy record:', err);
+    snackbarMessage.value = '❌ خطا در کپی کردن رکورد!';
+    snackbar.value = true;
+  }
+};
+
+/**
  * Applies currently edited filters and refetches from the first page.
  */
 const applyFilter = () => {
@@ -1573,7 +1680,34 @@ const handleFilterApply = (filterData: any) => {
                             </template>
                           </template>
                           <template v-else>
-                            {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
+                            <div class="d-flex align-center" style="gap: 4px;">
+                              <span
+                                v-if="shouldTruncate(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), getHeaderForColumn(column.key || ''))"
+                                class="truncated-text"
+                                :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
+                                @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                              >
+                                {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
+                              </span>
+                              <span
+                                v-else
+                                @click.stop="shouldShowCopyButton(getHeaderForColumn(column.key || '')) && openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                                :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
+                              >
+                                {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
+                              </span>
+                              <v-btn
+                                v-if="shouldShowCopyButton(getHeaderForColumn(column.key || ''))"
+                                icon
+                                size="x-small"
+                                variant="text"
+                                color="primary"
+                                @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                                style="min-width: 24px; width: 24px; height: 24px;"
+                              >
+                                <v-icon size="16">mdi-content-copy</v-icon>
+                              </v-btn>
+                            </div>
                           </template>
                         </td>
                       </tr>
@@ -1710,7 +1844,34 @@ const handleFilterApply = (filterData: any) => {
                 </template>
               </template>
               <template v-else>
-                {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
+                <div class="d-flex align-center" style="gap: 4px;">
+                  <span
+                    v-if="shouldTruncate(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), getHeaderForColumn(column.key || ''))"
+                    class="truncated-text"
+                    :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
+                    @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                  >
+                    {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
+                  </span>
+                  <span
+                    v-else
+                    @click.stop="shouldShowCopyButton(getHeaderForColumn(column.key || '')) && openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                    :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
+                  >
+                    {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
+                  </span>
+                  <v-btn
+                    v-if="shouldShowCopyButton(getHeaderForColumn(column.key || ''))"
+                    icon
+                    size="x-small"
+                    variant="text"
+                    color="primary"
+                    @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                    style="min-width: 24px; width: 24px; height: 24px;"
+                  >
+                    <v-icon size="16">mdi-content-copy</v-icon>
+                  </v-btn>
+                </div>
               </template>
             </td>
           </tr>
@@ -1742,7 +1903,12 @@ const handleFilterApply = (filterData: any) => {
           <component v-if="props.formComponent" :is="props.formComponent" v-model="formModel" />
           <template v-else>
             <v-row>
-              <v-col v-for="header in formHeaders" :key="resolveHeaderKey(header)" cols="12" md="4">
+              <v-col
+                v-for="header in formHeaders"
+                :key="resolveHeaderKey(header)"
+                :cols="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
+                :md="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
+              >
                 <template v-if="!header.hidden">
                   <ShamsiDatePicker
                     v-if="header.isDate"
@@ -1771,6 +1937,16 @@ const handleFilterApply = (filterData: any) => {
                     :label="resolveHeaderTitle(header)"
                     :disabled="isHeaderDisabled(header)"
                   />
+                  <v-textarea
+                    v-else-if="isTextareaHeader(header)"
+                    v-model="formModel[resolveHeaderKey(header)]"
+                    :label="resolveHeaderTitle(header)"
+                    variant="outlined"
+                    :disabled="isHeaderDisabled(header)"
+                    :dir="(header as Header).dir"
+                    auto-grow
+                    rows="3"
+                  />
                   <v-text-field
                     v-else
                     v-model="formModel[resolveHeaderKey(header)]"
@@ -1778,6 +1954,7 @@ const handleFilterApply = (filterData: any) => {
                     variant="outlined"
                     :disabled="isHeaderDisabled(header)"
                     :type="getFieldInputType(header)"
+                    :dir="(header as Header).dir"
                   />
                 </template>
               </v-col>
@@ -1848,6 +2025,40 @@ const handleFilterApply = (filterData: any) => {
           @apply="handleFilterApply"
         />
       </v-card-text>
+    </v-card>
+  </v-dialog>
+
+  <!-- Text Preview Dialog -->
+  <v-dialog v-model="textPreviewDialog" max-width="800">
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span>{{ previewTitle }}</span>
+        <v-btn icon variant="text" @click="textPreviewDialog = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-card-title>
+      <v-card-text>
+        <v-textarea
+          :model-value="previewText"
+          readonly
+          auto-grow
+          variant="outlined"
+          rows="10"
+          class="mb-4"
+        ></v-textarea>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="primary" @click="copyToClipboard(previewText)">
+          <v-icon start>mdi-content-copy</v-icon>
+          کپی متن
+        </v-btn>
+        <v-btn color="success" @click="copyCompleteRecord">
+          <v-icon start>mdi-content-copy</v-icon>
+          کپی رکورد کامل
+        </v-btn>
+        <v-btn color="grey" @click="textPreviewDialog = false">بستن</v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 

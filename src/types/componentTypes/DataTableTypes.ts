@@ -34,6 +34,11 @@ export interface Header {
   autocompleteItemValue?: string;
   autocompleteReturnObject?: boolean;
   autocompleteMultiple?: boolean;
+  truncate?: boolean; // Enable truncation for this column (requires enableTextTruncation prop)
+  showCopyButton?: boolean; // Show copy button for this column (works even without truncation)
+  cols?: number | string; // Column span for form layout (default: 12 for mobile, 4 for md and up)
+  textarea?: boolean; // Use textarea instead of text-field in form
+  dir?: 'ltr' | 'rtl'; // Text direction for the input field
 }
 
 export interface CustomAction {
@@ -98,6 +103,8 @@ export interface DataTableProps {
   dateWithTimezone?: boolean;
   bulkMode?: boolean;
   axiosInstance?: AxiosInstance; // Optional custom axios instance
+  enableTextTruncation?: boolean; // Enable text truncation feature globally (default: false)
+  maxTextLength?: number; // Maximum characters to show before truncating (default: 50, only used when enableTextTruncation is true)
 }
 
 export interface ApiResponse<T = TableItem> {

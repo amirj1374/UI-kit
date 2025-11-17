@@ -11,7 +11,8 @@ import {
   mdiPencil,
   mdiDelete,
   mdiArrowRight,
-  mdiCog
+  mdiCog,
+  mdiContentCopy
 } from '@mdi/js';
 
 export const icons = {
@@ -27,5 +28,6 @@ export const icons = {
   pencil: mdiPencil,
   delete: mdiDelete,
   arrowRight: mdiArrowRight,
-  cog: mdiCog
+  cog: mdiCog,
+  contentCopy: mdiContentCopy
 };
