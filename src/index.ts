@@ -81,6 +81,20 @@ export { configureAxiosInstance } from './services/axiosInstance';
 export { default as getAxiosInstance } from './services/axiosInstance';
 
 // ============================================================================
+// PLUGINS - Authentication and other plugins
+// ============================================================================
+
+// Keycloak plugin
+export { setupKeycloak } from './plugins/key-clock';
+export type {
+  KeycloakConfig,
+  KeycloakInitOptions,
+  KeycloakLogoutOptions,
+  KeycloakCallbacks,
+  KeycloakPluginOptions
+} from './plugins/key-clock';
+
+// ============================================================================
 // VALIDATORS - Generic validators
 // ============================================================================
 

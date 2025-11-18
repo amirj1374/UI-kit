@@ -61,7 +61,8 @@ export default defineConfig(({ command, mode }) => {
             'apexcharts',
             'vee-validate',
             'yup',
-            'vue3-persian-datetime-picker'
+            'vue3-persian-datetime-picker',
+            '@dsb-norge/vue-keycloak-js'
           ],
           output: {
             // Provide global variables for externalized deps
@@ -79,7 +80,8 @@ export default defineConfig(({ command, mode }) => {
               apexcharts: 'ApexCharts',
               'vee-validate': 'VeeValidate',
               yup: 'Yup',
-              'vue3-persian-datetime-picker': 'Vue3PersianDatetimePicker'
+              'vue3-persian-datetime-picker': 'Vue3PersianDatetimePicker',
+              '@dsb-norge/vue-keycloak-js': 'VueKeycloakJs'
             },
             // Preserve directory structure
             preserveModules: false,
