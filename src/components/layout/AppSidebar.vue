@@ -3,23 +3,7 @@ import { computed, type PropType } from "vue";
 import NavCollapse from "./NavCollapse/NavCollapse.vue";
 import NavGroup from "./NavGroup/NavGroup.vue";
 import NavItem from "./NavItem/NavItem.vue";
-
-export interface MenuItem {
-  header?: string;
-  title?: string;
-  icon?: object;
-  to?: string;
-  divider?: boolean;
-  chip?: string;
-  chipColor?: string;
-  chipVariant?: string;
-  chipIcon?: string;
-  children?: MenuItem[];
-  disabled?: boolean;
-  type?: string;
-  subCaption?: string;
-  permissionKey?: string;
-}
+import type { MenuItem } from '../../types/components/layout/menu';
 
 const props = defineProps({
   sidebarItems: {

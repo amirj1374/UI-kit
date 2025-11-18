@@ -35,8 +35,7 @@ export { default as Loading } from './components/Loading.vue';
 export { default as AppSidebar } from './components/layout/AppSidebar.vue';
 export { default as AppHeader } from './components/layout/AppHeader.vue';
 export { default as AppLayout } from './components/layout/AppLayout.vue';
-export type { MenuItem } from './components/layout/AppSidebar.vue';
-export type { HeaderAction } from './components/layout/AppHeader.vue';
+export type { MenuItem, HeaderAction } from './types/components/layout/menu';
 
 // ============================================================================
 // COMPOSABLES - Generic composables only (no business logic)

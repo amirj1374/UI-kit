@@ -1,99 +1,64 @@
 <script setup lang="ts">
-import { useCustomizerStore } from '@/stores/customizer';
+import { type PropType } from 'vue';
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
 
-// Types from child components
-import type { MenuItem } from './AppSidebar.vue';
-import type { HeaderAction } from './AppHeader.vue';
+// Types from types directory
+import type { MenuItem } from '../../types/components/layout/menu';
 
+// Header props - matching AppHeader component
 interface HeaderProps {
-  title?: string;
-  subtitle?: string;
-  showSidebarToggle?: boolean;
-  showSearch?: boolean;
-  searchPlaceholder?: string;
-  searchValue?: string;
-  showNotifications?: boolean;
-  notificationCount?: number;
-  showProfile?: boolean;
-  profileAvatar?: string;
-  profileName?: string;
-  profileMenu?: Array<{
-    title: string;
-    icon?: string;
-    to?: string;
-    href?: string;
-    divider?: boolean;
-    action?: () => void;
-  }>;
-  actions?: HeaderAction[];
-  color?: string;
-  elevation?: number;
-  height?: number | string;
-  class?: string;
+  menuOrientation?: 'horizontal' | 'vertical';
+  miniSidebar?: boolean;
+  userInfoLoaded?: boolean;
+  headerMenu?: MenuItem[];
+  onToggleMiniSidebar?: () => void;
+  onToggleCustomizer?: () => void;
+  onToggleSidebarDrawer?: () => void;
 }
 
+// Sidebar props - matching AppSidebar component
 interface SidebarProps {
-  menuItems?: MenuItem[];
-  logo?: string;
-  logoLight?: string;
-  logoText?: string;
-  miniSidebar?: boolean;
-  permanent?: boolean;
-  temporary?: boolean;
-  rail?: boolean;
-  location?: 'left' | 'right';
-  width?: number | string;
-  railWidth?: number | string;
+  sidebarItems: MenuItem[];
+  getFilteredSidebarItems: () => MenuItem[];
+  logoComponent: any; // Vue component
+  sidebarDrawer: boolean;
+  miniSidebar: boolean;
+  'onUpdate:sidebarDrawer'?: (value: boolean) => void;
 }
 
 interface Props {
   // Header props
   header?: HeaderProps;
   // Sidebar props
-  sidebar?: SidebarProps;
+  sidebar: SidebarProps;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  header: () => ({
-    title: 'Dashboard',
-    subtitle: '',
-    showSidebarToggle: true,
-    showSearch: false,
-    searchPlaceholder: 'جستجو...',
-    showNotifications: false,
-    notificationCount: 0,
-    showProfile: false,
-    actions: [],
-    color: 'surface',
-    elevation: 1,
-    height: 70,
-  }),
-  sidebar: () => ({
-    menuItems: [],
-    logo: '',
-    logoLight: '',
-    logoText: 'UI Kit',
-    miniSidebar: false,
-    permanent: true,
-    temporary: false,
-    rail: false,
-    location: 'left',
-    width: 265,
-    railWidth: 75,
-  }),
-});
-
-const customizer = useCustomizerStore();
+const props = defineProps<Props>();
 </script>
 
 <template>
   <v-app>
-    <AppHeader v-bind="header" class="app-header" />
+    <AppHeader 
+      v-bind="header" 
+      class="app-header"
+    >
+      <!-- Pass through header slots -->
+      <template #notifications>
+        <slot name="notifications" />
+      </template>
+      <template #profile>
+        <slot name="profile" />
+      </template>
+    </AppHeader>
 
     <AppSidebar
-      v-bind="sidebar"
+      :sidebarItems="sidebar.sidebarItems"
+      :getFilteredSidebarItems="sidebar.getFilteredSidebarItems"
+      :logoComponent="sidebar.logoComponent"
+      :sidebarDrawer="sidebar.sidebarDrawer"
+      :miniSidebar="sidebar.miniSidebar"
+      @update:sidebarDrawer="sidebar['onUpdate:sidebarDrawer']"
       class="app-sidebar"
     />
 
