@@ -95,6 +95,32 @@ export type {
 } from './plugins/key-clock';
 
 // ============================================================================
+// APP INITIALIZER - Bootstrap and authentication mode management
+// ============================================================================
+
+export {
+  AuthModeInitializer,
+  KeycloakInitializer,
+  JwtInitializer,
+  InitializerModeInitializer,
+  AppBootstrap,
+  bootstrapApp
+} from './utils/appInitializer';
+export type {
+  AuthMode,
+  AuthModeConfig,
+  KeycloakConfig as KeycloakInitializerConfig,
+  JwtConfig,
+  InitializerModeConfig,
+  AppInitializationResult,
+  AppInitializer,
+  AppBootstrapConfig,
+  PluginConfig,
+  DirectiveConfig,
+  ComponentConfig
+} from './utils/appInitializer';
+
+// ============================================================================
 // VALIDATORS - Generic validators
 // ============================================================================
 

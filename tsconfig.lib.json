@@ -30,6 +30,7 @@
     "src/utils/number-formatter.ts",
     "src/utils/NationalCodeValidator.ts",
     "src/utils/helpers/fetch-wrapper.ts",
+    "src/utils/appInitializer/**/*.ts",
     "src/validators/**/*.ts",
     "src/stores/permissions.ts",
     "src/stores/customizer.ts",
