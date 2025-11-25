@@ -49,7 +49,7 @@ const sidebarMenu = computed(() => {
     :model-value="sidebarDrawer"
     @update:modelValue="emit('update:sidebarDrawer', $event)"
     elevation="0"
-    rail-width="82"
+    rail-width="78"
     mobile-breakpoint="lg"
     app
     :rail="miniSidebar"
@@ -83,7 +83,7 @@ const sidebarMenu = computed(() => {
   </v-navigation-drawer>
 </template>
 
-<style>
+<style lang="scss" scoped>
 /* Completely hide text when sidebar is closed */
 .rightSidebar.sidebar-closed .v-list-item-title,
 .rightSidebar.sidebar-closed .v-list-item-subtitle,

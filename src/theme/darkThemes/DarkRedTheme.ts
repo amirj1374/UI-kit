@@ -26,8 +26,8 @@ const DarkRedTheme: ThemeTypes = {
     darksecondary: '#FF6B9D', // Lighter pink/red
     borderLight: '#404040', // Dark border
     inputBorder: '#525252', // Dark input border
-    containerBg: '#0f0f0f', // Very dark background
-    surface: '#1a1a1a', // Dark surface
+    containerBg: '#0E1226', // Very dark background
+    surface: '#020510', // Dark surface
     'on-surface-variant': '#2d2d2d', // Dark surface variant
     facebook: '#4267b2',
     twitter: '#1da1f2',

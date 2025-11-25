@@ -24,10 +24,10 @@ const DarkModernTheme: ThemeTypes = {
     lightText: '#d1d5db', // Gray 300
     darkprimary: '#818cf8', // Indigo 400
     darksecondary: '#a78bfa', // Purple 400
-    borderLight: '#374151', // Gray 700
-    inputBorder: '#4b5563', // Gray 600
-    containerBg: '#111827', // Gray 900
-    surface: '#0f172a', // Slate 900
+    borderLight: '#4f5c73', // Gray 700
+    inputBorder: '#505c6a', // Gray 600
+    containerBg: '#151B32',
+    surface: '#0E142B', // Slate 900
     'on-surface-variant': '#e2e8f0', // Slate 200
     facebook: '#4267b2',
     twitter: '#1da1f2',

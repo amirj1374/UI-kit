@@ -112,6 +112,24 @@
   }
 }
 
+/* Completely hide text when sidebar is closed */
+.rightSidebar.sidebar-closed .v-list-item-title,
+.rightSidebar.sidebar-closed .v-list-item-subtitle,
+.rightSidebar.sidebar-closed .v-list-subheader {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Also hide when in rail mode */
+.rightSidebar.v-navigation-drawer--rail .v-list-item-title,
+.rightSidebar.v-navigation-drawer--rail .v-list-item-subtitle,
+.rightSidebar.v-navigation-drawer--rail .v-list-subheader {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
 /* Mini Sidebar Hover Expand */
 @media only screen and (min-width: 1170px) {
   .mini-sidebar {
