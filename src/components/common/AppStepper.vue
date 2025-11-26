@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import '@/scss/components/_VStepper.scss';
 import { IconCheck, IconClock, IconPencil } from '@tabler/icons-vue';
 import type { Component, ComponentPublicInstance } from 'vue';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -117,6 +116,10 @@ defineExpose({ currentStepComponentRef });
     </div>
   </div>
 </template>
+
+<style lang="scss">
+@import '@/scss/components/_VStepper.scss';
+</style>
 
 <style lang="scss" scoped>
 .app-stepper-step {
