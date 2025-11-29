@@ -39,6 +39,7 @@ export interface Header {
   cols?: number | string; // Column span for form layout (default: 12 for mobile, 4 for md and up)
   textarea?: boolean; // Use textarea instead of text-field in form
   dir?: 'ltr' | 'rtl'; // Text direction for the input field
+  excludeFromForm?: boolean; // If true, field will be shown in table but excluded from create/edit forms (e.g., createdAt, updatedAt)
 }
 
 export interface CustomAction {

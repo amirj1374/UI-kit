@@ -417,7 +417,10 @@ const resolveAutocompleteMultiple = (header: Header): boolean => {
   return (header as EnhancedHeader).autocompleteMultiple === true;
 };
 
-const formHeaders = computed((): Header[] => props.headers as Header[]);
+// Filter headers to exclude fields marked with excludeFromForm
+const formHeaders = computed((): Header[] => {
+  return props.headers.filter((header) => !header.excludeFromForm) as Header[];
+});
 
 const isMoneyHeader = (header: Header): boolean => {
   if (!header || typeof header.type !== 'string') {
@@ -899,6 +902,14 @@ const saveItem = async () => {
   try {
     // Normalize dates before saving
     const dataToSave = { ...formModel.value };
+    
+    // Remove fields that are excluded from form (e.g., createdAt, updatedAt)
+    props.headers.forEach((header) => {
+      if (header.excludeFromForm && dataToSave[header.key] !== undefined) {
+        delete dataToSave[header.key];
+      }
+    });
+    
     props.headers.forEach((header) => {
       if (header.isDate && dataToSave[header.key]) {
         try {
@@ -936,7 +947,9 @@ const saveItem = async () => {
     });
 
     if (isEditing.value && dataToSave.id) {
-      await api.update(dataToSave);
+      const recordId = dataToSave.id;
+      const { id, ...dataWithoutId } = dataToSave;
+      await api.update(recordId, dataWithoutId);
       snackbarMessage.value = '✅ آیتم با موفقیت بروزرسانی شد!';
     } else {
       const response = await api.create(dataToSave);
