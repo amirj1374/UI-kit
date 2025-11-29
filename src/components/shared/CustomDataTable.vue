@@ -18,29 +18,21 @@
  */
 import MoneyInput from '@/components/shared/MoneyInput.vue';
 import ShamsiDatePicker from '@/components/shared/ShamsiDatePicker.vue';
+import ToggleSwitch from '@/components/shared/ToggleSwitch.vue';
 import { useTableSelection } from '@/composables/useTableSelection';
 import apiService from '@/services/apiService';
 import getAxiosInstance from '@/services/axiosInstance';
 import { DateConverter } from '@/utils/date-convertor';
 import { formatNumberWithCommas } from '@/utils/number-formatter';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-vue';
+import { IconCheck, IconChevronDown, IconChevronRight, IconSquareX } from '@tabler/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import type { Component, Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import type {
-  ApiResponse,
-  CustomAction,
-  DataTableProps,
-  Header,
-  TableItem
-} from '@/types/componentTypes/DataTableTypes';
+import type { ApiResponse, CustomAction, DataTableProps, Header, TableItem } from '@/types/componentTypes/DataTableTypes';
 
-type AutocompleteItemsSource =
-  | any[]
-  | Ref<any[] | undefined>
-  | ((context?: Record<string, any>) => any[] | undefined);
+type AutocompleteItemsSource = any[] | Ref<any[] | undefined> | ((context?: Record<string, any>) => any[] | undefined);
 
 type EnhancedHeader = Header & {
   autocompleteItems?: AutocompleteItemsSource;
@@ -422,21 +414,51 @@ const formHeaders = computed((): Header[] => {
   return props.headers.filter((header) => !header.excludeFromForm) as Header[];
 });
 
-const isMoneyHeader = (header: Header): boolean => {
-  if (!header || typeof header.type !== 'string') {
-    return false;
+// Helper functions to check header type
+const getHeaderType = (header: Header): string | undefined => {
+  // Use type property if available, otherwise fall back to legacy boolean props
+  if (header.type) {
+    return header.type.toLowerCase();
   }
-  return header.type.toLowerCase() === 'money';
+  // Backward compatibility with legacy props
+  if (header.isDate) return 'date';
+  if (header.textarea) return 'textarea';
+  if (header.toggleSwitch) return 'toggle';
+  return undefined;
+};
+
+const isDateHeader = (header: Header): boolean => {
+  const type = getHeaderType(header);
+  return type === 'date';
+};
+
+const isMoneyHeader = (header: Header): boolean => {
+  const type = getHeaderType(header);
+  return type === 'money';
+};
+
+const isTextareaHeader = (header: Header): boolean => {
+  const type = getHeaderType(header);
+  return type === 'textarea';
+};
+
+const isToggleHeader = (header: Header): boolean => {
+  const type = getHeaderType(header);
+  return type === 'toggle' || type === 'toggleswitch';
 };
 
 const getFieldInputType = (header: Header): string | undefined => {
-  return typeof header?.type === 'string' ? header.type : undefined;
+  const type = getHeaderType(header);
+  // Return HTML input type for text fields (e.g., 'number', 'email', etc.)
+  if (type && !['date', 'textarea', 'money', 'toggle', 'toggleswitch', 'autocomplete'].includes(type)) {
+    return type;
+  }
+  return undefined;
 };
 
 const resolveHeaderKey = (header: Header): string => header.key;
 const resolveHeaderTitle = (header: Header): string => header.title;
 const isHeaderDisabled = (header: Header): boolean => header.editable === false;
-const isTextareaHeader = (header: Header): boolean => header.textarea === true;
 
 // Helper function to get unique value from item
 const getUniqueValue = (item: any): string | number => {
@@ -589,7 +611,7 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
         }
       : params;
 
-    const response = await api.fetch(requestParams) as ApiResponse<TableItem>;
+    const response = (await api.fetch(requestParams)) as ApiResponse<TableItem>;
     const serverRawData = shouldPaginate ? response.data?.content ?? [] : response.data ?? [];
     const serverData = Array.isArray(serverRawData) ? serverRawData : [];
 
@@ -598,7 +620,7 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
     items.value = serverData.map((item: Record<string, any>) => {
       const newItem = { ...item };
       props.headers.forEach((header) => {
-        if (header.isDate && newItem[header.key]) {
+        if (isDateHeader(header) && newItem[header.key]) {
           try {
             newItem[header.key] = DateConverter.toShamsi(newItem[header.key]);
           } catch (error) {
@@ -744,7 +766,7 @@ const loadMore = async () => {
     const formattedItems = newItems.map((item: Record<string, any>) => {
       const newItem = { ...item };
       props.headers.forEach((header) => {
-        if (header.isDate && newItem[header.key]) {
+        if (isDateHeader(header) && newItem[header.key]) {
           try {
             newItem[header.key] = DateConverter.toShamsi(newItem[header.key]);
           } catch (error) {
@@ -805,6 +827,13 @@ const openDialog = (item?: any) => {
     const defaultContext: Record<string, any> = { ...editedItem.value };
 
     for (const header of props.headers) {
+      // Initialize toggle fields to false if not provided
+      if (isToggleHeader(header) && editedItem.value![header.key] === undefined) {
+        editedItem.value![header.key] = false;
+        defaultContext[header.key] = false;
+        continue;
+      }
+
       if (header.defaultValue === undefined) {
         continue;
       }
@@ -830,9 +859,7 @@ const openDialog = (item?: any) => {
 
     if (enhancedHeader.autocompleteReturnObject === false) {
       if (Array.isArray(currentValue)) {
-        formModel.value[header.key] = currentValue.map((item: any) =>
-          item && typeof item === 'object' ? item[valueKey] ?? null : item
-        );
+        formModel.value[header.key] = currentValue.map((item: any) => (item && typeof item === 'object' ? item[valueKey] ?? null : item));
       } else if (currentValue && typeof currentValue === 'object') {
         formModel.value[header.key] = currentValue[valueKey] ?? null;
       }
@@ -843,7 +870,7 @@ const openDialog = (item?: any) => {
   if (isEditing.value) {
     try {
       props.headers.forEach((header) => {
-        if (header.isDate) {
+        if (isDateHeader(header)) {
           const v = formModel.value[header.key];
           if (typeof v === 'string' && v.includes('/')) {
             // Convert Shamsi jYYYY/jMM/jDD -> YYYY-MM-DD for picker
@@ -902,16 +929,16 @@ const saveItem = async () => {
   try {
     // Normalize dates before saving
     const dataToSave = { ...formModel.value };
-    
+
     // Remove fields that are excluded from form (e.g., createdAt, updatedAt)
     props.headers.forEach((header) => {
       if (header.excludeFromForm && dataToSave[header.key] !== undefined) {
         delete dataToSave[header.key];
       }
     });
-    
+
     props.headers.forEach((header) => {
-      if (header.isDate && dataToSave[header.key]) {
+      if (isDateHeader(header) && dataToSave[header.key]) {
         try {
           const raw = dataToSave[header.key];
           if (typeof raw === 'string') {
@@ -1351,7 +1378,7 @@ const copyToClipboard = async (text: string) => {
  */
 const copyCompleteRecord = async () => {
   if (!previewItem.value) return;
-  
+
   try {
     // Format the complete record as JSON
     const recordText = JSON.stringify(previewItem.value, null, 2);
@@ -1693,18 +1720,36 @@ const handleFilterApply = (filterData: any) => {
                             </template>
                           </template>
                           <template v-else>
-                            <div class="d-flex align-center" style="gap: 4px;">
+                            <div class="d-flex align-center" style="gap: 4px">
                               <span
-                                v-if="shouldTruncate(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), getHeaderForColumn(column.key || ''))"
+                                v-if="
+                                  shouldTruncate(
+                                    getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                                    getHeaderForColumn(column.key || '')
+                                  )
+                                "
                                 class="truncated-text"
                                 :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
-                                @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                                @click.stop="
+                                  openTextPreview(
+                                    getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                                    (column.title || column.key || '') as string,
+                                    item
+                                  )
+                                "
                               >
                                 {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
                               </span>
                               <span
                                 v-else
-                                @click.stop="shouldShowCopyButton(getHeaderForColumn(column.key || '')) && openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                                @click.stop="
+                                  shouldShowCopyButton(getHeaderForColumn(column.key || '')) &&
+                                    openTextPreview(
+                                      getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                                      (column.title || column.key || '') as string,
+                                      item
+                                    )
+                                "
                                 :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
                               >
                                 {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
@@ -1715,8 +1760,14 @@ const handleFilterApply = (filterData: any) => {
                                 size="x-small"
                                 variant="text"
                                 color="primary"
-                                @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
-                                style="min-width: 24px; width: 24px; height: 24px;"
+                                @click.stop="
+                                  openTextPreview(
+                                    getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                                    (column.title || column.key || '') as string,
+                                    item
+                                  )
+                                "
+                                style="min-width: 24px; width: 24px; height: 24px"
                               >
                                 <v-icon size="16">mdi-content-copy</v-icon>
                               </v-btn>
@@ -1857,18 +1908,36 @@ const handleFilterApply = (filterData: any) => {
                 </template>
               </template>
               <template v-else>
-                <div class="d-flex align-center" style="gap: 4px;">
+                <div class="d-flex align-center" style="gap: 4px">
                   <span
-                    v-if="shouldTruncate(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), getHeaderForColumn(column.key || ''))"
+                    v-if="
+                      shouldTruncate(
+                        getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                        getHeaderForColumn(column.key || '')
+                      )
+                    "
                     class="truncated-text"
                     :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
-                    @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                    @click.stop="
+                      openTextPreview(
+                        getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                        (column.title || column.key || '') as string,
+                        item
+                      )
+                    "
                   >
                     {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
                   </span>
                   <span
                     v-else
-                    @click.stop="shouldShowCopyButton(getHeaderForColumn(column.key || '')) && openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
+                    @click.stop="
+                      shouldShowCopyButton(getHeaderForColumn(column.key || '')) &&
+                        openTextPreview(
+                          getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                          (column.title || column.key || '') as string,
+                          item
+                        )
+                    "
                     :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
                   >
                     {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
@@ -1879,8 +1948,14 @@ const handleFilterApply = (filterData: any) => {
                     size="x-small"
                     variant="text"
                     color="primary"
-                    @click.stop="openTextPreview(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), (column.title || column.key || '') as string, item)"
-                    style="min-width: 24px; width: 24px; height: 24px;"
+                    @click.stop="
+                      openTextPreview(
+                        getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                        (column.title || column.key || '') as string,
+                        item
+                      )
+                    "
+                    style="min-width: 24px; width: 24px; height: 24px"
                   >
                     <v-icon size="16">mdi-content-copy</v-icon>
                   </v-btn>
@@ -1924,7 +1999,7 @@ const handleFilterApply = (filterData: any) => {
               >
                 <template v-if="!header.hidden">
                   <ShamsiDatePicker
-                    v-if="header.isDate"
+                    v-if="isDateHeader(header)"
                     v-model="formModel[resolveHeaderKey(header)]"
                     :label="resolveHeaderTitle(header)"
                     :disabled="isHeaderDisabled(header)"
@@ -1959,6 +2034,18 @@ const handleFilterApply = (filterData: any) => {
                     :dir="(header as Header).dir"
                     auto-grow
                     rows="3"
+                  />
+                  <ToggleSwitch
+                    v-else-if="isToggleHeader(header)"
+                    v-model="formModel[resolveHeaderKey(header)]"
+                    :label="resolveHeaderTitle(header)"
+                    type="boolean"
+                    activeColor="#3bd32a"
+                    inactiveColor="#d32a2a"
+                    :options="[
+                      { value: 'true', label: 'فعال', icon: IconCheck },
+                      { value: 'false', label: 'غیر فعال', icon: IconSquareX }
+                    ]"
                   />
                   <v-text-field
                     v-else
@@ -2051,14 +2138,7 @@ const handleFilterApply = (filterData: any) => {
         </v-btn>
       </v-card-title>
       <v-card-text>
-        <v-textarea
-          :model-value="previewText"
-          readonly
-          auto-grow
-          variant="outlined"
-          rows="10"
-          class="mb-4"
-        ></v-textarea>
+        <v-textarea :model-value="previewText" readonly auto-grow variant="outlined" rows="10" class="mb-4"></v-textarea>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -2083,4 +2163,3 @@ const handleFilterApply = (filterData: any) => {
     </template>
   </v-snackbar>
 </template>
-

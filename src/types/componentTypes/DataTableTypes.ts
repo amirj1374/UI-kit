@@ -20,7 +20,6 @@ export interface Header {
   width?: number;
   hidden?: boolean;
   defaultValue?: unknown;
-  isDate?: boolean;
   style?: Record<string, string>;
   translate?: boolean;
   options?: Array<{ title: string; value: string | number | boolean }>;
@@ -28,7 +27,7 @@ export interface Header {
   nestedKey?: string;
   customRenderer?: (item: TableItem) => string | number | boolean;
   formatter?: (value: unknown, item: TableItem) => string;
-  type?: string;
+  type?: 'text' | 'date' | 'textarea' | 'money' | 'toggle' | 'toggleSwitch' | 'autocomplete' | string; // Field type for form rendering
   autocompleteItems?: any[] | Ref<any[] | undefined> | ((context?: Record<string, any>) => any[] | undefined);
   autocompleteItemTitle?: string;
   autocompleteItemValue?: string;
@@ -37,9 +36,14 @@ export interface Header {
   truncate?: boolean; // Enable truncation for this column (requires enableTextTruncation prop)
   showCopyButton?: boolean; // Show copy button for this column (works even without truncation)
   cols?: number | string; // Column span for form layout (default: 12 for mobile, 4 for md and up)
-  textarea?: boolean; // Use textarea instead of text-field in form
   dir?: 'ltr' | 'rtl'; // Text direction for the input field
   excludeFromForm?: boolean; // If true, field will be shown in table but excluded from create/edit forms (e.g., createdAt, updatedAt)
+  // Deprecated: Use type='date' instead
+  isDate?: boolean;
+  // Deprecated: Use type='textarea' instead
+  textarea?: boolean;
+  // Deprecated: Use type='toggle' or type='toggleSwitch' instead
+  toggleSwitch?: boolean;
 }
 
 export interface CustomAction {

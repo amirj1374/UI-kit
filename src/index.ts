@@ -26,6 +26,7 @@ export { default as ShamsiDatePicker } from './components/shared/ShamsiDatePicke
 export { default as UiChildCard } from './components/shared/UiChildCard.vue';
 export { default as UiParentCard } from './components/shared/UiParentCard.vue';
 export { default as VPriceTextField } from './components/shared/VPriceTextField.vue';
+export { default as ToggleSwitch } from './components/shared/ToggleSwitch.vue';
 
 // Components - Common
 export { default as AppStepper } from './components/common/AppStepper.vue';

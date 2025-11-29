@@ -55,4 +55,5 @@ declare module '@tabler/icons-vue' {
   export const IconMoon: DefineComponent
   export const IconPalette : DefineComponent
   export const IconCheckupList : DefineComponent
+  export const IconSquareX : DefineComponent
 }
