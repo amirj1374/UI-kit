@@ -30,7 +30,7 @@ import type { Component, Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import type { ApiResponse, CustomAction, DataTableProps, Header, TableItem } from '@/types/componentTypes/DataTableTypes';
+import type { ApiResponse, CustomAction, DataTableProps, Header, TableItem, FilterOperator } from '@/types/componentTypes/DataTableTypes';
 
 type AutocompleteItemsSource = any[] | Ref<any[] | undefined> | ((context?: Record<string, any>) => any[] | undefined);
 
@@ -93,6 +93,7 @@ const currentPage = ref(1);
 const sortBy = ref<{ key: string; order: 'asc' | 'desc' } | null>(null);
 const filterDialog = ref(false);
 const filterModel = ref<Record<string, any>>({});
+const filterOperatorModel = ref<Record<string, FilterOperator>>({});
 const tableRef = ref<HTMLElement | null>(null);
 const isLoadingMore = ref(false);
 const hasMore = ref(true);
@@ -579,6 +580,78 @@ const cleanFilterModel = computed(() => {
   return model;
 });
 
+// Label map for Java-style filter operators (for UI only)
+const FILTER_OPERATOR_LABELS: Record<FilterOperator, string> = {
+  equals: 'برابر با',
+  notEquals: 'مخالف با',
+  contains: 'شامل',
+  doesNotContain: 'شامل نباشد',
+  in: 'یکی از',
+  specified: 'خالی / غیر خالی',
+  greaterThan: 'بزرگتر از',
+  lessThan: 'کوچکتر از',
+  greaterThanOrEqual: 'بزرگتر یا مساوی',
+  lessThanOrEqual: 'کوچکتر یا مساوی'
+};
+
+const getHeaderFilterOperators = (header: Header): Array<{ value: FilterOperator; label: string }> => {
+  const configured = (header as any).filterOperators as FilterOperator[] | undefined;
+  const effective: FilterOperator[] =
+    configured && configured.length > 0 ? configured : (['equals', 'contains', 'in'] as FilterOperator[]);
+  return effective.map((op) => ({
+    value: op,
+    label: FILTER_OPERATOR_LABELS[op] || op
+  }));
+};
+
+const getDefaultFilterOperator = (header: Header): FilterOperator => {
+  const configured = (header as any).defaultFilterOperator as FilterOperator | undefined;
+  return configured || 'equals';
+};
+
+// Check if a header has filter operators configured (Java-style filtering)
+const hasFilterOperators = (header: Header): boolean => {
+  const operators = (header as any).filterOperators as FilterOperator[] | undefined;
+  return Array.isArray(operators) && operators.length > 0;
+};
+
+// Build backend-ready filter params
+// - If header has filterOperators configured: Java-style (field.equals, field.in, ...)
+// - Otherwise: Normal format (field=value)
+const buildFilterParams = (): Record<string, unknown> => {
+  // For custom filterComponent we keep legacy behavior and send model as-is
+  if (props.filterComponent) {
+    return cleanFilterModel.value;
+  }
+
+  const base: Record<string, unknown> = {};
+
+  Object.entries(cleanFilterModel.value).forEach(([key, value]) => {
+    // Find the header for this key
+    const header = props.headers.find((h) => h.key === key);
+    
+    // Only use Java-style operators if header has filterOperators configured
+    if (header && hasFilterOperators(header)) {
+      const op: FilterOperator = filterOperatorModel.value[key] || getDefaultFilterOperator(header);
+      const paramKey = `${key}.${op}`;
+
+      if (op === 'in' && Array.isArray(value)) {
+        base[paramKey] = value.join(',');
+      } else if (op === 'specified') {
+        // Backend usually expects boolean for "specified"
+        base[paramKey] = Boolean(value);
+      } else {
+        base[paramKey] = value;
+      }
+    } else {
+      // Normal format: send value directly without operator suffix
+      base[key] = value;
+    }
+  });
+
+  return base;
+};
+
 const hasFilterComponent = computed(() => {
   return !!props.filterComponent;
 });
@@ -593,7 +666,7 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
   error.value = null;
 
   let params: Record<string, unknown> = {
-    ...cleanFilterModel.value,
+    ...buildFilterParams(),
     ...props.queryParams
   };
 
@@ -753,7 +826,7 @@ const loadMore = async () => {
 
   try {
     const params = {
-      ...cleanFilterModel.value,
+      ...buildFilterParams(),
       ...props.queryParams,
       page: currentPage.value - 1,
       size: itemsPerPage.value
@@ -1404,6 +1477,7 @@ const applyFilter = () => {
  */
 const resetFilter = () => {
   filterModel.value = {};
+  filterOperatorModel.value = {}; // Clear operator selections too
   currentPage.value = 1;
   debouncedFetchData();
   filterDialog.value = false;
@@ -1419,6 +1493,23 @@ const handleFilterApply = (filterData: any) => {
   debouncedFetchData();
   filterDialog.value = false;
 };
+
+// Initialize default operators when filter dialog opens (only for headers with filterOperators)
+watch(
+  () => filterDialog.value,
+  (isOpen) => {
+    if (!isOpen) return;
+    formHeaders.value.forEach((header) => {
+      // Only initialize operators if header has filterOperators configured
+      if (hasFilterOperators(header)) {
+        const key = resolveHeaderKey(header);
+        if (!filterOperatorModel.value[key]) {
+          filterOperatorModel.value[key] = getDefaultFilterOperator(header);
+        }
+      }
+    });
+  }
+);
 </script>
 
 <template>
@@ -1430,7 +1521,7 @@ const handleFilterApply = (filterData: any) => {
   <!-- Action Buttons OUTSIDE the table container -->
   <div class="action-buttons">
     <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">ایجاد ✅</v-btn>
-    <v-btn v-if="hasFilterComponent" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
+    <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
     <v-btn v-if="props.showRefreshButton" color="blue" @click="debouncedFetchData" :loading="loading">بروزرسانی 🔄</v-btn>
 
     <!-- Selection Actions -->
@@ -2124,7 +2215,97 @@ const handleFilterApply = (filterData: any) => {
           @update:modelValue="filterModel = $event"
           @apply="handleFilterApply"
         />
+        <template v-else>
+          <v-container>
+            <v-row>
+              <v-col
+                v-for="header in formHeaders"
+                :key="resolveHeaderKey(header)"
+                :cols="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
+                :md="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
+              >
+                <template v-if="!header.hidden">
+                  <!-- Operator selector for Java-style filters (only if header has filterOperators configured) -->
+                  <v-select
+                    v-if="hasFilterOperators(header)"
+                    v-model="filterOperatorModel[resolveHeaderKey(header)]"
+                    :items="getHeaderFilterOperators(header)"
+                    item-title="label"
+                    item-value="value"
+                    density="compact"
+                    variant="underlined"
+                    hide-details
+                    class="mb-1"
+                  />
+                  <ShamsiDatePicker
+                    v-if="isDateHeader(header)"
+                    v-model="filterModel[resolveHeaderKey(header)]"
+                    :label="resolveHeaderTitle(header)"
+                    :disabled="isHeaderDisabled(header)"
+                  />
+                  <v-autocomplete
+                    v-else-if="hasAutocomplete(header)"
+                    v-model="filterModel[resolveHeaderKey(header)]"
+                    :label="resolveHeaderTitle(header)"
+                    :items="resolveAutocompleteItems(header, filterModel.value)"
+                    :item-title="resolveAutocompleteItemTitle(header)"
+                    :item-value="resolveAutocompleteItemValue(header)"
+                    :return-object="resolveAutocompleteReturnObject(header)"
+                    :multiple="resolveAutocompleteMultiple(header)"
+                    :chips="resolveAutocompleteMultiple(header)"
+                    :closable-chips="resolveAutocompleteMultiple(header)"
+                    :disabled="isHeaderDisabled(header)"
+                    clearable
+                    variant="outlined"
+                  />
+                  <MoneyInput
+                    v-else-if="isMoneyHeader(header)"
+                    v-model="filterModel[resolveHeaderKey(header)] as number"
+                    :label="resolveHeaderTitle(header)"
+                    :disabled="isHeaderDisabled(header)"
+                  />
+                  <v-textarea
+                    v-else-if="isTextareaHeader(header)"
+                    v-model="filterModel[resolveHeaderKey(header)]"
+                    :label="resolveHeaderTitle(header)"
+                    variant="outlined"
+                    :disabled="isHeaderDisabled(header)"
+                    :dir="(header as Header).dir"
+                    auto-grow
+                    rows="3"
+                  />
+                  <ToggleSwitch
+                    v-else-if="isToggleHeader(header)"
+                    v-model="filterModel[resolveHeaderKey(header)]"
+                    :label="resolveHeaderTitle(header)"
+                    type="boolean"
+                    activeColor="#3bd32a"
+                    inactiveColor="#d32a2a"
+                    :options="[
+                      { value: 'true', label: 'فعال', icon: IconCheck },
+                      { value: 'false', label: 'غیر فعال', icon: IconSquareX }
+                    ]"
+                  />
+                  <v-text-field
+                    v-else
+                    v-model="filterModel[resolveHeaderKey(header)]"
+                    :label="resolveHeaderTitle(header)"
+                    variant="outlined"
+                    :disabled="isHeaderDisabled(header)"
+                    :type="getFieldInputType(header)"
+                    :dir="(header as Header).dir"
+                  />
+                </template>
+              </v-col>
+            </v-row>
+          </v-container>
+        </template>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="grey" variant="tonal" @click="resetFilter">حذف فیلترها</v-btn>
+        <v-btn color="primary" @click="applyFilter">اعمال فیلتر</v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 

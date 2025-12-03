@@ -44,6 +44,19 @@ export interface Header {
   textarea?: boolean;
   // Deprecated: Use type='toggle' or type='toggleSwitch' instead
   toggleSwitch?: boolean;
+
+  /**
+   * Optional list of supported filter operators for this column when using
+   * the auto-generated filter form.
+   * Example (Java/Spring style): ['equals', 'in', 'contains']
+   */
+  filterOperators?: FilterOperator[];
+
+  /**
+   * Default filter operator for this header in the auto filter UI.
+   * Defaults to 'equals' when not provided.
+   */
+  defaultFilterOperator?: FilterOperator;
 }
 
 export interface CustomAction {
@@ -78,10 +91,26 @@ export interface DownloadLink {
   [key: string]: string;
 }
 
+/**
+ * Supported Java-style filter operators for auto-generated filters.
+ * These typically map to backend query params like `field.equals`, `field.in`, etc.
+ */
+export type FilterOperator =
+  | 'equals'
+  | 'notEquals'
+  | 'contains'
+  | 'doesNotContain'
+  | 'in'
+  | 'specified'
+  | 'greaterThan'
+  | 'lessThan'
+  | 'greaterThanOrEqual'
+  | 'lessThanOrEqual';
+
 export interface DataTableProps {
   apiResource: string;
   headers: Header[];
-  actions?: ('create' | 'edit' | 'delete' | 'view')[];
+  actions?: ('create' | 'edit' | 'delete' | 'view' | 'filter')[];
   routes?: TableRoutes | ((item: TableItem) => TableRoutes);
   downloadLink?: DownloadLink;
   formComponent?: any; // Vue component

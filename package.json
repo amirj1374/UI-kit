@@ -1,6 +1,6 @@
 {
   "name": "@amirjalili1374/ui-kit",
-  "version": "1.4.13",
+  "version": "1.4.14",
   "description": "A reusable UI component library built with Vue 3, Vuetify, and TypeScript",
   "type": "module",
   "main": "./dist/ui-kit.cjs.js",
@@ -60,7 +60,11 @@
     "format:check": "prettier --check \"src/**/*.{js,ts,vue,scss,css,json}\"",
     "test": "echo \"No tests specified\" && exit 0",
     "clean": "rimraf dist node_modules/.vite",
-    "serve": "vue-cli-service serve"
+    "serve": "vue-cli-service serve",
+    "release:patch": "npm version patch && npm publish --access public",
+    "release:minor": "npm version minor && npm publish --access public",
+    "release:major": "npm version major && npm publish --access public",
+    "publish:current": "npm publish --access public"
   },
   "dependencies": {
     "@amirjalili1374/ui-kit": "^1.2.1",
