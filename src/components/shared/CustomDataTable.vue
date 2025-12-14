@@ -738,10 +738,13 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
 const debouncedFetchData = useDebounceFn(fetchData, 300);
 
 // Update watcher to use debounced function
+// Skip automatic refetching when using custom filter component (it handles apply via @apply event)
 watch(
   [cleanFilterModel],
   () => {
-    debouncedFetchData();
+    if (!props.filterComponent) {
+      debouncedFetchData();
+    }
   },
   { deep: true }
 );
@@ -1490,7 +1493,7 @@ const resetFilter = () => {
 const handleFilterApply = (filterData: any) => {
   filterModel.value = filterData;
   currentPage.value = 1;
-  debouncedFetchData();
+  fetchData(); // Use fetchData directly for immediate action when user clicks apply
   filterDialog.value = false;
 };
 
@@ -2211,7 +2214,7 @@ watch(
         <component
           v-if="props.filterComponent"
           :is="props.filterComponent"
-          v-model="filterModel"
+          :model-value="filterModel"
           @update:modelValue="filterModel = $event"
           @apply="handleFilterApply"
         />
@@ -2301,7 +2304,7 @@ watch(
           </v-container>
         </template>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions v-if="!props.filterComponent">
         <v-spacer></v-spacer>
         <v-btn color="grey" variant="tonal" @click="resetFilter">حذف فیلترها</v-btn>
         <v-btn color="primary" @click="applyFilter">اعمال فیلتر</v-btn>
