@@ -141,6 +141,7 @@ function isMainGroup(item: any): boolean {
     :style="maxWidth ? { maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth } : undefined"
     v-bind="$attrs"
     variant="outlined"
+    :menu-props="{ attach: 'body', zIndex: 10000 }"
   >
     <template #item="{ props: itemProps, item }">
       <template v-if="isMainGroup(item.raw ?? item)">

@@ -2112,6 +2112,7 @@ watch(
                     :disabled="isHeaderDisabled(header)"
                     clearable
                     variant="outlined"
+                    :menu-props="{ attach: 'body', zIndex: 10000 }"
                   />
                   <MoneyInput
                     v-else-if="isMoneyHeader(header)"
@@ -2239,6 +2240,7 @@ watch(
                     variant="underlined"
                     hide-details
                     class="mb-1"
+                    :menu-props="{ attach: 'body', zIndex: 10000 }"
                   />
                   <ShamsiDatePicker
                     v-if="isDateHeader(header)"
@@ -2260,6 +2262,7 @@ watch(
                     :disabled="isHeaderDisabled(header)"
                     clearable
                     variant="outlined"
+                    :menu-props="{ attach: 'body', zIndex: 10000 }"
                   />
                   <MoneyInput
                     v-else-if="isMoneyHeader(header)"
