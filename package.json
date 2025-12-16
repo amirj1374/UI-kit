@@ -1,6 +1,6 @@
 {
   "name": "@amirjalili1374/ui-kit",
-  "version": "1.4.21",
+  "version": "1.4.23",
   "description": "A reusable UI component library built with Vue 3, Vuetify, and TypeScript",
   "type": "module",
   "main": "./dist/ui-kit.cjs.js",

@@ -280,3 +280,39 @@
 .data-table-container .v-chip {
   height: 22px;
 }
+
+/* Custom scrollbar for table wrapper (Vuetify 3: .v-table__wrapper) */
+:deep(.data-table-container .v-table__wrapper),
+:deep(.data-table-container .v-data-table__wrapper) {
+  scrollbar-color: rgb(var(--v-theme-primary)) rgba(var(--v-theme-borderLight), 0.4);
+  scrollbar-width: thin;
+}
+
+:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar),
+:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar) {
+  height: 10px;
+  width: 10px;
+  background: rgba(var(--v-theme-borderLight), 0.3);
+}
+
+:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar-track),
+:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar-track) {
+  background: rgba(var(--v-theme-borderLight), 0.2);
+  border-radius: 6px;
+}
+
+:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar-thumb),
+:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar-thumb) {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--v-theme-primary)) 0%,
+    rgba(var(--v-theme-primary), 0.85) 100%
+  );
+  border-radius: 6px;
+  border: 2px solid rgba(var(--v-theme-surface), 0.9);
+}
+
+:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar-thumb:hover),
+:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar-thumb:hover) {
+  background: rgb(var(--v-theme-primary));
+}
