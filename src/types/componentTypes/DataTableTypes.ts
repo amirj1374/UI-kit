@@ -57,6 +57,13 @@ export interface Header {
    * Defaults to 'equals' when not provided.
    */
   defaultFilterOperator?: FilterOperator;
+
+  /**
+   * Date picker mode for date type headers.
+   * - 'single': Single date selection (default)
+   * - 'range': Date range selection (returns [startDate, endDate])
+   */
+  dateMode?: 'single' | 'range';
 }
 
 export interface CustomAction {

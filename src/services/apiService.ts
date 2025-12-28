@@ -9,7 +9,7 @@ import type { AxiosInstance } from 'axios';
 export interface ApiService {
   fetch(params?: Record<string, any>): Promise<any>;
   create(data: any): Promise<any>;
-  update(id: string | number, data: any): Promise<any>;
+  update(data: any): Promise<any>;
   delete(id: string | number): Promise<any>;
   get(id: string | number): Promise<any>;
 }
@@ -36,8 +36,9 @@ export default function apiService(
       return response;
     },
 
-    async update(id: string | number, data: any) {
-      const response = await axiosInst.put(`${baseUrl}/${id}`, data);
+    async update(data: any) {
+      // Sends full payload (including id if needed by backend) in the body
+      const response = await axiosInst.put(baseUrl, data);
       return response;
     },
 

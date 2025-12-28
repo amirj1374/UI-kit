@@ -596,8 +596,7 @@ const FILTER_OPERATOR_LABELS: Record<FilterOperator, string> = {
 
 const getHeaderFilterOperators = (header: Header): Array<{ value: FilterOperator; label: string }> => {
   const configured = (header as any).filterOperators as FilterOperator[] | undefined;
-  const effective: FilterOperator[] =
-    configured && configured.length > 0 ? configured : (['equals', 'contains', 'in'] as FilterOperator[]);
+  const effective: FilterOperator[] = configured && configured.length > 0 ? configured : (['equals', 'contains', 'in'] as FilterOperator[]);
   return effective.map((op) => ({
     value: op,
     label: FILTER_OPERATOR_LABELS[op] || op
@@ -629,7 +628,7 @@ const buildFilterParams = (): Record<string, unknown> => {
   Object.entries(cleanFilterModel.value).forEach(([key, value]) => {
     // Find the header for this key
     const header = props.headers.find((h) => h.key === key);
-    
+
     // Only use Java-style operators if header has filterOperators configured
     if (header && hasFilterOperators(header)) {
       const op: FilterOperator = filterOperatorModel.value[key] || getDefaultFilterOperator(header);
@@ -1050,9 +1049,7 @@ const saveItem = async () => {
     });
 
     if (isEditing.value && dataToSave.id) {
-      const recordId = dataToSave.id;
-      const { id, ...dataWithoutId } = dataToSave;
-      await api.update(recordId, dataWithoutId);
+      await api.update(dataToSave);
       snackbarMessage.value = '✅ آیتم با موفقیت بروزرسانی شد!';
     } else {
       const response = await api.create(dataToSave);
@@ -2097,6 +2094,7 @@ watch(
                     v-model="formModel[resolveHeaderKey(header)]"
                     :label="resolveHeaderTitle(header)"
                     :disabled="isHeaderDisabled(header)"
+                    :mode="header.dateMode || 'single'"
                   />
                   <v-autocomplete
                     v-else-if="hasAutocomplete(header)"
@@ -2112,7 +2110,8 @@ watch(
                     :disabled="isHeaderDisabled(header)"
                     clearable
                     variant="outlined"
-                    :menu-props="{ attach: 'body', zIndex: 10000 }"
+                    attach
+                    :menu-props="{ zIndex: 20000 }"
                   />
                   <MoneyInput
                     v-else-if="isMoneyHeader(header)"
@@ -2240,13 +2239,15 @@ watch(
                     variant="underlined"
                     hide-details
                     class="mb-1"
-                    :menu-props="{ attach: 'body', zIndex: 10000 }"
+                    attach
+                    :menu-props="{ zIndex: 20000 }"
                   />
                   <ShamsiDatePicker
                     v-if="isDateHeader(header)"
                     v-model="filterModel[resolveHeaderKey(header)]"
                     :label="resolveHeaderTitle(header)"
                     :disabled="isHeaderDisabled(header)"
+                    :mode="header.dateMode || 'single'"
                   />
                   <v-autocomplete
                     v-else-if="hasAutocomplete(header)"
@@ -2262,7 +2263,8 @@ watch(
                     :disabled="isHeaderDisabled(header)"
                     clearable
                     variant="outlined"
-                    :menu-props="{ attach: 'body', zIndex: 10000 }"
+                    attach
+                    :menu-props="{ zIndex: 20000 }"
                   />
                   <MoneyInput
                     v-else-if="isMoneyHeader(header)"
