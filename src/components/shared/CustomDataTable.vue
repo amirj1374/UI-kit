@@ -684,7 +684,31 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
       : params;
 
     const response = (await api.fetch(requestParams)) as ApiResponse<TableItem>;
-    const serverRawData = shouldPaginate ? response.data?.content ?? [] : response.data ?? [];
+    
+    // Handle both paginated and non-paginated responses
+    // When pagination is disabled, try to get data from content first (in case API still returns paginated structure),
+    // then fall back to direct data array, or handle single object responses
+    let serverRawData: any[] = [];
+    if (shouldPaginate) {
+      // Pagination enabled: expect paginated response structure
+      serverRawData = response.data?.content ?? [];
+    } else {
+      // Pagination disabled: try multiple response structures for compatibility
+      if (Array.isArray(response.data)) {
+        // Direct array response
+        serverRawData = response.data;
+      } else if (response.data?.content && Array.isArray(response.data.content)) {
+        // Paginated structure even though pagination is disabled
+        serverRawData = response.data.content;
+      } else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+        // Single object response (not wrapped in array or content) - wrap it in an array
+        serverRawData = [response.data];
+      } else {
+        // Fallback to empty array
+        serverRawData = [];
+      }
+    }
+    
     const serverData = Array.isArray(serverRawData) ? serverRawData : [];
 
     originalServerData.value = serverData;
@@ -708,6 +732,7 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
       totalPages.value = response.data.page.totalPages;
       hasMore.value = currentPage.value < response.data.page.totalPages;
     } else {
+      // When pagination is disabled, set totals based on actual data length
       totalSize.value = serverData.length;
       totalPages.value = 1;
       hasMore.value = false;
