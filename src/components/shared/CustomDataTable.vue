@@ -1071,6 +1071,117 @@ const saveItem = async () => {
           console.error(`Error converting date for field ${header.key}:`, error);
         }
       }
+
+      // Clean up and enrich autocomplete arrays
+      if (hasAutocomplete(header)) {
+        const enhancedHeader = header as EnhancedHeader;
+        const currentValue = dataToSave[header.key];
+        const valueKey = resolveAutocompleteItemValue(header);
+
+        if (enhancedHeader.autocompleteMultiple && Array.isArray(currentValue)) {
+          // Get the current autocomplete items to match against
+          const autocompleteItems = resolveAutocompleteItems(header, dataToSave);
+          
+          // Process each item: match with autocomplete items to get full object data
+          const processedArray = currentValue
+            .map((item: any) => {
+              // Remove null/undefined items
+              if (item === null || item === undefined) {
+                return null;
+              }
+
+              // If autocompleteReturnObject is true, try to match with full object from items list
+              if (enhancedHeader.autocompleteReturnObject !== false) {
+                // If item is not an object, skip it
+                if (typeof item !== 'object') {
+                  return null;
+                }
+
+                // Check if object has null properties - try to find full object from autocomplete items
+                const itemValue = valueKey && item[valueKey];
+                if (itemValue !== null && itemValue !== undefined) {
+                  // Try to find the full object in autocomplete items
+                  const fullItem = autocompleteItems.find((autocompleteItem: any) => {
+                    const autocompleteValue = autocompleteItem[valueKey];
+                    return autocompleteValue !== null && 
+                           autocompleteValue !== undefined && 
+                           String(autocompleteValue) === String(itemValue);
+                  });
+
+                  // If we found a full item, use it; otherwise use the current item
+                  if (fullItem && typeof fullItem === 'object') {
+                    return fullItem;
+                  }
+                }
+
+                // Check if ALL properties are null/undefined/empty string
+                const propertyValues = Object.values(item);
+                if (propertyValues.length === 0) {
+                  return null; // Empty object with no properties
+                }
+
+                const allPropertiesEmpty = propertyValues.every((val: any) => 
+                  val === null || val === undefined || val === ''
+                );
+                
+                // If all properties are empty, remove it
+                if (allPropertiesEmpty) {
+                  return null;
+                }
+
+                // Return the item as-is if it has at least one non-empty property
+                return item;
+              }
+
+              // For non-object returns, just check if value exists
+              return item !== null && item !== undefined && item !== '' ? item : null;
+            })
+            .filter((item: any) => item !== null && item !== undefined); // Remove nulls
+
+          // Update the array
+          dataToSave[header.key] = processedArray;
+        } else if (currentValue === null || currentValue === undefined || currentValue === '') {
+          // For single autocomplete, set to null if empty
+          dataToSave[header.key] = null;
+        } else if (enhancedHeader.autocompleteReturnObject !== false && typeof currentValue === 'object') {
+          // For single autocomplete with return-object, try to match with full object
+          const autocompleteItems = resolveAutocompleteItems(header, dataToSave);
+          const valueKey = resolveAutocompleteItemValue(header);
+          const itemValue = valueKey && currentValue[valueKey];
+          
+          if (itemValue !== null && itemValue !== undefined) {
+            const fullItem = autocompleteItems.find((autocompleteItem: any) => {
+              const autocompleteValue = autocompleteItem[valueKey];
+              return autocompleteValue !== null && 
+                     autocompleteValue !== undefined && 
+                     String(autocompleteValue) === String(itemValue);
+            });
+
+            if (fullItem && typeof fullItem === 'object') {
+              dataToSave[header.key] = fullItem;
+            }
+          }
+        }
+      }
+    });
+
+    // Debug: Log autocomplete fields before sending
+    props.headers.forEach((header) => {
+      if (hasAutocomplete(header) && dataToSave[header.key]) {
+        const enhancedHeader = header as EnhancedHeader;
+        if (enhancedHeader.autocompleteMultiple && Array.isArray(dataToSave[header.key])) {
+          console.log(`[CustomDataTable] Autocomplete field "${header.key}" (${dataToSave[header.key].length} items) before save:`, dataToSave[header.key]);
+          // Check for objects with null properties
+          const itemsWithNulls = dataToSave[header.key].filter((item: any) => 
+            item && typeof item === 'object' && Object.values(item).some((val: any) => val === null)
+          );
+          if (itemsWithNulls.length > 0) {
+            console.warn(`[CustomDataTable] Warning: Found ${itemsWithNulls.length} items with null properties in "${header.key}":`, itemsWithNulls);
+          }
+        } else {
+          console.log(`[CustomDataTable] Autocomplete field "${header.key}" before save:`, dataToSave[header.key]);
+        }
+      }
     });
 
     if (isEditing.value && dataToSave.id) {

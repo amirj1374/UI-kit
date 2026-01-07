@@ -152,6 +152,7 @@ function isMainGroup(item: any): boolean {
           :text="undefined"
           width="300px"
           height="300px"
+          color="surface"
         >
           <template #activator="{ props: activatorProps }">
             <v-list-item
@@ -269,6 +270,7 @@ function isMainGroup(item: any): boolean {
 .ca-group-tooltip {
   max-width: 300px;
   padding: 8px;
+  color: rgb(var(--v-theme-on-surface));
 }
 
 .ca-group-tooltip-header {
@@ -277,15 +279,21 @@ function isMainGroup(item: any): boolean {
   align-items: center;
   margin-bottom: 8px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+
+.ca-group-tooltip-header strong {
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 600;
 }
 
 .ca-group-count {
   font-size: 0.8rem;
-  color: rgba(0, 0, 0, 0.6);
-  background-color: rgba(var(--v-theme-primary), 0.1);
+  color: rgb(var(--v-theme-on-primary));
+  background-color: rgb(var(--v-theme-primary));
   padding: 2px 6px;
   border-radius: 4px;
+  font-weight: 500;
 }
 
 .ca-group-members {
@@ -296,7 +304,8 @@ function isMainGroup(item: any): boolean {
 .ca-group-member {
   padding: 4px 0;
   font-size: 0.9rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  color: rgb(var(--v-theme-on-surface));
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 
 .ca-group-member:last-child {
