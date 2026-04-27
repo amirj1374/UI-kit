@@ -1,0 +1,133 @@
+///* ----------------------------------------------------
+//   Persian DatePicker – Enterprise Theme Integration
+//   Works with Vuetify Light/Dark Themes Automatically
+//   Fully Standalone (no wrapper required)
+//---------------------------------------------------- */
+//
+//.vpd-container,
+//.vpd-content,
+//.vpd-main,
+//.vpd-popup {
+//  background: rgb(var(--v-theme-surface)) !important;
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//  border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
+//  border-radius: 8px !important;
+//}
+//
+///* ----------------------------------------------------
+//   Header
+//---------------------------------------------------- */
+//.vpd-header {
+//  background: rgb(var(--v-theme-surface)) !important;
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
+//}
+//
+//.vpd-header * {
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//}
+//
+///* Navigation Arrows */
+//.vpd-prev svg path,
+//.vpd-next svg path {
+//  fill: rgb(var(--v-theme-on-surface)) !important;
+//}
+//
+///* ----------------------------------------------------
+//   Month label
+//---------------------------------------------------- */
+//.vpd-month-label,
+//.vpd-month-label span {
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//  font-weight: 600;
+//}
+//
+///* ----------------------------------------------------
+//   Weekdays (ش ی د ...)
+//---------------------------------------------------- */
+//.vpd-weekday {
+//  color: rgba(var(--v-theme-on-surface), 0.55) !important;
+//  font-size: 0.85rem;
+//}
+//
+///* ----------------------------------------------------
+//   Days
+//---------------------------------------------------- */
+//.vpd-day {
+//  position: relative;
+//  border-radius: 6px !important;
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//  background: transparent !important;
+//
+//  &:hover {
+//    background: rgba(var(--v-theme-primary), 0.12) !important;
+//  }
+//}
+//
+//.vpd-day-text {
+//  font-size: 0.9rem;
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//  position: relative;
+//  z-index: 2;
+//}
+//
+///* Selected Day */
+//.vpd-day.selected,
+//.vpd-day.vpd-selected {
+//  background: rgb(var(--v-theme-primary)) !important;
+//
+//  .vpd-day-text {
+//    color: rgb(var(--v-theme-on-primary)) !important;
+//  }
+//}
+//
+///* Today */
+//.vpd-day.today,
+//.vpd-day.is-today {
+//  outline: 1px solid rgb(var(--v-theme-primary)) !important;
+//  outline-offset: -2px;
+//}
+//
+///* Disabled Day */
+//.vpd-day.disabled,
+//.vpd-day[disabled="true"] {
+//  color: rgba(var(--v-theme-on-surface), 0.33) !important;
+//  background: transparent !important;
+//  cursor: not-allowed !important;
+//}
+//
+///* ----------------------------------------------------
+//   Addon List (Year / Month chooser)
+//---------------------------------------------------- */
+//.vpd-addon-list,
+//.vpd-addon-list-content {
+//  background: rgb(var(--v-theme-surface)) !important;
+//  border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
+//}
+//
+//.vpd-addon-list-item {
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//
+//  &:hover {
+//    background: rgba(var(--v-theme-primary), 0.12) !important;
+//  }
+//}
+//
+//.vpd-addon-list-item.vpd-selected {
+//  background: rgb(var(--v-theme-primary)) !important;
+//  color: rgb(var(--v-theme-on-primary)) !important;
+//}
+//
+///* ----------------------------------------------------
+//   Footer (actions)
+//---------------------------------------------------- */
+//.vpd-actions button {
+//  background: transparent !important;
+//  color: rgb(var(--v-theme-on-surface)) !important;
+//  border-radius: 6px;
+//  padding: 6px 12px;
+//
+//  &:hover {
+//    background: rgba(var(--v-theme-primary), 0.12) !important;
+//  }
+//}

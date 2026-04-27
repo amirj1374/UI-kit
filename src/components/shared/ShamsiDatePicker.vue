@@ -82,8 +82,8 @@ const selectedDate = computed({
       if (props.modelValue.includes('T')) {
         const date = new Date(props.modelValue);
         // Format as YYYY-MM-DD to avoid timezone confusion
-        const localDate = date.getFullYear() + '-' + 
-          String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+        const localDate = date.getFullYear() + '-' +
+          String(date.getMonth() + 1).padStart(2, '0') + '-' +
           String(date.getDate()).padStart(2, '0');
         console.log('Converted to local date:', localDate);
         return localDate;
@@ -101,16 +101,16 @@ const selectedDate = computed({
 
 const onDateChange = (date: any) => {
   console.log('Date changed:', date);
-  
+
   if (props.mode === 'range') {
     // Handle range mode
     if (Array.isArray(date) && date.length === 2) {
       const [startDate, endDate] = date;
-      const gregorianStart = startDate && startDate._isAMomentObject ? 
+      const gregorianStart = startDate && startDate._isAMomentObject ?
         startDate.toISOString() : startDate;
-      const gregorianEnd = endDate && endDate._isAMomentObject ? 
+      const gregorianEnd = endDate && endDate._isAMomentObject ?
         endDate.toISOString() : endDate;
-      
+
       console.log('Range - Start:', gregorianStart, 'End:', gregorianEnd);
       emit('update:modelValue', [gregorianStart, gregorianEnd]);
     } else {
@@ -331,12 +331,12 @@ const isRangeMode = computed(() => props.mode === 'range');
   .shamsi-date-picker :deep(.vpd-input-group) {
     border-radius: 8px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-input-group input) {
     padding: 10px 12px;
     font-size: 14px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-icon-btn) {
     padding: 6px;
     margin: 2px;
@@ -346,16 +346,16 @@ const isRangeMode = computed(() => props.mode === 'range');
     align-items: center;
     justify-content: center;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-icon-btn i) {
     font-size: 14px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-picker) {
     max-width: 320px;
     margin: 0 auto;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-day) {
     padding: 8px 4px;
     font-size: 14px;
@@ -365,7 +365,7 @@ const isRangeMode = computed(() => props.mode === 'range');
     align-items: center;
     justify-content: center;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-weekday) {
     padding: 6px 2px;
     font-size: 12px;
@@ -375,17 +375,17 @@ const isRangeMode = computed(() => props.mode === 'range');
     align-items: center;
     justify-content: center;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-actions button) {
     padding: 6px 12px;
     font-size: 14px;
     margin: 2px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-month-year) {
     font-size: 16px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-nav-btn) {
     padding: 4px;
     min-width: 28px;
@@ -401,31 +401,31 @@ const isRangeMode = computed(() => props.mode === 'range');
     max-width: 280px;
     border-radius: 8px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-day) {
     padding: 6px 2px;
     font-size: 12px;
     min-width: 28px;
     min-height: 28px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-weekday) {
     padding: 4px 1px;
     font-size: 11px;
     min-width: 24px;
     min-height: 24px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-actions button) {
     padding: 4px 8px;
     font-size: 12px;
     margin: 1px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-month-year) {
     font-size: 14px;
   }
-  
+
   .shamsi-date-picker :deep(.vpd-header) {
     border-radius: 8px 8px 0 0;
   }
