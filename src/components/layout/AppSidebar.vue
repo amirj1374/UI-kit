@@ -1,32 +1,18 @@
 <script setup lang="ts">
-import { computed, type PropType } from "vue";
-import NavCollapse from "./NavCollapse/NavCollapse.vue";
-import NavGroup from "./NavGroup/NavGroup.vue";
-import NavItem from "./NavItem/NavItem.vue";
-import type { MenuItem } from '../../types/components/layout/menu';
+import { computed } from 'vue';
+import NavCollapse from './NavCollapse/NavCollapse.vue';
+import NavGroup from './NavGroup/NavGroup.vue';
+import NavItem from './NavItem/NavItem.vue';
+import type { MenuItem } from '@/types/components/layout/menu';
 
-const props = defineProps({
-  sidebarItems: {
-    type: Array as PropType<MenuItem[]>,
-    required: true,
-  },
-  getFilteredSidebarItems: {
-    type: Function as PropType<() => MenuItem[]>,
-    required: true,
-  },
-  logoComponent: {
-    type: Object as PropType<any>, // Vue component
-    required: true,
-  },
-  sidebarDrawer: {
-    type: Boolean,
-    required: true
-  },
-  miniSidebar: {
-    type: Boolean,
-    required: true
-  }
-});
+const props = defineProps<{
+  sidebarItems: MenuItem[]
+  getFilteredSidebarItems: () => MenuItem[]
+  logoComponent: any
+  sidebarDrawer: boolean
+  miniSidebar: boolean
+  version?: string
+}>()
 
 const emit = defineEmits<{
   (e: 'update:sidebarDrawer', value: boolean): void;
@@ -66,18 +52,13 @@ const sidebarMenu = computed(() => {
         <template v-for="(item, i) in sidebarMenu" :key="i">
           <NavGroup v-if="item.header" :item="item" />
           <v-divider v-else-if="item.divider" class="my-3" />
-          <NavCollapse
-            v-else-if="item.children"
-            :item="item"
-            :level="0"
-            class="leftPadding"
-          />
+          <NavCollapse v-else-if="item.children" :item="item" :level="0" class="leftPadding" />
           <NavItem v-else :item="item" :level="0" class="leftPadding" />
         </template>
       </v-list>
 
       <div v-if="sidebarDrawer" class="pa-4 text-center">
-        <v-chip color="inputBorder" size="small">نمایشی</v-chip>
+        <v-chip color="inputBorder" size="small">{{ props.version }}</v-chip>
       </div>
     </perfect-scrollbar>
   </v-navigation-drawer>

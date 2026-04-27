@@ -24,6 +24,7 @@ import apiService from '@/services/apiService';
 import getAxiosInstance from '@/services/axiosInstance';
 import { DateConverter } from '@/utils/date-convertor';
 import { formatNumberWithCommas } from '@/utils/number-formatter';
+import { defaultFilterAdapter } from '@/utils/defaultFilterAdapter';
 import { IconCheck, IconChevronDown, IconChevronRight, IconSquareX } from '@tabler/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import type { Component, Ref } from 'vue';
@@ -105,6 +106,14 @@ const selection = useTableSelection(items, {
   groupBy: props.groupBy as any,
   defaultExpanded: props.defaultExpanded
 });
+
+function resolveFilter(raw: Record<string, any>) {
+  if (props.filterAdapter) {
+    return props.filterAdapter(raw);
+  }
+
+  return defaultFilterAdapter(raw);
+}
 
 // Override toggleSelection in bulk mode to ensure single selection
 const originalToggleSelection = selection.toggleSelection;
@@ -660,21 +669,46 @@ const hasFilterComponent = computed(() => {
  * Converts date fields to Shamsi for display and computes grouping/selection state.
  * @param queryParams Optional extra query params to merge with filter and pagination
  */
+const applyFilterAdapter = (raw: Record<string, any>) => {
+  if (!props.filterAdapter) return raw;
+  return props.filterAdapter(raw);
+};
+
 const fetchData = async (queryParams?: Record<string, unknown>) => {
   loading.value = true;
   error.value = null;
 
-  let params: Record<string, unknown> = {
-    ...buildFilterParams(),
-    ...props.queryParams
-  };
-
-  if (queryParams) {
-    params = { ...params, ...queryParams };
-  }
-
   try {
+    /* =========================
+     * 1. Build Raw Filters
+     ========================= */
+    const rawFilter = buildFilterParams();
+
+    /* =========================
+     * 2. Apply Adapter (Criteria)
+     ========================= */
+    const finalFilter = resolveFilter(rawFilter);
+
+    /* =========================
+     * 3. Merge All Params
+     ========================= */
+    let params: Record<string, unknown> = {
+      ...finalFilter,
+      ...props.queryParams
+    };
+
+    if (queryParams) {
+      params = {
+        ...params,
+        ...queryParams
+      };
+    }
+
+    /* =========================
+     * 4. Pagination
+     ========================= */
     const shouldPaginate = props.showPagination !== false;
+
     const requestParams = shouldPaginate
       ? {
           ...params,
@@ -683,75 +717,87 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
         }
       : params;
 
+    /* =========================
+     * 5. API Call
+     ========================= */
     const response = (await api.fetch(requestParams)) as ApiResponse<TableItem>;
-    
-    // Handle both paginated and non-paginated responses
-    // When pagination is disabled, try to get data from content first (in case API still returns paginated structure),
-    // then fall back to direct data array, or handle single object responses
+
+    /* =========================
+     * 6. Normalize Response
+     ========================= */
     let serverRawData: any[] = [];
+
     if (shouldPaginate) {
-      // Pagination enabled: expect paginated response structure
       serverRawData = response.data?.content ?? [];
     } else {
-      // Pagination disabled: try multiple response structures for compatibility
       if (Array.isArray(response.data)) {
-        // Direct array response
         serverRawData = response.data;
-      } else if (response.data?.content && Array.isArray(response.data.content)) {
-        // Paginated structure even though pagination is disabled
+      } else if (Array.isArray(response.data?.content)) {
         serverRawData = response.data.content;
-      } else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
-        // Single object response (not wrapped in array or content) - wrap it in an array
+      } else if (response.data && typeof response.data === 'object') {
         serverRawData = [response.data];
-      } else {
-        // Fallback to empty array
-        serverRawData = [];
       }
     }
-    
+
     const serverData = Array.isArray(serverRawData) ? serverRawData : [];
 
+    /* =========================
+     * 7. Post Process (Dates)
+     ========================= */
     originalServerData.value = serverData;
 
     items.value = serverData.map((item: Record<string, any>) => {
       const newItem = { ...item };
+
       props.headers.forEach((header) => {
         if (isDateHeader(header) && newItem[header.key]) {
           try {
             newItem[header.key] = DateConverter.toShamsi(newItem[header.key]);
-          } catch (error) {
-            console.error(`Error converting date for field ${header.key}:`, error);
+          } catch (e) {
+            console.error(`Date convert error: ${header.key}`, e);
           }
         }
       });
+
       return newItem;
     });
 
+    /* =========================
+     * 8. Pagination Meta
+     ========================= */
     if (shouldPaginate && response.data?.page) {
       totalSize.value = response.data.page.totalElements;
       totalPages.value = response.data.page.totalPages;
       hasMore.value = currentPage.value < response.data.page.totalPages;
     } else {
-      // When pagination is disabled, set totals based on actual data length
       totalSize.value = serverData.length;
       totalPages.value = 1;
       hasMore.value = false;
     }
 
-    if (props.defaultSelected && items.value.length > 0 && props.defaultSelected in items.value[0]) {
+    /* =========================
+     * 9. Default Selection
+     ========================= */
+    if (props.defaultSelected && items.value.length && props.defaultSelected in items.value[0]) {
       const defaultSelectedItems = items.value.filter((item) => item[props.defaultSelected!] === true);
+
       selectedItems.value = [...defaultSelectedItems];
+
       emit('update:selectedItems', selectedItems.value);
       emit('selection-change', selectedItems.value);
     }
   } catch (err: any) {
+    /* =========================
+     * 10. Error Handling
+     ========================= */
     if (err.response) {
-      error.value = `خطای سرور: ${err.response.status} - ${err.response.data.message || 'خطای ناشناخته'}`;
+      error.value = `خطای سرور: ${err.response.status}`;
     } else if (err.request) {
       error.value = 'خطای شبکه. لطفا دوباره تلاش کنید.';
     } else {
       error.value = 'یک خطای غیرمنتظره رخ داد.';
     }
+
     console.error(err);
   } finally {
     loading.value = false;
@@ -1081,7 +1127,7 @@ const saveItem = async () => {
         if (enhancedHeader.autocompleteMultiple && Array.isArray(currentValue)) {
           // Get the current autocomplete items to match against
           const autocompleteItems = resolveAutocompleteItems(header, dataToSave);
-          
+
           // Process each item: match with autocomplete items to get full object data
           const processedArray = currentValue
             .map((item: any) => {
@@ -1103,9 +1149,7 @@ const saveItem = async () => {
                   // Try to find the full object in autocomplete items
                   const fullItem = autocompleteItems.find((autocompleteItem: any) => {
                     const autocompleteValue = autocompleteItem[valueKey];
-                    return autocompleteValue !== null && 
-                           autocompleteValue !== undefined && 
-                           String(autocompleteValue) === String(itemValue);
+                    return autocompleteValue !== null && autocompleteValue !== undefined && String(autocompleteValue) === String(itemValue);
                   });
 
                   // If we found a full item, use it; otherwise use the current item
@@ -1120,10 +1164,8 @@ const saveItem = async () => {
                   return null; // Empty object with no properties
                 }
 
-                const allPropertiesEmpty = propertyValues.every((val: any) => 
-                  val === null || val === undefined || val === ''
-                );
-                
+                const allPropertiesEmpty = propertyValues.every((val: any) => val === null || val === undefined || val === '');
+
                 // If all properties are empty, remove it
                 if (allPropertiesEmpty) {
                   return null;
@@ -1148,13 +1190,11 @@ const saveItem = async () => {
           const autocompleteItems = resolveAutocompleteItems(header, dataToSave);
           const valueKey = resolveAutocompleteItemValue(header);
           const itemValue = valueKey && currentValue[valueKey];
-          
+
           if (itemValue !== null && itemValue !== undefined) {
             const fullItem = autocompleteItems.find((autocompleteItem: any) => {
               const autocompleteValue = autocompleteItem[valueKey];
-              return autocompleteValue !== null && 
-                     autocompleteValue !== undefined && 
-                     String(autocompleteValue) === String(itemValue);
+              return autocompleteValue !== null && autocompleteValue !== undefined && String(autocompleteValue) === String(itemValue);
             });
 
             if (fullItem && typeof fullItem === 'object') {
@@ -1170,13 +1210,19 @@ const saveItem = async () => {
       if (hasAutocomplete(header) && dataToSave[header.key]) {
         const enhancedHeader = header as EnhancedHeader;
         if (enhancedHeader.autocompleteMultiple && Array.isArray(dataToSave[header.key])) {
-          console.log(`[CustomDataTable] Autocomplete field "${header.key}" (${dataToSave[header.key].length} items) before save:`, dataToSave[header.key]);
+          console.log(
+            `[CustomDataTable] Autocomplete field "${header.key}" (${dataToSave[header.key].length} items) before save:`,
+            dataToSave[header.key]
+          );
           // Check for objects with null properties
-          const itemsWithNulls = dataToSave[header.key].filter((item: any) => 
-            item && typeof item === 'object' && Object.values(item).some((val: any) => val === null)
+          const itemsWithNulls = dataToSave[header.key].filter(
+            (item: any) => item && typeof item === 'object' && Object.values(item).some((val: any) => val === null)
           );
           if (itemsWithNulls.length > 0) {
-            console.warn(`[CustomDataTable] Warning: Found ${itemsWithNulls.length} items with null properties in "${header.key}":`, itemsWithNulls);
+            console.warn(
+              `[CustomDataTable] Warning: Found ${itemsWithNulls.length} items with null properties in "${header.key}":`,
+              itemsWithNulls
+            );
           }
         } else {
           console.log(`[CustomDataTable] Autocomplete field "${header.key}" before save:`, dataToSave[header.key]);
@@ -1658,7 +1704,8 @@ watch(
   <div class="action-buttons">
     <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">ایجاد ✅</v-btn>
     <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
-    <v-btn v-if="props.showRefreshButton" color="blue" @click="debouncedFetchData" :loading="loading">بروزرسانی 🔄</v-btn>
+    <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
+    <v-btn v-if="props.showRefreshButton" color="blue" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
 
     <!-- Selection Actions -->
     <div v-if="props.selectable && hasSelection" class="selection-actions">
@@ -2201,8 +2248,8 @@ watch(
 
     <!-- Custom Pagination always visible at the bottom -->
     <div v-if="props.showPagination" class="pagination-wrapper">
-      <div class="d-flex justify-space-between align-center pa-4">
-        <div class="text-subtitle-2">
+      <div class="d-flex justify-space-between align-center pa-3">
+        <div class="text-subtitle-3">
           نمایش {{ (currentPage - 1) * itemsPerPage + 1 }} تا {{ Math.min(currentPage * itemsPerPage, totalSize) }} از {{ totalSize }} رکورد
         </div>
         <v-pagination v-model="currentPage" :length="totalPages" :total-visible="5" size="small" @update:model-value="handlePageChange" />
@@ -2343,7 +2390,7 @@ watch(
   </v-dialog>
 
   <!-- Filter Dialog -->
-  <v-dialog v-model="filterDialog" max-width="800">
+  <v-dialog v-model="filterDialog" max-width="1500">
     <v-card>
       <v-card-title>فیلتر</v-card-title>
       <v-card-text>
@@ -2488,3 +2535,114 @@ watch(
     </template>
   </v-snackbar>
 </template>
+<style scoped>
+/* wrapper اصلی - بدون overflow */
+.data-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* اسکرول فقط روی wrapper جدول Vuetify */
+.data-table-container :deep(.v-table__wrapper) {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* جدول حداقل عرض داشته باشه */
+.data-table-container :deep(table) {
+  min-width: max-content;
+  width: 100%;
+}
+
+/* pagination ثابت در پایین */
+.data-table-container :deep(.v-data-table-footer) {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 2;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+/* ===== Scrollbar Minimal Style ===== */
+
+.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+  background: transparent;
+}
+
+.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-thumb {
+  background: rgb(var(--v-theme-primary));
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--v-theme-primary));
+}
+
+.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+.data-table-container :deep(.v-table__wrapper) {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--v-theme-primary)) transparent;
+}
+
+/* اسکرول برای حالت گروه‌بندی */
+.groups-scroll-container {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.groups-scroll-container::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+  background: transparent;
+}
+
+.groups-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.groups-scroll-container::-webkit-scrollbar-thumb {
+  background: rgb(var(--v-theme-primary));
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.groups-scroll-container::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* رنگ هدر جدول */
+.data-table-container :deep(.v-data-table thead) {
+  background: rgb(var(--v-theme-containerBg));
+}
+
+.data-table-container :deep(.v-data-table thead th) {
+  background: rgb(var(--v-theme-containerBg)) !important;
+}
+
+/* برای حالت گروه‌بندی */
+.groups-scroll-container :deep(.v-data-table thead) {
+  background: rgb(var(--v-theme-containerBg));
+}
+
+.groups-scroll-container :deep(.v-data-table thead th) {
+  background: rgb(var(--v-theme-containerBg)) !important;
+}
+</style>
+
+
+

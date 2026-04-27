@@ -117,7 +117,7 @@ export type FilterOperator =
 export interface DataTableProps {
   apiResource: string;
   headers: Header[];
-  actions?: ('create' | 'edit' | 'delete' | 'view' | 'filter')[];
+  actions?: ('create' | 'edit' | 'delete' | 'view' | 'filter'| 'manual')[];
   routes?: TableRoutes | ((item: TableItem) => TableRoutes);
   downloadLink?: DownloadLink;
   formComponent?: any; // Vue component
@@ -146,6 +146,7 @@ export interface DataTableProps {
   axiosInstance?: AxiosInstance; // Optional custom axios instance
   enableTextTruncation?: boolean; // Enable text truncation feature globally (default: false)
   maxTextLength?: number; // Maximum characters to show before truncating (default: 50, only used when enableTextTruncation is true)
+  filterAdapter?: (rawFilter: any) => Record<string, any>;
 }
 
 export interface ApiResponse<T = TableItem> {
