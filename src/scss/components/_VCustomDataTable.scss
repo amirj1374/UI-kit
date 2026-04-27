@@ -1,3 +1,10 @@
+@use 'vuetify/settings' as *;
+@use 'vuetify/styles' as *;
+
+/* ============================================================
+   Custom Data Table Styles (SCSS Version)
+   ============================================================ */
+
 .data-table-container {
   display: flex;
   flex-direction: column;
@@ -7,312 +14,212 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform, margin-top;
-}
 
-/* Grouped Table Styles */
-.grouped-table {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+  /* ============================================================
+     FIX: WIDTH BEFORE DATA LOAD (No Jumping)
+     ============================================================ */
 
-.group-controls {
-  display: flex;
-  gap: 8px;
-  padding: 8px 0;
-  flex-shrink: 0;
-}
+  .v-table__wrapper {
+    table {
+      width: 100%;
+      table-layout: fixed !important;
 
-.groups-scroll-container {
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex: 1;
-  min-height: 0;
-}
+      thead th {
+        min-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
 
-.groups-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-bottom: 16px;
-}
+    /* Vuetify Empty State */
+    .v-data-table__empty-wrapper,
+    .v-data-table-empty {
+      display: table-row !important;
+      width: 100% !important;
 
-.group-section {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-}
+      td {
+        width: 100% !important;
+      }
+    }
 
-.group-header {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgb(var(--v-theme-lightprimary)) 0%, rgb(var(--v-theme-lightsecondary)) 100%);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-bottom: 1px solid rgb(var(--v-theme-borderLight));
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
+    /* Vuetify Loading State */
+    .v-data-table__progress {
+      display: table-row !important;
 
-.group-header:hover {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary200)) 0%, rgb(var(--v-theme-secondary200)) 100%);
-}
+      td {
+        width: 100% !important;
+      }
+    }
 
-.group-header.expanded {
-  background: rgb(var(--v-theme-lightsecondary))
-}
+    /* ============================================================
+       Table Rows
+       ============================================================ */
 
-.group-label {
-  font-weight: 600;
-  color: rgb(var(--v-theme-darksecondary));
-  flex: 1;
-}
+    table {
+      tbody {
+        tr {
+          height: 36px !important;
+          transition: background 0.2s ease;
 
-.group-items {
-  background: rgb(var(--v-theme-surface));
-  overflow: hidden;
-}
+          &:nth-child(even) {
+            background: rgb(var(--v-theme-lightprimary)) !important;
+          }
 
-/* Group expansion transitions */
-.group-expand-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  max-height: 0;
-  opacity: 0;
-}
+          &:hover {
+            background: rgb(var(--v-theme-primary200)) !important;
+          }
+        }
+      }
 
-.group-expand-enter-to {
-  max-height: 1000px;
-  opacity: 1;
-}
+      thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
 
-.group-expand-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  max-height: 1000px;
-  opacity: 1;
-}
+        th {
+          background: rgb(var(--v-theme-containerBg)) !important;
+          height: 40px !important;
+          font-weight: 700 !important;
+          box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
 
-.group-expand-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
+    /* ============================================================
+       Scrollbar – Windows 11 Style
+       ============================================================ */
 
-/* Chevron icon rotation */
-.chevron-icon {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
 
-.group-header.expanded .chevron-icon {
-  transform: rotate(0deg);
-}
+    &::-webkit-scrollbar-button {
+      display: none !important;
+    }
 
-.group-header:not(.expanded) .chevron-icon {
-  transform: rotate(-90deg);
-}
+    &::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
 
-.group-table {
-  border: none !important;
-  box-shadow: none !important;
-}
+    &::-webkit-scrollbar-thumb {
+      background: rgb(var(--v-theme-primary)) !important;
+      border-radius: 20px !important;
+      border: 3px solid transparent !important;
+      background-clip: content-box !important;
+    }
 
-.group-table :deep(.v-data-table__wrapper) {
-  border: none !important;
-  overflow: visible !important;
-}
+    &::-webkit-scrollbar-corner {
+      background: transparent;
+    }
 
-.group-table :deep(.v-data-table__thead) {
-  background: rgb(var(--v-theme-lightprimary)) !important;
-}
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--v-theme-primary)) transparent;
+  }
 
-.group-table :deep(.v-data-table__tbody tr:hover) {
-  background: rgb(var(--v-theme-primary200)) !important;
-}
+  /* ============================================================
+     Cell Padding & Line Height
+     ============================================================ */
 
-.group-table :deep(.v-data-table__tbody) {
-  overflow: visible !important;
-}
+  .v-table__wrapper table {
 
-.pagination-wrapper {
-  flex-shrink: 0;
-  border-top: 1px solid rgb(var(--v-theme-borderLight));
-  background: rgb(var(--v-theme-surface));
-  z-index: 2;
-}
+    td,
+    th {
+      padding: 8px 12px !important;
+      line-height: 1.6 !important;
+      font-size: 0.875rem;
+    }
+  }
 
-.page-title {
-  margin-bottom: 16px;
-  padding: 16px 0 8px 0;
-  border-bottom: 1px solid rgb(var(--v-theme-borderLight));
-}
+  /* ============================================================
+     Pagination Footer
+     ============================================================ */
 
-.title-text {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--v-primary-base);
-}
+  .pagination-wrapper {
+    flex-shrink: 0;
+    border-top: 1px solid rgb(var(--v-theme-borderLight));
+    background: rgb(var(--v-theme-surface));
+    z-index: 2;
+  }
 
-.action-buttons {
-  margin-bottom: 16px;
-  padding: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: height, margin-bottom;
-}
+  /* ============================================================
+     Grouping Styles
+     ============================================================ */
 
-.selection-actions {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-}
+  .groups-scroll-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
 
-.selected-actions {
-  width: 100vw;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  border-radius: 8px;
-  margin-top: 5px;
-  flex-wrap: wrap;
-  flex-direction: row-reverse;
-  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform, opacity, height;
-}
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
 
-:deep(.v-data-table__wrapper table thead) {
-  position: sticky;
-  top: 0;
-  background: rgb(var(--v-theme-surface));
-  z-index: 1;
-  box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-}
+    &::-webkit-scrollbar-thumb {
+      background: rgb(var(--v-theme-primary)) !important;
+      border-radius: 20px;
+      border: 3px solid transparent;
+      background-clip: content-box;
+    }
 
-:deep(.v-data-table__wrapper tbody tr:nth-child(even)) {
-  background: rgb(var(--v-theme-lightprimary)) !important;
-}
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-button,
+    &::-webkit-scrollbar-corner {
+      background: transparent !important;
+      display: none !important;
+    }
+  }
 
-:deep(.v-data-table__wrapper tbody tr:nth-child(odd)) {
-  background: rgb(var(--v-theme-surface)) !important;
-}
+  .group-section {
+    border: 1px solid rgb(var(--v-theme-borderLight));
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
 
-/* Smooth table content transitions */
-:deep(.v-data-table__wrapper) {
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
+  .group-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: linear-gradient(
+                    135deg,
+                    rgb(var(--v-theme-lightprimary)) 0%,
+                    rgb(var(--v-theme-lightsecondary)) 100%
+    );
+    cursor: pointer;
+    user-select: none;
 
-:deep(.v-data-table__wrapper tbody tr) {
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
+    &.expanded {
+      background: rgb(var(--v-theme-lightsecondary));
+    }
 
-/* Enhanced slide transition for bulk mode actions */
-.slide-left-enter-active {
-  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
+    .chevron {
+      transition: transform 0.3s ease;
+    }
 
-.slide-left-leave-active {
-  transition: all 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19);
-}
+    &:not(.expanded) .chevron-icon {
+      transform: rotate(-90deg);
+    }
+  }
 
-.slide-left-enter-from {
-  transform: translateX(-100%) scale(0.95);
-  opacity: 0;
-}
+  /* ============================================================
+     Misc Controls
+     ============================================================ */
 
-.slide-left-leave-to {
-  transform: translateX(-100%) scale(0.95);
-  opacity: 0;
-}
+  .v-selection-control {
+    --v-selection-control-size: 18px;
+  }
 
-.slide-left-enter-to,
-.slide-left-leave-from {
-  transform: translateX(0) scale(1);
-  opacity: 1;
-}
+  td .v-btn {
+    min-height: 26px;
+    height: 26px;
+    padding: 0 8px;
+  }
 
-/* Compact row height adjustments */
-.data-table-container .v-data-table .v-table__wrapper table tr {
-  height: 45px;
-}
-
-.data-table-container .v-data-table .v-table__wrapper table td,
-.data-table-container .v-data-table .v-table__wrapper table th {
-  padding-top: 6px;
-  padding-bottom: 6px;
-  padding-left: 8px;
-  padding-right: 8px;
-  line-height: 1.2;
-}
-
-/* Even tighter density for group tables */
-.group-table .v-table__wrapper table tr {
-  height: 34px;
-}
-
-.group-table .v-table__wrapper table td,
-.group-table .v-table__wrapper table th {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-/* Checkbox/radio compact spacing */
-.data-table-container .v-selection-control {
-  --v-selection-control-size: 18px;
-}
-
-.data-table-container .v-selection-control .v-label {
-  margin: 0;
-}
-
-/* Buttons inside cells */
-.data-table-container td .v-btn {
-  min-height: 28px;
-  height: 28px;
-  padding: 0 8px;
-}
-
-/* Chips inside headers or cells */
-.data-table-container .v-chip {
-  height: 22px;
-}
-
-/* Custom scrollbar for table wrapper (Vuetify 3: .v-table__wrapper) */
-:deep(.data-table-container .v-table__wrapper),
-:deep(.data-table-container .v-data-table__wrapper) {
-  scrollbar-color: rgb(var(--v-theme-primary)) rgba(var(--v-theme-borderLight), 0.4);
-  scrollbar-width: thin;
-}
-
-:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar),
-:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar) {
-  height: 10px;
-  width: 10px;
-  background: rgba(var(--v-theme-borderLight), 0.3);
-}
-
-:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar-track),
-:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar-track) {
-  background: rgba(var(--v-theme-borderLight), 0.2);
-  border-radius: 6px;
-}
-
-:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar-thumb),
-:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar-thumb) {
-  background: linear-gradient(
-    135deg,
-    rgb(var(--v-theme-primary)) 0%,
-    rgba(var(--v-theme-primary), 0.85) 100%
-  );
-  border-radius: 6px;
-  border: 2px solid rgba(var(--v-theme-surface), 0.9);
-}
-
-:deep(.data-table-container .v-table__wrapper::-webkit-scrollbar-thumb:hover),
-:deep(.data-table-container .v-data-table__wrapper::-webkit-scrollbar-thumb:hover) {
-  background: rgb(var(--v-theme-primary));
+  .v-chip {
+    height: 20px;
+    font-size: 0.75rem;
+  }
 }

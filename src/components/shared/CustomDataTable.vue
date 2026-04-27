@@ -1705,7 +1705,7 @@ watch(
     <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">ایجاد ✅</v-btn>
     <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
-    <v-btn v-if="props.showRefreshButton" color="blue" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
+    <v-btn v-if="props.showRefreshButton"  @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
 
     <!-- Selection Actions -->
     <div v-if="props.selectable && hasSelection" class="selection-actions">
@@ -2535,114 +2535,11 @@ watch(
     </template>
   </v-snackbar>
 </template>
-<style scoped>
-/* wrapper اصلی - بدون overflow */
-.data-table-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-/* اسکرول فقط روی wrapper جدول Vuetify */
-.data-table-container :deep(.v-table__wrapper) {
-  overflow-x: auto;
-  overflow-y: auto;
-}
-
-/* جدول حداقل عرض داشته باشه */
-.data-table-container :deep(table) {
-  min-width: max-content;
-  width: 100%;
-}
-
-/* pagination ثابت در پایین */
-.data-table-container :deep(.v-data-table-footer) {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  z-index: 2;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  flex-shrink: 0;
-}
-
-/* ===== Scrollbar Minimal Style ===== */
-
-.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar {
-  height: 10px;
-  width: 10px;
-  background: transparent;
-}
-
-.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-thumb {
-  background: rgb(var(--v-theme-primary));
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--v-theme-primary));
-}
-
-.data-table-container :deep(.v-table__wrapper)::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* Firefox */
-.data-table-container :deep(.v-table__wrapper) {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(var(--v-theme-primary)) transparent;
-}
-
-/* اسکرول برای حالت گروه‌بندی */
-.groups-scroll-container {
-  overflow-x: auto;
-  overflow-y: auto;
-}
-
-.groups-scroll-container::-webkit-scrollbar {
-  height: 10px;
-  width: 10px;
-  background: transparent;
-}
-
-.groups-scroll-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.groups-scroll-container::-webkit-scrollbar-thumb {
-  background: rgb(var(--v-theme-primary));
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-.groups-scroll-container::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* رنگ هدر جدول */
-.data-table-container :deep(.v-data-table thead) {
-  background: rgb(var(--v-theme-containerBg));
-}
-
-.data-table-container :deep(.v-data-table thead th) {
-  background: rgb(var(--v-theme-containerBg)) !important;
-}
-
-/* برای حالت گروه‌بندی */
-.groups-scroll-container :deep(.v-data-table thead) {
-  background: rgb(var(--v-theme-containerBg));
-}
-
-.groups-scroll-container :deep(.v-data-table thead th) {
-  background: rgb(var(--v-theme-containerBg)) !important;
-}
+<style lang="scss">
+@import '@/scss/components/VCustomDataTable';
 </style>
+
+
 
 
 
