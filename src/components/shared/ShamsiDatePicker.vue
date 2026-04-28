@@ -82,9 +82,8 @@ const selectedDate = computed({
       if (props.modelValue.includes('T')) {
         const date = new Date(props.modelValue);
         // Format as YYYY-MM-DD to avoid timezone confusion
-        const localDate = date.getFullYear() + '-' +
-          String(date.getMonth() + 1).padStart(2, '0') + '-' +
-          String(date.getDate()).padStart(2, '0');
+        const localDate =
+          date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
         console.log('Converted to local date:', localDate);
         return localDate;
       }
@@ -106,10 +105,8 @@ const onDateChange = (date: any) => {
     // Handle range mode
     if (Array.isArray(date) && date.length === 2) {
       const [startDate, endDate] = date;
-      const gregorianStart = startDate && startDate._isAMomentObject ?
-        startDate.toISOString() : startDate;
-      const gregorianEnd = endDate && endDate._isAMomentObject ?
-        endDate.toISOString() : endDate;
+      const gregorianStart = startDate && startDate._isAMomentObject ? startDate.toISOString() : startDate;
+      const gregorianEnd = endDate && endDate._isAMomentObject ? endDate.toISOString() : endDate;
 
       console.log('Range - Start:', gregorianStart, 'End:', gregorianEnd);
       emit('update:modelValue', [gregorianStart, gregorianEnd]);
@@ -153,33 +150,39 @@ const isRangeMode = computed(() => props.mode === 'range');
 </script>
 
 <style scoped>
+/* کانتینر اصلی دیت‌پیکر */
 .shamsi-date-picker {
   position: relative;
 }
 
-/* Style the Persian date picker input to look like Vuetify */
+/* استایل‌دهی به گروه ورودی (input container) */
 .shamsi-date-picker :deep(.vpd-input-group) {
   border: 1px solid rgb(var(--v-theme-borderLight));
   border-radius: 10px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   background: rgb(var(--v-theme-surface));
   position: relative;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
+/* حالت hover روی ورودی */
 .shamsi-date-picker :deep(.vpd-input-group:hover) {
   border-color: rgb(var(--v-theme-secondary));
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* حالت focus روی ورودی */
 .shamsi-date-picker :deep(.vpd-input-group:focus-within) {
   border-color: rgb(var(--v-theme-primary));
   box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.1);
 }
 
+/* استایل فیلد ورودی */
 .shamsi-date-picker :deep(.vpd-input-group input) {
   padding: 12px 16px;
-  font-size: 16px;
+  font-size: 14px;
   border: none;
   outline: none;
   background: transparent;
@@ -188,11 +191,13 @@ const isRangeMode = computed(() => props.mode === 'range');
   color: rgb(var(--v-theme-onSurface));
 }
 
+/* استایل placeholder ورودی */
 .shamsi-date-picker :deep(.vpd-input-group input::placeholder) {
   color: rgb(var(--v-theme-onSurfaceVariant));
   opacity: 0.7;
 }
 
+/* دکمه آیکون (آیکون تقویم) */
 .shamsi-date-picker :deep(.vpd-icon-btn) {
   padding: 8px;
   border-radius: 6px;
@@ -204,29 +209,31 @@ const isRangeMode = computed(() => props.mode === 'range');
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* حالت hover دکمه آیکون */
 .shamsi-date-picker :deep(.vpd-icon-btn:hover) {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* حالت active دکمه آیکون */
 .shamsi-date-picker :deep(.vpd-icon-btn:active) {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Custom icon styling */
+/* آیکون داخل دکمه */
 .shamsi-date-picker :deep(.vpd-icon-btn i) {
   font-size: 16px;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-/* Range mode styling */
+/* نوار نمایش بازه تاریخ در ورودی */
 .shamsi-date-picker :deep(.vpd-range) {
   background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%) !important;
   opacity: 0.2;
 }
 
-/* Calendar popup styling */
+/* کانتینر اصلی تقویم (picker) */
 .shamsi-date-picker :deep(.vpd-picker) {
   background: rgb(var(--v-theme-surface));
   border: 1px solid rgb(var(--v-theme-borderLight));
@@ -234,13 +241,22 @@ const isRangeMode = computed(() => props.mode === 'range');
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* Calendar header */
+/* هدر تقویم (بخش بالایی با گرادیانت) */
 .shamsi-date-picker :deep(.vpd-header) {
   background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);
   color: white;
 }
 
-/* Calendar navigation buttons */
+/* متن بالای هدر در حالت range picker */
+.shamsi-date-picker :deep(.vpd-header-title) {
+  color: white !important;
+  font-weight: 600;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  opacity: 0.95;
+}
+
+/* دکمه‌های ناوبری (فلش‌های چپ و راست) */
 .shamsi-date-picker :deep(.vpd-nav-btn) {
   background: rgba(255, 255, 255, 0.2) !important;
   color: white !important;
@@ -248,55 +264,47 @@ const isRangeMode = computed(() => props.mode === 'range');
   transition: all 0.2s ease;
 }
 
+/* حالت hover دکمه‌های ناوبری */
 .shamsi-date-picker :deep(.vpd-nav-btn:hover) {
   background: rgba(255, 255, 255, 0.3) !important;
   transform: scale(1.05);
 }
 
-/* Calendar days */
+/* روزهای تقویم */
 .shamsi-date-picker :deep(.vpd-day) {
-  color: rgb(var(--v-theme-onSurface));
+  color: rgb(var(--v-theme-onSurface)) !important;
   border-radius: 6px;
   transition: all 0.2s ease;
   font-weight: 500;
 }
 
-/* Ensure proper contrast for calendar days */
-.shamsi-date-picker :deep(.vpd-day) {
-  color: rgb(var(--v-theme-onSurface)) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Force better visibility in dark mode */
-.shamsi-date-picker :deep(.vpd-day) {
-  color: rgb(var(--v-theme-secondary)) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
+/* حالت hover روی روزها */
 .shamsi-date-picker :deep(.vpd-day:hover) {
   background: rgb(var(--v-theme-primaryContainer)) !important;
   color: rgb(var(--v-theme-onPrimaryContainer)) !important;
 }
 
+/* روز انتخاب شده */
 .shamsi-date-picker :deep(.vpd-day.vpd-selected) {
   background: rgb(var(--v-theme-primary)) !important;
   color: white !important;
   box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.3);
 }
 
+/* روز امروز */
 .shamsi-date-picker :deep(.vpd-day.vpd-today) {
   border: 2px solid rgb(var(--v-theme-primary));
   font-weight: bold;
 }
 
-/* Month/Year selector */
+/* نمایش ماه و سال در هدر */
 .shamsi-date-picker :deep(.vpd-month-year) {
   color: white;
   font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Weekday headers */
+/* نام روزهای هفته */
 .shamsi-date-picker :deep(.vpd-weekday) {
   color: rgb(var(--v-theme-primary));
   font-weight: 600;
@@ -305,7 +313,7 @@ const isRangeMode = computed(() => props.mode === 'range');
   margin: 0px;
 }
 
-/* Footer buttons */
+/* دکمه‌های فوتر (امروز، پاک کردن و ...) */
 .shamsi-date-picker :deep(.vpd-actions button) {
   background: rgb(var(--v-theme-secondary)) !important;
   color: white !important;
@@ -316,17 +324,31 @@ const isRangeMode = computed(() => props.mode === 'range');
   margin: 4px;
 }
 
+/* حالت hover دکمه‌های فوتر */
 .shamsi-date-picker :deep(.vpd-actions button:hover) {
   background: rgb(var(--v-theme-primary)) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* حالت active دکمه‌های فوتر */
 .shamsi-date-picker :deep(.vpd-actions button:active) {
   transform: translateY(0);
 }
 
-/* Responsive Design */
+/* محتوای اصلی تقویم */
+.shamsi-date-picker :deep(.vpd-content) {
+  opacity: 1;
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.17, 1.84);
+  text-align: right;
+  direction: rtl;
+  width: 316px;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  box-shadow: 5px 22px 95px -14px #000;
+  cursor: default;
+}
+
+/* استایل‌های ریسپانسیو برای تبلت */
 @media (max-width: 768px) {
   .shamsi-date-picker :deep(.vpd-input-group) {
     border-radius: 8px;
@@ -396,6 +418,7 @@ const isRangeMode = computed(() => props.mode === 'range');
   }
 }
 
+/* استایل‌های ریسپانسیو برای موبایل */
 @media (max-width: 480px) {
   .shamsi-date-picker :deep(.vpd-picker) {
     max-width: 280px;
@@ -431,7 +454,7 @@ const isRangeMode = computed(() => props.mode === 'range');
   }
 }
 
-/* Ensure proper touch targets on mobile */
+/* بهینه‌سازی برای دستگاه‌های لمسی */
 @media (hover: none) and (pointer: coarse) {
   .shamsi-date-picker :deep(.vpd-icon-btn),
   .shamsi-date-picker :deep(.vpd-day),
@@ -441,4 +464,36 @@ const isRangeMode = computed(() => props.mode === 'range');
     min-height: 44px;
   }
 }
+
+/* روزهای بین دو تاریخ انتخاب شده در range picker */
+.shamsi-date-picker :deep(.vpd-day.vpd-range-between) {
+  background: rgba(var(--v-theme-primary), 0.15) !important;
+  color: rgb(var(--v-theme-onSurface)) !important;
+  border-radius: 0 !important;
+}
+
+/* اولین روز انتخاب شده در range picker */
+.shamsi-date-picker :deep(.vpd-day.vpd-range-start) {
+  background: rgb(var(--v-theme-primary)) !important;
+  color: white !important;
+  border-radius: 6px 0 0 6px !important;
+}
+
+/* آخرین روز انتخاب شده در range picker */
+.shamsi-date-picker :deep(.vpd-day.vpd-range-end) {
+  background: rgb(var(--v-theme-primary)) !important;
+  color: white !important;
+  border-radius: 0 6px 6px 0 !important;
+}
+
+/* حالت hover روی روزهای بین range */
+.shamsi-date-picker :deep(.vpd-day.vpd-range-between:hover) {
+  background: rgba(var(--v-theme-primary), 0.25) !important;
+}
+
+/* زمانی که روز شروع و پایان یکی باشند */
+.shamsi-date-picker :deep(.vpd-day.vpd-range-start.vpd-range-end) {
+  border-radius: 6px !important;
+}
 </style>
+
