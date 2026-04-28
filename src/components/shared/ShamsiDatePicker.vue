@@ -23,8 +23,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+type OutputFormat = 'iso' | 'date-only';
+
 interface Props {
-  modelValue?: string | [string, string] | null; // Single date or range
+  modelValue?: string | [string, string] | null;
   label?: string;
   placeholder?: string;
   variant?: 'outlined' | 'filled' | 'plain' | 'underlined' | 'solo' | 'solo-inverted' | 'solo-filled';
@@ -41,8 +43,9 @@ interface Props {
   displayFormat?: string;
   minDate?: string;
   maxDate?: string;
-  mode?: 'single' | 'range'; // Single date or range picker
-  icon?: string; // Custom calendar icon
+  mode?: 'single' | 'range';
+  icon?: string;
+  outputFormat?: OutputFormat; // حالت خروجی: 'iso' (با timezone) یا 'date-only' (فقط تاریخ)
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,7 +67,8 @@ const props = withDefaults(defineProps<Props>(), {
   minDate: '',
   maxDate: '',
   mode: 'single',
-  icon: ''
+  icon: '',
+  outputFormat: 'iso' // دیفالت: فرمت ISO با timezone
 });
 
 const emit = defineEmits<{
@@ -73,66 +77,73 @@ const emit = defineEmits<{
 
 const selectedDate = computed({
   get: () => {
-    // Pass Gregorian date directly to the library, let it handle Shamsi display
     if (props.mode === 'range' && Array.isArray(props.modelValue)) {
       return props.modelValue;
     } else if (typeof props.modelValue === 'string' && props.modelValue) {
-      console.log('Passing Gregorian date to picker:', props.modelValue);
-      // Convert ISO string to local date to avoid timezone issues
       if (props.modelValue.includes('T')) {
         const date = new Date(props.modelValue);
-        // Format as YYYY-MM-DD to avoid timezone confusion
         const localDate =
           date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
-        console.log('Converted to local date:', localDate);
         return localDate;
       }
-      // Otherwise, create a proper date string that the picker can handle
-      return props.modelValue + 'T00:00:00.000Z';
+      return props.modelValue;
     }
     return props.modelValue;
   },
   set: (value) => {
-    console.log('selectedDate setter called with:', value);
     emit('update:modelValue', value);
   }
 });
 
 const onDateChange = (date: any) => {
-  console.log('Date changed:', date);
-
   if (props.mode === 'range') {
-    // Handle range mode
     if (Array.isArray(date) && date.length === 2) {
       const [startDate, endDate] = date;
-      const gregorianStart = startDate && startDate._isAMomentObject ? startDate.toISOString() : startDate;
-      const gregorianEnd = endDate && endDate._isAMomentObject ? endDate.toISOString() : endDate;
-
-      console.log('Range - Start:', gregorianStart, 'End:', gregorianEnd);
+      const gregorianStart = formatOutput(startDate);
+      const gregorianEnd = formatOutput(endDate);
       emit('update:modelValue', [gregorianStart, gregorianEnd]);
     } else {
       emit('update:modelValue', null);
     }
   } else {
-    // Handle single date mode
-    if (date && date._isAMomentObject && date.isValid()) {
-      // Use Moment's toISOString method to get full ISO format with timezone
-      const gregorianISO = date.toISOString();
-      console.log('Single date - Gregorian for server:', gregorianISO);
-      emit('update:modelValue', gregorianISO);
-    } else if (typeof date === 'string') {
-      // If it's a string, convert to ISO format
-      const dateObj = new Date(date);
-      const gregorianISO = dateObj.toISOString();
-      console.log('String date converted to ISO:', gregorianISO);
-      emit('update:modelValue', gregorianISO);
+    if (date) {
+      const formattedDate = formatOutput(date);
+      emit('update:modelValue', formattedDate);
     } else {
       emit('update:modelValue', '');
     }
   }
 };
 
-// CSS classes for Vuetify-like styling
+const formatOutput = (date: any): string => {
+  if (!date) return '';
+
+  let dateObj: Date;
+
+  if (date._isAMomentObject && date.isValid()) {
+    dateObj = date.toDate();
+  } else if (typeof date === 'string') {
+    dateObj = new Date(date);
+  } else if (date instanceof Date) {
+    dateObj = date;
+  } else {
+    return '';
+  }
+
+  if (isNaN(dateObj.getTime())) return '';
+
+  if (props.outputFormat === 'date-only') {
+    // فرمت: 2026-04-28
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  } else {
+    // فرمت: 2026-04-28T00:00:00.000Z (ISO با timezone)
+    return dateObj.toISOString();
+  }
+};
+
 const inputClass = computed(() => {
   const classes = ['v-text-field', 'v-input', 'v-input--density-comfortable'];
   if (props.variant === 'outlined') {
@@ -145,7 +156,6 @@ const wrapperClass = computed(() => {
   return 'v-field v-field--variant-outlined v-field--density-comfortable';
 });
 
-// Check if range mode is enabled
 const isRangeMode = computed(() => props.mode === 'range');
 </script>
 
@@ -496,4 +506,3 @@ const isRangeMode = computed(() => props.mode === 'range');
   border-radius: 6px !important;
 }
 </style>
-
