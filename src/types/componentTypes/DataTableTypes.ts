@@ -147,6 +147,7 @@ export interface DataTableProps {
   enableTextTruncation?: boolean; // Enable text truncation feature globally (default: false)
   maxTextLength?: number; // Maximum characters to show before truncating (default: 50, only used when enableTextTruncation is true)
   filterAdapter?: (rawFilter: any) => Record<string, any>;
+  inlineFilter?: boolean;
 }
 
 export interface ApiResponse<T = TableItem> {

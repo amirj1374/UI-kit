@@ -27,9 +27,11 @@ import { formatNumberWithCommas } from '@/utils/number-formatter';
 import { defaultFilterAdapter } from '@/utils/defaultFilterAdapter';
 import { IconCheck, IconChevronDown, IconChevronRight, IconSquareX } from '@tabler/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
-import type { Component, Ref } from 'vue';
+import { type Component, reactive, type Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+const filters = reactive<Record<string, any>>({});
+const initialized = ref(false);
 
 import type { ApiResponse, CustomAction, DataTableProps, Header, TableItem, FilterOperator } from '@/types/componentTypes/DataTableTypes';
 
@@ -64,13 +66,30 @@ const props = withDefaults(defineProps<Props>(), {
   dateWithTimezone: false,
   bulkMode: false,
   enableTextTruncation: false, // Disabled by default to avoid layout issues
-  maxTextLength: 50 // Maximum characters to show before truncating
+  maxTextLength: 50, // Maximum characters to show before truncating
+  inlineFilter: false // 👈 مقدار پیش‌فرض
 });
 
 const emit = defineEmits<{
   (e: 'update:selectedItems', items: TableItem[]): void;
   (e: 'selection-change', items: TableItem[]): void;
 }>();
+
+// 🔹 اگر جدول فیلتر header داره، می‌تونیم watch بذاریم رویش
+watch(filters, () => {
+  // هر تغییری در فیلتر → می‌تونه auto fetch کنه (در صورت فعال بودن)
+  if (props.autoFetch && initialized.value) {
+    fetchData();
+  }
+});
+
+const externalCriteria = ref({});
+
+const getFilters = (): Record<string, any> => ({ ...cleanFilterModel.value });
+
+const setCriteria = (criteria: Record<string, any>) => {
+  externalCriteria.value = { ...(criteria || {}) };
+};
 
 defineOptions({ inheritAttrs: false });
 
@@ -378,6 +397,10 @@ const resolveAutocompleteItems = (header: Header, context?: Record<string, any>)
     return [];
   }
 };
+
+const hasActiveInlineFilters = computed(() => {
+  return Object.values(filterModel.value).some((val) => val !== null && val !== undefined && val !== '');
+});
 
 const resolveHeaderDefaultValue = (header: Header, context: Record<string, any>): any => {
   const rawDefault = header.defaultValue;
@@ -692,9 +715,12 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
     /* =========================
      * 3. Merge All Params
      ========================= */
+    const hasExternalCriteria = externalCriteria.value && Object.keys(externalCriteria.value).length > 0;
+
     let params: Record<string, unknown> = {
-      ...finalFilter,
-      ...props.queryParams
+      ...(hasExternalCriteria ? {} : finalFilter),
+      ...props.queryParams,
+      ...(externalCriteria.value || {})
     };
 
     if (queryParams) {
@@ -812,7 +838,7 @@ const debouncedFetchData = useDebounceFn(fetchData, 300);
 watch(
   [cleanFilterModel],
   () => {
-    if (!props.filterComponent) {
+    if (!props.filterComponent && props.autoFetch && initialized.value) {
       debouncedFetchData();
     }
   },
@@ -958,7 +984,9 @@ defineExpose({
   toggleGroup,
   expandAllGroups,
   collapseAllGroups,
-  formModel
+  formModel,
+  getFilters,
+  setCriteria
 });
 
 /**
@@ -1457,6 +1485,8 @@ const handlePageChange = (newPage: number) => {
 };
 
 onMounted(() => {
+  initialized.value = true;
+
   if (props.autoFetch) {
     fetchData();
   }
@@ -1699,19 +1729,12 @@ watch(
   <div v-if="props.title" class="page-title">
     <h3 class="title-text">{{ props.title }}</h3>
   </div>
-
   <!-- Action Buttons OUTSIDE the table container -->
-  <div class="action-buttons">
+  <div class="action-buttons" v-if="!props.inlineFilter">
     <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">ایجاد ✅</v-btn>
     <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
-    <v-btn v-if="props.showRefreshButton"  @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
-
-    <!-- Selection Actions -->
-    <div v-if="props.selectable && hasSelection" class="selection-actions">
-      <v-chip color="primary" class="me-2"> {{ selectedCount }} آیتم انتخاب شده </v-chip>
-      <v-btn color="error" size="small" class="me-2" @click="clearSelection"> پاک کردن انتخاب </v-btn>
-    </div>
+    <v-btn v-if="props.showRefreshButton" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
 
     <!-- Action Buttons for Selected Items -->
     <transition name="slide-left" appear>
@@ -1799,7 +1822,124 @@ watch(
       </div>
     </transition>
   </div>
+  <!-- Inline Filter Section -->
+  <v-card v-if="props.inlineFilter && formHeaders.length > 0" class="mb-2 pa-2" elevation="1">
+    <!-- همیشه از headers استفاده می‌کنه، بدون شرط filterComponent -->
+    <v-container>
+      <v-row>
+        <v-col
+          v-for="header in formHeaders"
+          :key="resolveHeaderKey(header)"
+          :cols="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
+          :md="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
+        >
+          <template v-if="!header.hidden">
+            <!-- Operator selector -->
+            <v-select
+              v-if="hasFilterOperators(header)"
+              v-model="filterOperatorModel[resolveHeaderKey(header)]"
+              :items="getHeaderFilterOperators(header)"
+              item-title="label"
+              item-value="value"
+              density="compact"
+              variant="underlined"
+              hide-details
+              class="mb-1"
+              attach
+              :menu-props="{ zIndex: 20000 }"
+            />
 
+            <!-- Date picker -->
+            <ShamsiDatePicker
+              v-if="isDateHeader(header)"
+              v-model="filterModel[resolveHeaderKey(header)]"
+              :label="resolveHeaderTitle(header)"
+              :disabled="isHeaderDisabled(header)"
+              :mode="header.dateMode || 'single'"
+            />
+
+            <!-- Autocomplete -->
+            <v-autocomplete
+              v-else-if="hasAutocomplete(header)"
+              v-model="filterModel[resolveHeaderKey(header)]"
+              :label="resolveHeaderTitle(header)"
+              :items="resolveAutocompleteItems(header, filterModel.value)"
+              :item-title="resolveAutocompleteItemTitle(header)"
+              :item-value="resolveAutocompleteItemValue(header)"
+              :return-object="resolveAutocompleteReturnObject(header)"
+              :multiple="resolveAutocompleteMultiple(header)"
+              :chips="resolveAutocompleteMultiple(header)"
+              :closable-chips="resolveAutocompleteMultiple(header)"
+              :disabled="isHeaderDisabled(header)"
+              clearable
+              variant="outlined"
+              attach
+              :menu-props="{ zIndex: 20000 }"
+            />
+
+            <!-- Money input -->
+            <MoneyInput
+              v-else-if="isMoneyHeader(header)"
+              v-model="filterModel[resolveHeaderKey(header)] as number"
+              :label="resolveHeaderTitle(header)"
+              :disabled="isHeaderDisabled(header)"
+            />
+
+            <!-- Textarea -->
+            <v-textarea
+              v-else-if="isTextareaHeader(header)"
+              v-model="filterModel[resolveHeaderKey(header)]"
+              :label="resolveHeaderTitle(header)"
+              variant="outlined"
+              :disabled="isHeaderDisabled(header)"
+              :dir="(header as Header).dir"
+              auto-grow
+              rows="3"
+            />
+
+            <!-- Toggle switch -->
+            <ToggleSwitch
+              v-else-if="isToggleHeader(header)"
+              v-model="filterModel[resolveHeaderKey(header)]"
+              :label="resolveHeaderTitle(header)"
+              type="boolean"
+              activeColor="#3bd32a"
+              inactiveColor="#d32a2a"
+              :options="[
+                { value: 'true', label: 'فعال', icon: IconCheck },
+                { value: 'false', label: 'غیر فعال', icon: IconSquareX }
+              ]"
+            />
+
+            <!-- Default text field -->
+            <v-text-field
+              v-else
+              v-model="filterModel[resolveHeaderKey(header)]"
+              :label="resolveHeaderTitle(header)"
+              variant="outlined"
+              :disabled="isHeaderDisabled(header)"
+              :type="getFieldInputType(header)"
+              :dir="(header as Header).dir"
+            />
+          </template>
+        </v-col>
+        <v-col cols="12" md="12" class="inlineCustomAction">
+          <slot
+            name="inline-filter-actions"
+            :apply-filter="applyFilter"
+            :reset-filter="resetFilter"
+            :has-active-filters="hasActiveInlineFilters"
+            :filter-model="filterModel"
+          />
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-card>
+  <!-- Selection Actions -->
+  <div v-if="props.selectable && hasSelection" class="selection-actions mb-2">
+    <v-chip color="primary" class="me-2"> {{ selectedCount }} آیتم انتخاب شده </v-chip>
+    <v-btn color="error" size="small" class="me-2" @click="clearSelection"> پاک کردن انتخاب </v-btn>
+  </div>
   <!-- Data Table Container (fills parent height) -->
   <div
     class="data-table-container"
@@ -2057,7 +2197,6 @@ watch(
           </div>
         </div>
       </div>
-
       <!-- Regular Table Structure (when not grouped) -->
       <v-data-table
         v-else
@@ -2388,7 +2527,6 @@ watch(
       </v-card-text>
     </v-card>
   </v-dialog>
-
   <!-- Filter Dialog -->
   <v-dialog v-model="filterDialog" max-width="1500">
     <v-card>
@@ -2538,8 +2676,3 @@ watch(
 <style lang="scss">
 @import '@/scss/components/VCustomDataTable';
 </style>
-
-
-
-
-
