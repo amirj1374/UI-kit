@@ -53,7 +53,7 @@ const props = withDefaults(defineProps<Props>(), {
   label: 'تاریخ',
   placeholder: 'تاریخ را انتخاب کنید',
   variant: 'outlined',
-  density: 'default',
+  density: 'compact',
   color: 'primary',
   disabled: false,
   readonly: false,
@@ -233,7 +233,7 @@ const isRangeMode = computed(() => props.mode === 'range');
 
 /* آیکون داخل دکمه */
 .shamsi-date-picker :deep(.vpd-icon-btn i) {
-  font-size: 16px;
+  font-size: 12px;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
@@ -257,11 +257,15 @@ const isRangeMode = computed(() => props.mode === 'range');
   color: white;
 }
 
+.shamsi-date-picker :deep(.vpd-month-label) {
+  width: 110px;
+}
+
 /* متن بالای هدر در حالت range picker */
 .shamsi-date-picker :deep(.vpd-header-title) {
   color: white !important;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   opacity: 0.95;
 }

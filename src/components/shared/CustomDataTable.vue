@@ -57,6 +57,7 @@ const props = withDefaults(defineProps<Props>(), {
   autoFetch: true,
   showPagination: true,
   showRefreshButton: false,
+  globalFetch: false,
   selectable: false,
   multiSelect: false,
   selectedItems: () => [],
@@ -117,6 +118,7 @@ const filterOperatorModel = ref<Record<string, FilterOperator>>({});
 const tableRef = ref<HTMLElement | null>(null);
 const isLoadingMore = ref(false);
 const hasMore = ref(true);
+const globalSearchMode = ref(false);
 
 // Selection & grouping using composable (minimal-risk wiring)
 const selection = useTableSelection(items, {
@@ -1706,6 +1708,24 @@ const handleFilterApply = (filterData: any) => {
   filterDialog.value = false;
 };
 
+watch(
+  () => filterDialog.value,
+  (isOpen) => {
+    if (!isOpen) return;
+
+    // Sync UI filter fields with applied filters
+    filterModel.value = { ...filterModel.value };
+    formHeaders.value.forEach((header) => {
+      if (hasFilterOperators(header)) {
+        const key = resolveHeaderKey(header);
+        if (!filterOperatorModel.value[key]) {
+          filterOperatorModel.value[key] = getDefaultFilterOperator(header);
+        }
+      }
+    });
+  }
+);
+
 // Initialize default operators when filter dialog opens (only for headers with filterOperators)
 watch(
   () => filterDialog.value,
@@ -1735,6 +1755,7 @@ watch(
     <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
     <v-btn v-if="props.showRefreshButton" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
+    <v-btn v-if="props.globalFetch" color="primary" class="me-2" @click="resetFilter()" :loading="loading">جستجو کلی</v-btn>
 
     <!-- Action Buttons for Selected Items -->
     <transition name="slide-left" appear>
@@ -2528,7 +2549,7 @@ watch(
     </v-card>
   </v-dialog>
   <!-- Filter Dialog -->
-  <v-dialog v-model="filterDialog" max-width="1500">
+  <v-dialog v-model="filterDialog" max-width="1600">
     <v-card>
       <v-card-title>فیلتر</v-card-title>
       <v-card-text>

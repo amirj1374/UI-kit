@@ -117,7 +117,7 @@ export type FilterOperator =
 export interface DataTableProps {
   apiResource: string;
   headers: Header[];
-  actions?: ('create' | 'edit' | 'delete' | 'view' | 'filter'| 'manual')[];
+  actions?: ('create' | 'edit' | 'delete' | 'view' | 'filter' | 'manual')[];
   routes?: TableRoutes | ((item: TableItem) => TableRoutes);
   downloadLink?: DownloadLink;
   formComponent?: any; // Vue component
@@ -131,6 +131,7 @@ export interface DataTableProps {
   height: number;
   pagination?: PaginationConfig | boolean;
   showRefreshButton?: boolean;
+  globalFetch?: boolean;
   title?: string;
   selectable?: boolean;
   multiSelect?: boolean;
