@@ -120,9 +120,11 @@ const formatOutput = (date: any): string => {
 
   let dateObj: Date;
 
+  // اگر moment باشه
   if (date._isAMomentObject && date.isValid()) {
     dateObj = date.toDate();
   } else if (typeof date === 'string') {
+    // رشته مثل "2026-05-27" یا تاریخ ISO
     dateObj = new Date(date);
   } else if (date instanceof Date) {
     dateObj = date;
@@ -132,17 +134,24 @@ const formatOutput = (date: any): string => {
 
   if (isNaN(dateObj.getTime())) return '';
 
+  // تاریخ محلی را جدا می‌کنیم
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth(); // 0-based
+  const day = dateObj.getDate();
+
   if (props.outputFormat === 'date-only') {
-    // فرمت: 2026-04-28
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    // فقط تاریخ محلی
+    const m = String(month + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    return `${year}-${m}-${d}`;
   } else {
-    // فرمت: 2026-04-28T00:00:00.000Z (ISO با timezone)
-    return dateObj.toISOString();
+    // خروجی ISO طوری که تاریخش با تاریخ محلی یکی بماند
+    // یعنی "نیمه شب UTC" همان روز
+    const utcDate = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+    return utcDate.toISOString();
   }
 };
+
 
 const inputClass = computed(() => {
   const classes = ['v-text-field', 'v-input', 'v-input--density-comfortable'];

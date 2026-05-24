@@ -1786,7 +1786,7 @@ watch(
 
           <!-- Route Actions -->
           <template v-for="(routePath, routeKey) in getRoutesForItem(item)" :key="routeKey">
-            <v-btn color="indigo" size="small" class="me-2" @click="goToRoute(routeKey, item)">
+            <v-btn color="primary" size="small" class="me-2" @click="goToRoute(routeKey, item)">
               <span class="me-1">➡️</span>
               {{ String(routeKey) }}
             </v-btn>
@@ -1802,7 +1802,7 @@ watch(
           <template v-for="(action, index) in props.customActions" :key="action.title || index">
             <v-btn
               v-if="!action.condition || action.condition(item)"
-              color="orange"
+              color="primary"
               size="small"
               class="me-2"
               @click="openCustomActionDialog(action, item)"
@@ -2244,16 +2244,12 @@ watch(
         </template>
         <template v-slot:item="{ item, columns, index }">
           <tr
-            :style="{
-              color: isSelected(item) && props.bulkMode ? 'rgb(var(--v-theme-white))' : 'rgb(var(--v-theme-darkText))',
-              background:
-                isSelected(item) && props.bulkMode
-                  ? 'rgb(var(--v-theme-primary))'
-                  : index % 2 === 0
-                    ? 'rgb(var(--v-theme-surface))'
-                    : 'rgb(var(--v-theme-lightprimary))',
-              cursor: props.bulkMode && props.selectable ? 'pointer' : 'default'
-            }"
+            :class="[
+              'data-row',
+              props.bulkMode && props.selectable ? 'is-selectable' : '',
+              isSelected(item) && props.bulkMode ? 'is-selected' : '',
+              index % 2 === 0 ? 'row-even' : 'row-odd'
+            ]"
             :tabindex="props.selectable ? 0 : -1"
             @keydown.enter.prevent="props.selectable && toggleSelection(item)"
             @click="props.bulkMode && props.selectable && selectSingleItem(item)"
@@ -2549,7 +2545,7 @@ watch(
     </v-card>
   </v-dialog>
   <!-- Filter Dialog -->
-  <v-dialog v-model="filterDialog" max-width="1600">
+  <v-dialog v-model="filterDialog" max-width="1600" content-class="white-list-filter-dialog">
     <v-card>
       <v-card-title>فیلتر</v-card-title>
       <v-card-text>
@@ -2581,7 +2577,6 @@ watch(
                     variant="underlined"
                     hide-details
                     class="mb-1"
-                    attach
                     :menu-props="{ zIndex: 20000 }"
                   />
                   <ShamsiDatePicker
@@ -2605,7 +2600,6 @@ watch(
                     :disabled="isHeaderDisabled(header)"
                     clearable
                     variant="outlined"
-                    attach
                     :menu-props="{ zIndex: 20000 }"
                   />
                   <MoneyInput

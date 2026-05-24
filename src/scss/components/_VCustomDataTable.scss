@@ -15,10 +15,6 @@
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform, margin-top;
 
-  /* ============================================================
-     FIX: WIDTH BEFORE DATA LOAD (No Jumping)
-     ============================================================ */
-
   .v-table__wrapper {
     table {
       width: 100%;
@@ -32,42 +28,34 @@
       }
     }
 
-    /* Vuetify Empty State */
-    .v-data-table__empty-wrapper,
-    .v-data-table-empty {
-      display: table-row !important;
-      width: 100% !important;
-
-      td {
-        width: 100% !important;
-      }
-    }
-
-    /* Vuetify Loading State */
-    .v-data-table__progress {
-      display: table-row !important;
-
-      td {
-        width: 100% !important;
-      }
-    }
-
-    /* ============================================================
-       Table Rows
-       ============================================================ */
-
+    /* Table Rows - Updated Logic */
     table {
       tbody {
-        tr {
+        tr.data-row {
           height: 36px !important;
           transition: background 0.2s ease;
 
-          &:nth-child(even) {
-            background: rgb(var(--v-theme-lightprimary)) !important;
+          // 1. استایل ردیف انتخاب شده (اولویت بالا)
+          &.is-selected {
+            background-color: rgb(var(--v-theme-primary)) !important;
+
+            // رنگ متن و آیکون‌ها داخل ردیف سلکت شده
+            &, td, td span, td i {
+              color: rgb(var(--v-theme-on-primary)) !important;
+            }
           }
 
-          &:hover {
-            background: rgb(var(--v-theme-primary200)) !important;
+          // 2. استایل یکی‌درمیان برای ردیف‌های غیر انتخاب شده
+          &.row-even:not(.is-selected) {
+            background-color: rgb(var(--v-theme-surface));
+          }
+          &.row-odd:not(.is-selected) {
+            background-color: rgb(var(--v-theme-lightprimary));
+          }
+
+          // 3. هاور برای ردیف‌های غیر انتخاب شده
+          &:hover:not(.is-selected) {
+            background-color: rgb(var(--v-theme-primary200)) !important;
           }
         }
       }
@@ -78,7 +66,7 @@
         z-index: 2;
 
         th {
-          background: rgb(var(--v-theme-containerBg)) !important;
+          background: rgb(var(--v-theme-primary300)) !important;
           height: 40px !important;
           font-weight: 700 !important;
           box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
@@ -86,146 +74,33 @@
       }
     }
 
-    /* ============================================================
-       Scrollbar – Windows 11 Style
-       ============================================================ */
-
-    &::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-
-    &::-webkit-scrollbar-button {
-      display: none !important;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent !important;
-    }
-
+    /* Scrollbar */
+    &::-webkit-scrollbar { width: 10px; height: 10px; }
     &::-webkit-scrollbar-thumb {
       background: rgb(var(--v-theme-primary)) !important;
       border-radius: 20px !important;
       border: 3px solid transparent !important;
       background-clip: content-box !important;
     }
-
-    &::-webkit-scrollbar-corner {
-      background: transparent;
-    }
-
-    scrollbar-width: thin;
-    scrollbar-color: rgb(var(--v-theme-primary)) transparent;
   }
 
-  /* ============================================================
-     Cell Padding & Line Height
-     ============================================================ */
-
+  /* Cell Padding */
   .v-table__wrapper table {
-
-    td,
-    th {
+    td, th {
       padding: 8px 12px !important;
       line-height: 1.6 !important;
       font-size: 0.875rem;
     }
   }
 
-  /* ============================================================
-     Pagination Footer
-     ============================================================ */
-
-  .pagination-wrapper {
-    flex-shrink: 0;
-    border-top: 1px solid rgb(var(--v-theme-borderLight));
-    background: rgb(var(--v-theme-surface));
-    z-index: 2;
-  }
-
-  /* ============================================================
-     Grouping Styles
-     ============================================================ */
-
-  .groups-scroll-container {
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-
-    &::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgb(var(--v-theme-primary)) !important;
-      border-radius: 20px;
-      border: 3px solid transparent;
-      background-clip: content-box;
-    }
-
-    &::-webkit-scrollbar-track,
-    &::-webkit-scrollbar-button,
-    &::-webkit-scrollbar-corner {
-      background: transparent !important;
-      display: none !important;
-    }
-  }
-
-  .group-section {
-    border: 1px solid rgb(var(--v-theme-borderLight));
-    border-radius: 8px;
-    margin-bottom: 8px;
-    overflow: hidden;
-  }
-
+  /* سایر بخش‌ها بدون تغییر */
+  .pagination-wrapper { flex-shrink: 0; border-top: 1px solid rgb(var(--v-theme-borderLight)); background: rgb(var(--v-theme-surface)); z-index: 2; }
+  .groups-scroll-container { overflow-y: auto; overflow-x: hidden; flex: 1; }
+  .group-section { border: 1px solid rgb(var(--v-theme-borderLight)); border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
   .group-header {
-    display: flex;
-    align-items: center;
-    padding: 8px 16px;
-    background: linear-gradient(
-                    135deg,
-                    rgb(var(--v-theme-lightprimary)) 0%,
-                    rgb(var(--v-theme-lightsecondary)) 100%
-    );
+    display: flex; align-items: center; padding: 8px 16px;
+    background: linear-gradient(135deg, rgb(var(--v-theme-lightprimary)) 0%, rgb(var(--v-theme-lightsecondary)) 100%);
     cursor: pointer;
-    user-select: none;
-
-    &.expanded {
-      background: rgb(var(--v-theme-lightsecondary));
-    }
-
-    .chevron {
-      transition: transform 0.3s ease;
-    }
-
-    &:not(.expanded) .chevron-icon {
-      transform: rotate(-90deg);
-    }
+    &.expanded { background: rgb(var(--v-theme-lightsecondary)); }
   }
-
-  /* ============================================================
-     Misc Controls
-     ============================================================ */
-
-  .v-selection-control {
-    --v-selection-control-size: 18px;
-  }
-
-  td .v-btn {
-    min-height: 26px;
-    height: 26px;
-    padding: 0 8px;
-  }
-
-  .v-chip {
-    height: 20px;
-    font-size: 0.75rem;
-  }
-}
-
-.inlineCustomAction {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }

@@ -4,6 +4,7 @@ import NavCollapse from './NavCollapse/NavCollapse.vue';
 import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
 import type { MenuItem } from '@/types/components/layout/menu';
+import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 
 const props = defineProps<{
   sidebarItems: MenuItem[]
