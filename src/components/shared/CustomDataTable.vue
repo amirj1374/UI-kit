@@ -16,6 +16,7 @@
  * - Adds ARIA attributes to group headers and busy regions
  * - Keyboard support for toggling groups and activating selection on rows
  */
+import * as XLSX from 'xlsx';
 import MoneyInput from '@/components/shared/MoneyInput.vue';
 import ShamsiDatePicker from '@/components/shared/ShamsiDatePicker.vue';
 import ToggleSwitch from '@/components/shared/ToggleSwitch.vue';
@@ -25,13 +26,14 @@ import getAxiosInstance from '@/services/axiosInstance';
 import { DateConverter } from '@/utils/date-convertor';
 import { formatNumberWithCommas } from '@/utils/number-formatter';
 import { defaultFilterAdapter } from '@/utils/defaultFilterAdapter';
-import { IconCheck, IconChevronDown, IconChevronRight, IconSquareX } from '@tabler/icons-vue';
+import { IconCheck, IconChevronDown, IconChevronRight, IconSquareX, IconFileExport } from '@tabler/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import { type Component, reactive, type Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 const filters = reactive<Record<string, any>>({});
 const initialized = ref(false);
+const exportLoading = ref(false);
 
 import type { ApiResponse, CustomAction, DataTableProps, Header, TableItem, FilterOperator } from '@/types/componentTypes/DataTableTypes';
 
@@ -61,6 +63,7 @@ const props = withDefaults(defineProps<Props>(), {
   selectable: false,
   multiSelect: false,
   selectedItems: () => [],
+  items: () => [],
   uniqueKey: 'id',
   pageSize: 10,
   defaultExpanded: false,
@@ -68,7 +71,10 @@ const props = withDefaults(defineProps<Props>(), {
   bulkMode: false,
   enableTextTruncation: false, // Disabled by default to avoid layout issues
   maxTextLength: 50, // Maximum characters to show before truncating
-  inlineFilter: false // 👈 مقدار پیش‌فرض
+  inlineFilter: false, // 👈 مقدار پیش‌فرض
+  enableExport: false,
+  exportUrl: '',
+  exportFileName: ''
 });
 
 const emit = defineEmits<{
@@ -587,6 +593,156 @@ const clearSelection = () => {
   emit('selection-change', selectedItems.value);
 };
 
+const base64ToBlob = (base64: string, mimeType: string) => {
+  const cleanedBase64 = base64.includes(',') ? base64.split(',')[1] : base64;
+  const byteCharacters = atob(cleanedBase64);
+  const byteNumbers = new Array(byteCharacters.length);
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
+};
+
+const handleExportClientSide = () => {
+  // 1) انتخاب منبع دیتا:
+  // اگر والد items پاس داده بود از همان استفاده کن، وگرنه از state داخلی جدول
+  const sourceItems: TableItem[] =
+    (props.items && props.items.length ? props.items : items.value) ?? [];
+
+  // 2) کنترل وجود داده
+  if (sourceItems.length === 0) {
+    console.warn('داده‌ای برای خروجی اکسل وجود ندارد.');
+    return;
+  }
+
+  // 3) هدرهای معتبر (حذف ستون‌های بدون key/title مثل عملیات)
+  const validHeaders = props.headers.filter((h: Header) => !!h.key && !!h.title);
+
+  // 4) نگاشت داده‌ها
+  const excelData = sourceItems.map((item: TableItem) => {
+    const row: Record<string, any> = {};
+
+    validHeaders.forEach((header: Header) => {
+      // مقداردهی اولیه از key یا nestedKey
+      let value = header.nestedKey
+        ? (item[header.key] as any)?.[header.nestedKey]
+        : item[header.key];
+
+      // formatter اگر وجود دارد، اولویت دارد
+      if (header.formatter) {
+        value = header.formatter(value, item);
+      } else if (header.type === 'date' || header.isDate) {
+        /**
+         * نکته: در fetchData شما تاریخ‌ها را قبلاً برای نمایش به شمسی تبدیل کرده‌اید
+         * (items.value = serverData.map(... DateConverter.toShamsi ...))
+         * پس اینجا فقط وقتی تبدیل انجام بده که مقدار شبیه تاریخ میلادی/قابل‌تبدیل باشد.
+         */
+        if (value !== null && value !== undefined && value !== '') {
+          try {
+            value = DateConverter.toShamsi(value as string);
+          } catch {
+            // اگر از قبل شمسی/فرمت دیگر بود و تبدیل خطا داد، همان مقدار را نگه دار
+          }
+        }
+      } else if (typeof value === 'boolean') {
+        value = value ? 'بله' : 'خیر';
+      }
+
+      row[header.title] = value !== null && value !== undefined ? value : '';
+    });
+
+    return row;
+  });
+
+  // 5) ساخت شیت
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // 6) تنظیم عرض ستون‌ها
+  worksheet['!cols'] = validHeaders.map((h: Header) => ({
+    wch: h.width ? Math.max(10, Math.round(h.width / 7)) : 20
+  }));
+
+  // 7) ساخت فایل و دانلود
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Export');
+
+  const safeName = (props.exportFileName || 'export-data').trim();
+  const fileName = safeName.toLowerCase().endsWith('.xlsx') ? safeName : `${safeName}.xlsx`;
+
+  XLSX.writeFile(workbook, fileName);
+};
+
+const handleExport = async () => {
+  try {
+    exportLoading.value = true;
+
+    // ۱. ساختن پارامترها مطابق fetchData
+    const rawFilter = buildFilterParams();
+    const finalFilter = resolveFilter(rawFilter);
+    const hasExternalCriteria = externalCriteria.value && Object.keys(externalCriteria.value).length > 0;
+
+    let params: Record<string, unknown> = {
+      ...(hasExternalCriteria ? {} : finalFilter),
+      ...props.queryParams,
+      ...(externalCriteria.value || {})
+    };
+
+    if (props.showPagination !== false) {
+      params = {
+        ...params,
+        page: currentPage.value - 1,
+        size: itemsPerPage.value
+      };
+    }
+
+    // ۲. گرفتن خروجی اکسل از سرور
+    const response = await api.exportExcel(params, props.exportUrl);
+
+    // ۳. چون response.data یک Base64 string است، باید decode شود
+    const base64Data =
+      typeof response.data === 'string' ? response.data : response.data?.data || response.data?.file || response.data?.content || '';
+
+    if (!base64Data || typeof base64Data !== 'string') {
+      throw new Error('Export response is not a valid base64 string.');
+    }
+
+    const blob = base64ToBlob(base64Data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    // ۴. دانلود فایل
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = props.exportFileName || 'export.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Export Error:', err);
+  } finally {
+    exportLoading.value = false;
+  }
+};
+
+const onExportClick = async () => {
+  // اگر آدرس URL برای اکسل سروری داشتیم
+  if (props.exportUrl) {
+    await handleExport(); // همان متد قدیمی که به API درخواست می‌زد
+  }
+  // در غیر این صورت از دیتای موجود در جدول استفاده کن
+  else {
+    exportLoading.value = true;
+    try {
+      handleExportClientSide();
+    } finally {
+      exportLoading.value = false;
+    }
+  }
+};
+
 // Method for single item selection in bulk mode
 const selectSingleItem = (item: any) => {
   // Clear all selections first
@@ -974,8 +1130,7 @@ const loadMore = async () => {
 // Expose methods to parent component
 defineExpose({
   fetchData,
-  items,
-  selectedItems,
+  getItems: () => items.value,
   getSelectedItems: () => selectedItems.value,
   clearSelection: () => {
     selectedItems.value = [];
@@ -1756,6 +1911,9 @@ watch(
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
     <v-btn v-if="props.showRefreshButton" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
     <v-btn v-if="props.globalFetch" color="primary" class="me-2" @click="resetFilter()" :loading="loading">جستجو کلی</v-btn>
+    <v-btn v-if="enableExport" color="secondary" variant="tonal" class="me-2" @click="onExportClick" :loading="exportLoading" :disabled="loading"
+      >گزارش کلی</v-btn
+    >
 
     <!-- Action Buttons for Selected Items -->
     <transition name="slide-left" appear>
@@ -2120,7 +2278,7 @@ watch(
                             <template v-for="(action, index) in props.customActions" :key="action.title || index">
                               <v-btn
                                 v-if="!action.condition || action.condition(item)"
-                                color="orange"
+                                color="primary"
                                 size="small"
                                 class="mr-2"
                                 @click="openCustomActionDialog(action, item)"
@@ -2303,7 +2461,7 @@ watch(
                 <template v-for="(action, index) in props.customActions" :key="action.title || index">
                   <v-btn
                     v-if="!action.condition || action.condition(item)"
-                    color="orange"
+                    color="primary"
                     size="small"
                     class="mr-2"
                     @click="openCustomActionDialog(action, item)"

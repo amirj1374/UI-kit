@@ -117,6 +117,7 @@ export type FilterOperator =
 export interface DataTableProps {
   apiResource: string;
   headers: Header[];
+  items: TableItem[]; // تغییر از ساختار ران‌تایم به تایپ خالص تایپ‌اسکریپت
   actions?: ('create' | 'edit' | 'delete' | 'view' | 'filter' | 'manual')[];
   routes?: TableRoutes | ((item: TableItem) => TableRoutes);
   downloadLink?: DownloadLink;
@@ -149,6 +150,10 @@ export interface DataTableProps {
   maxTextLength?: number; // Maximum characters to show before truncating (default: 50, only used when enableTextTruncation is true)
   filterAdapter?: (rawFilter: any) => Record<string, any>;
   inlineFilter?: boolean;
+  filters: Record<string, any>;
+  enableExport?: boolean;
+  exportUrl?: string;
+  exportFileName?: string;
 }
 
 export interface ApiResponse<T = TableItem> {

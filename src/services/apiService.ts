@@ -12,6 +12,7 @@ export interface ApiService {
   update(data: any): Promise<any>;
   delete(id: string | number): Promise<any>;
   get(id: string | number): Promise<any>;
+  exportExcel(params?: Record<string, any>, customUrl?: string): Promise<any>;
 }
 
 /**
@@ -49,6 +50,13 @@ export default function apiService(
 
     async get(id: string | number) {
       const response = await axiosInst.get(`${baseUrl}/${id}`);
+      return response;
+    },
+    async exportExcel(params: Record<string, any> = {}, customUrl?: string) {
+      const url = customUrl || baseUrl;
+      const response = await axiosInst.get(url, {
+        params,
+      });
       return response;
     }
   };

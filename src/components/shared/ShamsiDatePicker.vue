@@ -3,11 +3,12 @@
     <Vue3PersianDatetimePicker
       :label="label"
       v-model="selectedDate"
-      :format="format"
-      :display-format="displayFormat"
+      :type="type"
+      :format="internalFormat"
+      :display-format="internalDisplayFormat"
       :editable="false"
       :clearable="clearable"
-      :disabled="disabled"
+      :disable="disabledDates"
       :min="minDate"
       :max="maxDate"
       :placeholder="placeholder"
@@ -24,148 +25,145 @@
 import { computed } from 'vue';
 
 type OutputFormat = 'iso' | 'date-only';
+type PickerType = 'date' | 'datetime' | 'time' | 'year' | 'month';
 
 interface Props {
   modelValue?: string | [string, string] | null;
   label?: string;
   placeholder?: string;
-  variant?: 'outlined' | 'filled' | 'plain' | 'underlined' | 'solo' | 'solo-inverted' | 'solo-filled';
-  density?: 'default' | 'comfortable' | 'compact' | 'prominent';
   color?: string;
   disabled?: boolean;
-  readonly?: boolean;
   clearable?: boolean;
-  rules?: any[];
-  hideDetails?: boolean | 'auto';
-  prependInnerIcon?: string;
-  appendInnerIcon?: string;
-  format?: string;
-  displayFormat?: string;
   minDate?: string;
   maxDate?: string;
   mode?: 'single' | 'range';
-  icon?: string;
-  outputFormat?: OutputFormat; // حالت خروجی: 'iso' (با timezone) یا 'date-only' (فقط تاریخ)
+  type?: PickerType;
+  outputFormat?: OutputFormat;
+  format?: string;
+  displayFormat?: string;
+  disabledDates?: (date: string) => boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
   label: 'تاریخ',
-  placeholder: 'تاریخ را انتخاب کنید',
-  variant: 'outlined',
-  density: 'compact',
+  placeholder: 'انتخاب کنید',
   color: 'primary',
   disabled: false,
-  readonly: false,
   clearable: true,
-  rules: () => [],
-  hideDetails: 'auto',
-  prependInnerIcon: '',
-  appendInnerIcon: '',
-  format: 'YYYY-MM-DD',
-  displayFormat: 'jYYYY/jMM/jDD',
-  minDate: '',
-  maxDate: '',
   mode: 'single',
-  icon: '',
-  outputFormat: 'iso' // دیفالت: فرمت ISO با timezone
+  type: 'date',
+  outputFormat: 'iso'
 });
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | [string, string] | null];
 }>();
 
-const selectedDate = computed({
-  get: () => {
-    if (props.mode === 'range' && Array.isArray(props.modelValue)) {
-      return props.modelValue;
-    } else if (typeof props.modelValue === 'string' && props.modelValue) {
-      if (props.modelValue.includes('T')) {
-        const date = new Date(props.modelValue);
-        const localDate =
-          date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
-        return localDate;
-      }
-      return props.modelValue;
-    }
-    return props.modelValue;
-  },
-  set: (value) => {
-    emit('update:modelValue', value);
+// فرمت داخلی برای اینکه Picker بفهمد ورودی شامل چه بخش‌هایی است
+const internalFormat = computed(() => {
+  if (props.format) return props.format;
+  if (props.type === 'datetime') return 'YYYY-MM-DD HH:mm:ss';
+  if (props.type === 'time') return 'HH:mm:ss';
+  return 'YYYY-MM-DD';
+});
+
+// فرمت نمایش در اینپوت به صورت شمسی
+const internalDisplayFormat = computed(() => {
+  if (props.displayFormat) return props.displayFormat;
+  switch (props.type) {
+    case 'datetime':
+      return 'jYYYY/jMM/jDD HH:mm';
+    case 'time':
+      return 'HH:mm';
+    case 'year':
+      return 'jYYYY';
+    case 'month':
+      return 'jMMMM jYYYY';
+    default:
+      return 'jYYYY/jMM/jDD';
   }
 });
 
-const onDateChange = (date: any) => {
-  if (props.mode === 'range') {
-    if (Array.isArray(date) && date.length === 2) {
-      const [startDate, endDate] = date;
-      const gregorianStart = formatOutput(startDate);
-      const gregorianEnd = formatOutput(endDate);
-      emit('update:modelValue', [gregorianStart, gregorianEnd]);
-    } else {
-      emit('update:modelValue', null);
-    }
-  } else {
-    if (date) {
-      const formattedDate = formatOutput(date);
-      emit('update:modelValue', formattedDate);
-    } else {
-      emit('update:modelValue', '');
-    }
-  }
+// تابعی کمکی برای تبدیل ISO به فرمت تخت YYYY-MM-DD HH:mm:ss
+const convertIsoToLocalFormat = (isoStr: string): string => {
+  if (!isoStr || !isoStr.includes('T')) return isoStr;
+  const date = new Date(isoStr);
+  if (isNaN(date.getTime())) return isoStr;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const y = date.getFullYear();
+  const m = pad(date.getMonth() + 1);
+  const d = pad(date.getDate());
+  const h = pad(date.getHours());
+  const min = pad(date.getMinutes());
+  const s = pad(date.getSeconds());
+
+  if (props.type === 'datetime') return `${y}-${m}-${d} ${h}:${min}:${s}`;
+  if (props.type === 'time') return `${h}:${min}:${s}`;
+  return `${y}-${m}-${d}`;
 };
+
+const selectedDate = computed({
+  get: () => {
+    if (!props.modelValue) return '';
+
+    // پشتیبانی از نمایش صحیح تاریخ‌های ISO در حالت Range
+    if (props.mode === 'range' && Array.isArray(props.modelValue)) {
+      return [convertIsoToLocalFormat(props.modelValue[0]), convertIsoToLocalFormat(props.modelValue[1])];
+    }
+
+    // پشتیبانی از نمایش صحیح تاریخ ISO در حالت Single
+    if (typeof props.modelValue === 'string') {
+      return convertIsoToLocalFormat(props.modelValue);
+    }
+
+    return props.modelValue;
+  },
+  set: (val) => {
+    // تغییرات از طریق onDateChange هندل می‌شود
+  }
+});
 
 const formatOutput = (date: any): string => {
   if (!date) return '';
 
   let dateObj: Date;
-
-  // اگر moment باشه
-  if (date._isAMomentObject && date.isValid()) {
-    dateObj = date.toDate();
-  } else if (typeof date === 'string') {
-    // رشته مثل "2026-05-27" یا تاریخ ISO
-    dateObj = new Date(date);
-  } else if (date instanceof Date) {
-    dateObj = date;
-  } else {
-    return '';
-  }
+  // هندل کردن Moment object که کتابخانه استفاده می‌کند
+  if (date._isAMomentObject) dateObj = date.toDate();
+  else if (typeof date === 'string') dateObj = new Date(date);
+  else if (date instanceof Date) dateObj = date;
+  else return '';
 
   if (isNaN(dateObj.getTime())) return '';
 
-  // تاریخ محلی را جدا می‌کنیم
-  const year = dateObj.getFullYear();
-  const month = dateObj.getMonth(); // 0-based
-  const day = dateObj.getDate();
+  // خروجی Date-Only برای حالت‌های خاص
+  if (props.outputFormat === 'date-only' && props.type === 'date') {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
 
-  if (props.outputFormat === 'date-only') {
-    // فقط تاریخ محلی
-    const m = String(month + 1).padStart(2, '0');
-    const d = String(day).padStart(2, '0');
-    return `${year}-${m}-${d}`;
+  // خروجی ISO کامل برای دیتابیس
+  return dateObj.toISOString();
+};
+
+const onDateChange = (date: any) => {
+  if (props.mode === 'range') {
+    if (Array.isArray(date) && date.length === 2) {
+      emit('update:modelValue', [formatOutput(date[0]), formatOutput(date[1])]);
+    } else {
+      emit('update:modelValue', null);
+    }
   } else {
-    // خروجی ISO طوری که تاریخش با تاریخ محلی یکی بماند
-    // یعنی "نیمه شب UTC" همان روز
-    const utcDate = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
-    return utcDate.toISOString();
+    emit('update:modelValue', date ? formatOutput(date) : '');
   }
 };
 
-
-const inputClass = computed(() => {
-  const classes = ['v-text-field', 'v-input', 'v-input--density-comfortable'];
-  if (props.variant === 'outlined') {
-    classes.push('v-text-field--variant-outlined');
-  }
-  return classes.join(' ');
-});
-
-const wrapperClass = computed(() => {
-  return 'v-field v-field--variant-outlined v-field--density-comfortable';
-});
-
 const isRangeMode = computed(() => props.mode === 'range');
+const inputClass = computed(() => 'v-text-field v-input v-input--density-comfortable v-text-field--variant-outlined');
+const wrapperClass = computed(() => 'v-field v-field--variant-outlined v-field--density-comfortable');
 </script>
 
 <style scoped>

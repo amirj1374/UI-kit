@@ -1,6 +1,6 @@
 {
   "name": "@amirjalili1374/ui-kit",
-  "version": "1.5.75",
+  "version": "1.5.90",
   "description": "A reusable UI component library built with Vue 3, Vuetify, and TypeScript",
   "type": "module",
   "main": "./dist/ui-kit.cjs.js",
@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "@amirjalili1374/ui-kit": "^1.2.1",
-    "@dsb-norge/vue-keycloak-js": "^3.0.3",
+    "@dsb-norge/vue-keycloak-js": "^3.0.0",
     "@mdi/js": "^7.4.47",
     "@tabler/icons-vue": "^3.33.0",
     "@tsconfig/node20": "20.1.4",
@@ -88,8 +88,8 @@
     "remixicon": "4.2.0",
     "vee-validate": "4.12.8",
     "vite-plugin-vuetify": "^2.1.2",
-    "vue": "^3.5.0",
-    "vue-router": "4.3.2",
+    "vue": "^3.3.0",
+    "vue-router": "^4.3.0",
     "vue3-apexcharts": "1.5.2",
     "vue3-lottie": "^3.3.1",
     "vue3-perfect-scrollbar": "2.0.0",
@@ -97,6 +97,7 @@
     "vue3-print-nb": "0.1.4",
     "vuetify": "^3.10.0",
     "webpack-plugin-vuetify": "^3.1.2",
+    "xlsx": "^0.18.5",
     "yup": "1.4.0"
   },
   "peerDependencies": {
