@@ -1911,7 +1911,7 @@ watch(
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
     <v-btn v-if="props.showRefreshButton" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
     <v-btn v-if="props.globalFetch" color="primary" class="me-2" @click="resetFilter()" :loading="loading">جستجو کلی</v-btn>
-    <v-btn v-if="enableExport" color="secondary" variant="tonal" class="me-2" @click="onExportClick" :loading="exportLoading" :disabled="loading"
+    <v-btn v-if="enableExport" color="primary" variant="tonal" class="me-2" @click="onExportClick" :loading="exportLoading" :disabled="loading"
       >گزارش کلی</v-btn
     >
 
