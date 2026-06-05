@@ -18,6 +18,8 @@ export { default as BaseIcon } from './components/shared/BaseIcon.vue';
 export { default as ConfirmDialog } from './components/shared/ConfirmDialog.vue';
 export { default as CustomAutocomplete } from './components/shared/CustomAutocomplete.vue';
 export { default as CustomDataTable } from './components/shared/CustomDataTable.vue';
+export { CustomDataTableV2 } from './components/shared/data-table-v2';
+export type { DataTableV2Props } from './components/shared/data-table-v2';
 export { default as DescriptionInput } from './components/shared/DescriptionInput.vue';
 export { default as DownloadButton } from './components/shared/DownloadButton.vue';
 export { default as MoneyInput } from './components/shared/MoneyInput.vue';

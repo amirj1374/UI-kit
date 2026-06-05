@@ -1,6 +1,9 @@
 <script setup lang="ts">
 /**
- * CustomDataTable.vue
+ * CustomDataTableV2.vue
+ *
+ * Refactored successor to CustomDataTable — same API surface with bug fixes.
+ * Original CustomDataTable.vue is unchanged for backward compatibility.
  *
  * A feature-rich data table component with server-side pagination, filtering,
  * grouping, selection, CRUD actions, custom actions, downloads, and dialogs.
@@ -26,12 +29,13 @@ import getAxiosInstance from '@/services/axiosInstance';
 import { DateConverter } from '@/utils/date-convertor';
 import { formatNumberWithCommas } from '@/utils/number-formatter';
 import { defaultFilterAdapter } from '@/utils/defaultFilterAdapter';
-import { IconCheck, IconChevronDown, IconChevronRight, IconSquareX, IconFileExport } from '@tabler/icons-vue';
+import { IconCheck, IconChevronDown, IconChevronRight, IconCopy, IconSquareX, IconFileExport, IconX } from '@tabler/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
-import { type Component, reactive, type Ref } from 'vue';
+import { type Component, type Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-const filters = reactive<Record<string, any>>({});
+import DataTableFilterFields from './components/DataTableFilterFields.vue';
+import { computeActionColumnWidth } from './computeActionColumnWidth';
 const initialized = ref(false);
 const exportLoading = ref(false);
 
@@ -50,9 +54,12 @@ type EnhancedHeader = Header & {
 /**
  * Component props - using proper types from DataTableTypes
  */
-interface Props extends Omit<DataTableProps, 'routes'> {
+interface Props extends Omit<DataTableProps, 'routes' | 'filters'> {
   routes?: Record<string, string> | ((item: TableItem) => Record<string, string>);
-  enableGroupDelete?: boolean; // Enable group delete functionality for bulk mode
+  enableGroupDelete?: boolean;
+  filters?: Record<string, any>;
+  /** Load next page when scrolling near the bottom (requires showPagination) */
+  enableInfiniteScroll?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -74,21 +81,14 @@ const props = withDefaults(defineProps<Props>(), {
   inlineFilter: false, // 👈 مقدار پیش‌فرض
   enableExport: false,
   exportUrl: '',
-  exportFileName: ''
+  exportFileName: '',
+  enableInfiniteScroll: false
 });
 
 const emit = defineEmits<{
   (e: 'update:selectedItems', items: TableItem[]): void;
   (e: 'selection-change', items: TableItem[]): void;
 }>();
-
-// 🔹 اگر جدول فیلتر header داره، می‌تونیم watch بذاریم رویش
-watch(filters, () => {
-  // هر تغییری در فیلتر → می‌تونه auto fetch کنه (در صورت فعال بودن)
-  if (props.autoFetch && initialized.value) {
-    fetchData();
-  }
-});
 
 const externalCriteria = ref({});
 
@@ -98,7 +98,7 @@ const setCriteria = (criteria: Record<string, any>) => {
   externalCriteria.value = { ...(criteria || {}) };
 };
 
-defineOptions({ inheritAttrs: false });
+defineOptions({ name: 'CustomDataTableV2', inheritAttrs: false });
 
 const items = ref<TableItem[]>([]);
 const originalServerData = ref<TableItem[]>([]); // Store original server data
@@ -124,8 +124,6 @@ const filterOperatorModel = ref<Record<string, FilterOperator>>({});
 const tableRef = ref<HTMLElement | null>(null);
 const isLoadingMore = ref(false);
 const hasMore = ref(true);
-const globalSearchMode = ref(false);
-
 // Selection & grouping using composable (minimal-risk wiring)
 const selection = useTableSelection(items, {
   multiSelect: props.bulkMode ? false : props.multiSelect, // Force single select in bulk mode
@@ -216,167 +214,14 @@ const autoHeaders = computed(() => {
 
 const selectionHeader = { title: '', key: 'selection', sortable: false, width: 50 } as const;
 
-const groupedHeaders = computed(() => {
+const buildTableHeaders = () => {
   const base = [...(props.selectable ? [selectionHeader] : []), ...autoHeaders.value];
+  if (!hasAnyActions.value) return base;
+  return [...base, { title: 'عملیات', key: 'actions', sortable: false, width: computeActionColumnWidth(props) }];
+};
 
-  if (!hasAnyActions.value) {
-    return base;
-  }
-
-  // Calculate dynamic width based on actual button sizes (same logic as normalHeaders)
-  let totalWidth = 0;
-
-  // CRUD actions (edit, delete, view, create)
-  if (props.actions) {
-    props.actions.forEach((action) => {
-      switch (action) {
-        case 'edit':
-          totalWidth += 140; // "ویرایش ✏️" button width
-          break;
-        case 'delete':
-          totalWidth += 120; // "حذف ❌" button width
-          break;
-        case 'view':
-          totalWidth += 140; // "🔍 نمایش" button width
-          break;
-        case 'create':
-          totalWidth += 120; // Create button width
-          break;
-      }
-    });
-  }
-
-  // Route actions
-  if (props.routes) {
-    Object.keys(props.routes).forEach((routeKey) => {
-      totalWidth += 120; // Route button width (key.toUpperCase())
-    });
-  }
-
-  // Download actions
-  if (props.downloadLink) {
-    Object.keys(props.downloadLink).forEach((key) => {
-      totalWidth += 120; // Download button width
-    });
-  }
-
-  // Custom actions
-  if (props.customActions) {
-    props.customActions.forEach((action) => {
-      totalWidth += 140; // Custom action button width
-    });
-  }
-
-  // Custom buttons
-  if (props.customButtonsFn) {
-    // For dynamic buttons, estimate based on typical button count
-    totalWidth += 240; // 2 buttons * 120px each
-  } else if (props.customButtons) {
-    props.customButtons.forEach((button) => {
-      totalWidth += 120; // Custom button width
-    });
-  }
-
-  // Add spacing between buttons (8px margin per button)
-  const buttonCount =
-    (props.actions?.length || 0) +
-    (props.routes ? Object.keys(props.routes).length : 0) +
-    (props.downloadLink ? Object.keys(props.downloadLink).length : 0) +
-    (props.customActions?.length || 0) +
-    (props.customButtons?.length || (props.customButtonsFn ? 2 : 0));
-
-  const spacingWidth = Math.max(buttonCount - 1, 0) * 8; // 8px margin between buttons
-  totalWidth += spacingWidth;
-
-  // Add padding for the cell
-  totalWidth += 32; // 16px padding on each side
-
-  // Ensure minimum width
-  const actionWidth = Math.max(totalWidth, 200);
-
-  return [...base, { title: 'عملیات', key: 'actions', sortable: false, width: actionWidth }];
-});
-
-const normalHeaders = computed(() => {
-  const base = [...(props.selectable ? [selectionHeader] : []), ...autoHeaders.value];
-
-  if (!hasAnyActions.value) {
-    return base;
-  }
-
-  // Calculate dynamic width based on actual button sizes
-  let totalWidth = 0;
-
-  // CRUD actions (edit, delete, view, create)
-  if (props.actions) {
-    props.actions.forEach((action) => {
-      switch (action) {
-        case 'edit':
-          totalWidth += 140; // "ویرایش ✏️" button width
-          break;
-        case 'delete':
-          totalWidth += 120; // "حذف ❌" button width
-          break;
-        case 'view':
-          totalWidth += 140; // "🔍 نمایش" button width
-          break;
-        case 'create':
-          totalWidth += 120; // Create button width
-          break;
-      }
-    });
-  }
-
-  // Route actions
-  if (props.routes) {
-    Object.keys(props.routes).forEach((routeKey) => {
-      totalWidth += 120; // Route button width (key.toUpperCase())
-    });
-  }
-
-  // Download actions
-  if (props.downloadLink) {
-    Object.keys(props.downloadLink).forEach((key) => {
-      totalWidth += 120; // Download button width
-    });
-  }
-
-  // Custom actions
-  if (props.customActions) {
-    props.customActions.forEach((action) => {
-      totalWidth += 140; // Custom action button width
-    });
-  }
-
-  // Custom buttons
-  if (props.customButtonsFn) {
-    // For dynamic buttons, estimate based on typical button count
-    totalWidth += 240; // 2 buttons * 120px each
-  } else if (props.customButtons) {
-    props.customButtons.forEach((button) => {
-      totalWidth += 120; // Custom button width
-    });
-  }
-
-  // Add spacing between buttons (8px margin per button)
-  const buttonCount =
-    (props.actions?.length || 0) +
-    (props.routes ? Object.keys(props.routes).length : 0) +
-    (props.downloadLink ? Object.keys(props.downloadLink).length : 0) +
-    (props.customActions?.length || 0) +
-    (props.customButtons?.length || (props.customButtonsFn ? 2 : 0));
-
-  const spacingWidth = Math.max(buttonCount - 1, 0) * 8; // 8px margin between buttons
-  totalWidth += spacingWidth;
-
-  // Add padding for the cell
-  totalWidth += 32; // 16px padding on each side
-
-  // Ensure minimum width
-  const actionWidth = Math.max(totalWidth, 200);
-
-  return [...base, { title: 'عملیات', key: 'actions', sortable: false, width: actionWidth }];
-});
+const groupedHeaders = computed(() => buildTableHeaders());
+const normalHeaders = computed(() => buildTableHeaders());
 
 const hasAutocomplete = (header: Header): header is EnhancedHeader => {
   return Boolean((header as EnhancedHeader).autocompleteItems);
@@ -850,11 +695,6 @@ const hasFilterComponent = computed(() => {
  * Converts date fields to Shamsi for display and computes grouping/selection state.
  * @param queryParams Optional extra query params to merge with filter and pagination
  */
-const applyFilterAdapter = (raw: Record<string, any>) => {
-  if (!props.filterAdapter) return raw;
-  return props.filterAdapter(raw);
-};
-
 const fetchData = async (queryParams?: Record<string, unknown>) => {
   loading.value = true;
   error.value = null;
@@ -1063,6 +903,7 @@ const previewItem = ref<any>(null);
 
 // Add scroll event handler
 const handleScroll = async (event: Event) => {
+  if (!props.enableInfiniteScroll) return;
   const target = event.target as HTMLElement;
   const { scrollTop, scrollHeight, clientHeight } = target;
 
@@ -1076,21 +917,25 @@ const handleScroll = async (event: Event) => {
  * Loads next page and appends to current items. Preserves selection defaults.
  */
 const loadMore = async () => {
-  if (isLoadingMore.value || !hasMore.value) return;
+  if (!props.enableInfiniteScroll || isLoadingMore.value || !hasMore.value) return;
 
   isLoadingMore.value = true;
   currentPage.value++;
 
   try {
+    const rawFilter = buildFilterParams();
+    const finalFilter = resolveFilter(rawFilter);
+    const hasExternalCriteria = externalCriteria.value && Object.keys(externalCriteria.value).length > 0;
     const params = {
-      ...buildFilterParams(),
+      ...(hasExternalCriteria ? {} : finalFilter),
       ...props.queryParams,
+      ...(externalCriteria.value || {}),
       page: currentPage.value - 1,
       size: itemsPerPage.value
     };
 
-    const response = await api.fetch(params);
-    const newItems = response.data.content || [];
+    const response = (await api.fetch(params)) as ApiResponse<TableItem>;
+    const newItems = response.data?.content ?? [];
 
     // Convert dates to Shamsi format
     const formattedItems = newItems.map((item: Record<string, any>) => {
@@ -1108,7 +953,8 @@ const loadMore = async () => {
     });
 
     items.value = [...items.value, ...formattedItems];
-    hasMore.value = currentPage.value < response.data.totalPages;
+    const pageMeta = response.data?.page;
+    hasMore.value = pageMeta ? currentPage.value < pageMeta.totalPages : false;
 
     // Auto-select new items if defaultSelected prop is provided
     if (props.defaultSelected && props.selectable) {
@@ -1390,31 +1236,6 @@ const saveItem = async () => {
       }
     });
 
-    // Debug: Log autocomplete fields before sending
-    props.headers.forEach((header) => {
-      if (hasAutocomplete(header) && dataToSave[header.key]) {
-        const enhancedHeader = header as EnhancedHeader;
-        if (enhancedHeader.autocompleteMultiple && Array.isArray(dataToSave[header.key])) {
-          console.log(
-            `[CustomDataTable] Autocomplete field "${header.key}" (${dataToSave[header.key].length} items) before save:`,
-            dataToSave[header.key]
-          );
-          // Check for objects with null properties
-          const itemsWithNulls = dataToSave[header.key].filter(
-            (item: any) => item && typeof item === 'object' && Object.values(item).some((val: any) => val === null)
-          );
-          if (itemsWithNulls.length > 0) {
-            console.warn(
-              `[CustomDataTable] Warning: Found ${itemsWithNulls.length} items with null properties in "${header.key}":`,
-              itemsWithNulls
-            );
-          }
-        } else {
-          console.log(`[CustomDataTable] Autocomplete field "${header.key}" before save:`, dataToSave[header.key]);
-        }
-      }
-    });
-
     if (isEditing.value && dataToSave.id) {
       await api.update(dataToSave);
       snackbarMessage.value = '✅ آیتم با موفقیت بروزرسانی شد!';
@@ -1441,7 +1262,7 @@ const deleteItem = async (id: string) => {
   try {
     await api.delete(id);
     deleteDialog.value = false;
-    items.value = items.value.filter((item) => item.id !== id);
+    items.value = items.value.filter((item) => String(getUniqueValue(item)) !== String(id));
     await fetchData();
   } catch (err) {
     console.error('خطا در حذف اطلاعات', err);
@@ -1641,9 +1462,20 @@ const handlePageChange = (newPage: number) => {
   debouncedFetchData();
 };
 
+watch(
+  () => props.selectedItems,
+  (external) => {
+    if (!external) return;
+    selectedItems.value = [...external];
+  },
+  { deep: true }
+);
+
 onMounted(() => {
   initialized.value = true;
-
+  if (props.selectedItems?.length) {
+    selectedItems.value = [...props.selectedItems];
+  }
   if (props.autoFetch) {
     fetchData();
   }
@@ -1881,22 +1713,6 @@ watch(
   }
 );
 
-// Initialize default operators when filter dialog opens (only for headers with filterOperators)
-watch(
-  () => filterDialog.value,
-  (isOpen) => {
-    if (!isOpen) return;
-    formHeaders.value.forEach((header) => {
-      // Only initialize operators if header has filterOperators configured
-      if (hasFilterOperators(header)) {
-        const key = resolveHeaderKey(header);
-        if (!filterOperatorModel.value[key]) {
-          filterOperatorModel.value[key] = getDefaultFilterOperator(header);
-        }
-      }
-    });
-  }
-);
 </script>
 
 <template>
@@ -2006,102 +1822,13 @@ watch(
     <!-- همیشه از headers استفاده می‌کنه، بدون شرط filterComponent -->
     <v-container>
       <v-row>
-        <v-col
-          v-for="header in formHeaders"
-          :key="resolveHeaderKey(header)"
-          :cols="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
-          :md="header.cols ? (typeof header.cols === 'number' ? header.cols : Number(header.cols)) : 4"
-        >
-          <template v-if="!header.hidden">
-            <!-- Operator selector -->
-            <v-select
-              v-if="hasFilterOperators(header)"
-              v-model="filterOperatorModel[resolveHeaderKey(header)]"
-              :items="getHeaderFilterOperators(header)"
-              item-title="label"
-              item-value="value"
-              density="compact"
-              variant="underlined"
-              hide-details
-              class="mb-1"
-              attach
-              :menu-props="{ zIndex: 20000 }"
-            />
-
-            <!-- Date picker -->
-            <ShamsiDatePicker
-              v-if="isDateHeader(header)"
-              v-model="filterModel[resolveHeaderKey(header)]"
-              :label="resolveHeaderTitle(header)"
-              :disabled="isHeaderDisabled(header)"
-              :mode="header.dateMode || 'single'"
-            />
-
-            <!-- Autocomplete -->
-            <v-autocomplete
-              v-else-if="hasAutocomplete(header)"
-              v-model="filterModel[resolveHeaderKey(header)]"
-              :label="resolveHeaderTitle(header)"
-              :items="resolveAutocompleteItems(header, filterModel.value)"
-              :item-title="resolveAutocompleteItemTitle(header)"
-              :item-value="resolveAutocompleteItemValue(header)"
-              :return-object="resolveAutocompleteReturnObject(header)"
-              :multiple="resolveAutocompleteMultiple(header)"
-              :chips="resolveAutocompleteMultiple(header)"
-              :closable-chips="resolveAutocompleteMultiple(header)"
-              :disabled="isHeaderDisabled(header)"
-              clearable
-              variant="outlined"
-              attach
-              :menu-props="{ zIndex: 20000 }"
-            />
-
-            <!-- Money input -->
-            <MoneyInput
-              v-else-if="isMoneyHeader(header)"
-              v-model="filterModel[resolveHeaderKey(header)] as number"
-              :label="resolveHeaderTitle(header)"
-              :disabled="isHeaderDisabled(header)"
-            />
-
-            <!-- Textarea -->
-            <v-textarea
-              v-else-if="isTextareaHeader(header)"
-              v-model="filterModel[resolveHeaderKey(header)]"
-              :label="resolveHeaderTitle(header)"
-              variant="outlined"
-              :disabled="isHeaderDisabled(header)"
-              :dir="(header as Header).dir"
-              auto-grow
-              rows="3"
-            />
-
-            <!-- Toggle switch -->
-            <ToggleSwitch
-              v-else-if="isToggleHeader(header)"
-              v-model="filterModel[resolveHeaderKey(header)]"
-              :label="resolveHeaderTitle(header)"
-              type="boolean"
-              activeColor="#3bd32a"
-              inactiveColor="#d32a2a"
-              :options="[
-                { value: 'true', label: 'فعال', icon: IconCheck },
-                { value: 'false', label: 'غیر فعال', icon: IconSquareX }
-              ]"
-            />
-
-            <!-- Default text field -->
-            <v-text-field
-              v-else
-              v-model="filterModel[resolveHeaderKey(header)]"
-              :label="resolveHeaderTitle(header)"
-              variant="outlined"
-              :disabled="isHeaderDisabled(header)"
-              :type="getFieldInputType(header)"
-              :dir="(header as Header).dir"
-            />
-          </template>
-        </v-col>
+        <DataTableFilterFields
+          v-model:filter-model="filterModel"
+          v-model:filter-operator-model="filterOperatorModel"
+          :headers="formHeaders"
+          :has-filter-operators="hasFilterOperators"
+          :get-header-filter-operators="getHeaderFilterOperators"
+        />
         <v-col cols="12" md="12" class="inlineCustomAction">
           <slot
             name="inline-filter-actions"
@@ -2126,6 +1853,7 @@ watch(
     role="region"
     :aria-busy="loading || isLoadingMore"
     :aria-live="loading || isLoadingMore ? 'polite' : 'off'"
+    @scroll.passive="handleScroll"
   >
     <template v-if="loading && !isLoadingMore">
       <div class="skeleton-container" :style="{ height: `${props.height}px` }">
@@ -2362,7 +2090,7 @@ watch(
                                 "
                                 style="min-width: 24px; width: 24px; height: 24px"
                               >
-                                <v-icon size="16">mdi-content-copy</v-icon>
+                                <IconCopy :size="16" />
                               </v-btn>
                             </div>
                           </template>
@@ -2545,7 +2273,7 @@ watch(
                     "
                     style="min-width: 24px; width: 24px; height: 24px"
                   >
-                    <v-icon size="16">mdi-content-copy</v-icon>
+                    <IconCopy :size="16" />
                   </v-btn>
                 </div>
               </template>
@@ -2655,7 +2383,7 @@ watch(
       </v-card-text>
       <v-card-actions>
         <v-btn variant="tonal" color="error" @click="dialog = false">انصراف</v-btn>
-        <v-btn color="primary" var @click="saveItem">{{ isEditing ? 'ذخیره' : 'ایجاد' }}</v-btn>
+        <v-btn color="primary" @click="saveItem">{{ isEditing ? 'ذخیره' : 'ایجاد' }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -2666,7 +2394,7 @@ watch(
       <v-card-text> آیا مایل به حذف این رکورد هستید ?</v-card-text>
       <v-card-actions>
         <v-btn color="grey" @click="deleteDialog = false">انصراف</v-btn>
-        <v-btn color="red" @click="deleteItem(String(itemToDelete?.id || ''))">حذف</v-btn>
+        <v-btn color="red" @click="deleteItem(String(itemToDelete ? getUniqueValue(itemToDelete) : ''))">حذف</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -2817,7 +2545,7 @@ watch(
       <v-card-title class="d-flex justify-space-between align-center">
         <span>{{ previewTitle }}</span>
         <v-btn icon variant="text" @click="textPreviewDialog = false">
-          <v-icon>mdi-close</v-icon>
+          <IconX :size="20" />
         </v-btn>
       </v-card-title>
       <v-card-text>
@@ -2826,11 +2554,11 @@ watch(
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="primary" @click="copyToClipboard(previewText)">
-          <v-icon start>mdi-content-copy</v-icon>
+          <IconCopy :size="18" class="me-1" />
           کپی متن
         </v-btn>
         <v-btn color="success" @click="copyCompleteRecord">
-          <v-icon start>mdi-content-copy</v-icon>
+          <IconCopy :size="18" class="me-1" />
           کپی رکورد کامل
         </v-btn>
         <v-btn color="grey" @click="textPreviewDialog = false">بستن</v-btn>

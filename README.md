@@ -64,7 +64,8 @@ You can import components individually for better tree-shaking:
 ```vue
 <script setup lang="ts">
 1import { 
-  CustomDataTable, 
+  CustomDataTable,
+  CustomDataTableV2,
   BaseIcon, 
   ShamsiDatePicker,
   AppSidebar,
@@ -254,7 +255,8 @@ const formatted = formatNumberWithCommas(1234567); // "1,234,567"
 - `BaseIcon` - Icon component wrapper
 - `ConfirmDialog` - Confirmation dialog
 - `CustomAutocomplete` - Enhanced autocomplete input
-- `CustomDataTable` - Feature-rich data table with pagination, filtering, etc.
+- `CustomDataTable` - Feature-rich data table (stable; unchanged)
+- `CustomDataTableV2` - Same API as `CustomDataTable` with bug fixes; use for new pages
 - `DescriptionInput` - Text area input for descriptions
 - `DownloadButton` - Button with download functionality
 - `MoneyInput` - Currency/money input field

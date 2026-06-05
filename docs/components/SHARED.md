@@ -2,6 +2,14 @@
 
 Reusable UI components for common use cases.
 
+## CustomDataTableV2 (recommended for new work)
+
+Refactored copy of CustomDataTable with bug fixes. The original `CustomDataTable` is unchanged. See **[DATA_TABLE_V2.md](./DATA_TABLE_V2.md)**.
+
+```vue
+import { CustomDataTableV2 } from '@amirjalili1374/ui-kit'
+```
+
 ## CustomDataTable
 
 A powerful, feature-rich data table component with server-side pagination, filtering, grouping, selection, CRUD actions, custom actions, downloads, and dialogs.
