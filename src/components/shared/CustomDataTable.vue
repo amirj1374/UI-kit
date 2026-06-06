@@ -16,7 +16,8 @@
  * - Adds ARIA attributes to group headers and busy regions
  * - Keyboard support for toggling groups and activating selection on rows
  */
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
+
 import MoneyInput from '@/components/shared/MoneyInput.vue';
 import ShamsiDatePicker from '@/components/shared/ShamsiDatePicker.vue';
 import ToggleSwitch from '@/components/shared/ToggleSwitch.vue';
@@ -31,6 +32,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { type Component, reactive, type Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+
 const filters = reactive<Record<string, any>>({});
 const initialized = ref(false);
 const exportLoading = ref(false);
@@ -606,74 +608,178 @@ const base64ToBlob = (base64: string, mimeType: string) => {
   return new Blob([byteArray], { type: mimeType });
 };
 
+
 const handleExportClientSide = () => {
-  // 1) انتخاب منبع دیتا:
-  // اگر والد items پاس داده بود از همان استفاده کن، وگرنه از state داخلی جدول
   const sourceItems: TableItem[] =
     (props.items && props.items.length ? props.items : items.value) ?? [];
 
-  // 2) کنترل وجود داده
-  if (sourceItems.length === 0) {
-    console.warn('داده‌ای برای خروجی اکسل وجود ندارد.');
-    return;
-  }
+  if (!sourceItems.length) return;
 
-  // 3) هدرهای معتبر (حذف ستون‌های بدون key/title مثل عملیات)
-  const validHeaders = props.headers.filter((h: Header) => !!h.key && !!h.title);
+  const headers = props.headers.filter((h: Header) => h.key && h.title);
 
-  // 4) نگاشت داده‌ها
-  const excelData = sourceItems.map((item: TableItem) => {
+  const now = new Date();
+
+  const exportDate =
+    now.toLocaleDateString("fa-IR") +
+    " " +
+    now.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
+
+  const title = props.exportFileName || "گزارش";
+
+  const moneyTotals: Record<string, number> = {};
+
+  const rows = sourceItems.map((item: TableItem) => {
     const row: Record<string, any> = {};
 
-    validHeaders.forEach((header: Header) => {
-      // مقداردهی اولیه از key یا nestedKey
-      let value = header.nestedKey
-        ? (item[header.key] as any)?.[header.nestedKey]
-        : item[header.key];
+    headers.forEach((h) => {
+      let value = h.nestedKey
+        ? (item[h.key] as any)?.[h.nestedKey]
+        : item[h.key];
 
-      // formatter اگر وجود دارد، اولویت دارد
-      if (header.formatter) {
-        value = header.formatter(value, item);
-      } else if (header.type === 'date' || header.isDate) {
-        /**
-         * نکته: در fetchData شما تاریخ‌ها را قبلاً برای نمایش به شمسی تبدیل کرده‌اید
-         * (items.value = serverData.map(... DateConverter.toShamsi ...))
-         * پس اینجا فقط وقتی تبدیل انجام بده که مقدار شبیه تاریخ میلادی/قابل‌تبدیل باشد.
-         */
-        if (value !== null && value !== undefined && value !== '') {
-          try {
-            value = DateConverter.toShamsi(value as string);
-          } catch {
-            // اگر از قبل شمسی/فرمت دیگر بود و تبدیل خطا داد، همان مقدار را نگه دار
-          }
-        }
-      } else if (typeof value === 'boolean') {
-        value = value ? 'بله' : 'خیر';
+      if (h.type === "money") {
+        const num = Number(value);
+        value = !isNaN(num) ? num : 0;
+        moneyTotals[h.title] = (moneyTotals[h.title] || 0) + value;
       }
 
-      row[header.title] = value !== null && value !== undefined ? value : '';
+      if (typeof value === "boolean") value = value ? "بله" : "خیر";
+
+      row[h.title] = value ?? "";
     });
 
     return row;
   });
 
-  // 5) ساخت شیت
-  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const totalRow: Record<string, any> = {};
 
-  // 6) تنظیم عرض ستون‌ها
-  worksheet['!cols'] = validHeaders.map((h: Header) => ({
-    wch: h.width ? Math.max(10, Math.round(h.width / 7)) : 20
-  }));
+  headers.forEach((h, i) => {
+    if (h.type === "money") totalRow[h.title] = moneyTotals[h.title] || 0;
+    else if (i === 0) totalRow[h.title] = "جمع کل";
+    else totalRow[h.title] = "";
+  });
 
-  // 7) ساخت فایل و دانلود
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Export');
+  rows.push(totalRow);
 
-  const safeName = (props.exportFileName || 'export-data').trim();
-  const fileName = safeName.toLowerCase().endsWith('.xlsx') ? safeName : `${safeName}.xlsx`;
+  const ws = XLSX.utils.json_to_sheet(rows, { origin: "A4" });
 
-  XLSX.writeFile(workbook, fileName);
+  const range = XLSX.utils.decode_range(ws["!ref"]!);
+
+  ws["!freeze"] = { xSplit: 0, ySplit: 3 };
+
+  ws["!autofilter"] = {
+    ref: XLSX.utils.encode_range({
+      s: { r: 3, c: 0 },
+      e: range.e
+    })
+  };
+
+  ws["!cols"] = headers.map((h) => {
+    let max = h.title.length;
+
+    rows.forEach((r) => {
+      const len = String(r[h.title] ?? "").length;
+      if (len > max) max = len;
+    });
+
+    return { wch: max + 4 };
+  });
+
+  XLSX.utils.sheet_add_aoa(
+    ws,
+    [
+      [title],
+      [`تاریخ چاپ: ${exportDate}`],
+      []
+    ],
+    { origin: "A1" }
+  );
+
+  ws["!merges"] = [
+    {
+      s: { r: 0, c: 0 },
+      e: { r: 0, c: headers.length - 1 }
+    }
+  ];
+
+  ws["A1"].s = {
+    font: { bold: true, sz: 16, name: "B Nazanin" },
+    alignment: { horizontal: "center", vertical: "center" }
+  };
+
+  ws["A2"].s = {
+    font: { name: "B Nazanin", sz: 12 },
+    alignment: { horizontal: "left" }
+  };
+
+  const headerStyle = {
+    font: { bold: true, name: "B Nazanin" },
+    alignment: { horizontal: "center", vertical: "center" },
+    fill: { fgColor: { rgb: "D9D9D9" } },
+    border: {
+      top: { style: "thin" },
+      bottom: { style: "thin" },
+      left: { style: "thin" },
+      right: { style: "thin" }
+    }
+  };
+
+  const zebraFill = { fgColor: { rgb: "F7F7F7" } };
+
+  headers.forEach((h, c) => {
+    const headerCell = XLSX.utils.encode_cell({ r: 3, c });
+
+    if (ws[headerCell]) ws[headerCell].s = headerStyle;
+
+    for (let r = 4; r <= rows.length + 3; r++) {
+      const addr = XLSX.utils.encode_cell({ r, c });
+      const cell = ws[addr];
+
+      if (!cell) continue;
+
+      const isTotalRow = r === rows.length + 3;
+      const zebra = r % 2 === 0;
+
+      cell.s = {
+        font: { name: "B Nazanin" },
+        alignment: {
+          horizontal: h.type === "money" ? "center" : "right",
+          vertical: "center"
+        },
+        border: {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" }
+        },
+        fill: zebra && !isTotalRow ? zebraFill : undefined
+      };
+
+      if (h.type === "money" && typeof cell.v === "number") {
+        cell.z = "#,##0;[Red]-#,##0";
+      }
+
+      if (isTotalRow) {
+        cell.s.font = { bold: true, name: "B Nazanin" };
+        cell.s.fill = { fgColor: { rgb: "EFEFEF" } };
+      }
+    }
+  });
+
+  const wb = XLSX.utils.book_new();
+
+  wb.Workbook = {
+    Views: [{ RTL: true }]
+  };
+
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+
+  const dateForFile = now.toLocaleDateString("fa-IR").replaceAll("/", "-");
+
+  const fileName = `${title}_${dateForFile}.xlsx`;
+
+  XLSX.writeFile(wb, fileName);
 };
+
 
 const handleExport = async () => {
   try {
@@ -1911,7 +2017,14 @@ watch(
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
     <v-btn v-if="props.showRefreshButton" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
     <v-btn v-if="props.globalFetch" color="primary" class="me-2" @click="resetFilter()" :loading="loading">جستجو کلی</v-btn>
-    <v-btn v-if="enableExport" color="primary" variant="tonal" class="me-2" @click="onExportClick" :loading="exportLoading" :disabled="loading"
+    <v-btn
+      v-if="enableExport"
+      color="primary"
+      variant="tonal"
+      class="me-2"
+      @click="onExportClick"
+      :loading="exportLoading"
+      :disabled="loading"
       >گزارش کلی</v-btn
     >
 
