@@ -1001,10 +1001,10 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
 
     const requestParams = shouldPaginate
       ? {
-          ...params,
-          page: currentPage.value - 1,
-          size: itemsPerPage.value
-        }
+        ...params,
+        page: currentPage.value - 1,
+        size: itemsPerPage.value
+      }
       : params;
 
     /* =========================
@@ -1692,7 +1692,7 @@ const download = async (key: string | number, item: TableItem) => {
       });
 
       // If it's XML, convert to text to see the error
-      if (typeof contentType === 'string' && contentType.includes('xml')) {
+      if (contentType && contentType.includes('xml')) {
         const textResponse = await componentAxiosInstance.get(fileUrlString, {
           responseType: 'text'
         });
@@ -2025,7 +2025,7 @@ watch(
       @click="onExportClick"
       :loading="exportLoading"
       :disabled="loading"
-      >گزارش کلی</v-btn
+    >گزارش کلی</v-btn
     >
 
     <!-- Action Buttons for Selected Items -->
@@ -2364,7 +2364,7 @@ watch(
                               size="small"
                               class="mr-2"
                               @click="openDeleteDialog(item)"
-                              >حذف ❌
+                            >حذف ❌
                             </v-btn>
                             <v-btn
                               v-if="props.actions?.includes('view')"
@@ -2372,7 +2372,7 @@ watch(
                               size="small"
                               class="mr-2"
                               @click="goToRoute('view', item)"
-                              >🔍 نمایش
+                            >🔍 نمایش
                             </v-btn>
                             <template v-for="(routePath, routeKey) in getRoutesForItem(item)" :key="routeKey">
                               <v-btn color="indigo" size="small" class="mr-2" @click="goToRoute(routeKey, item)">
@@ -2558,10 +2558,10 @@ watch(
                   ویرایش ✏️
                 </v-btn>
                 <v-btn v-if="props.actions?.includes('delete')" color="red" size="small" class="mr-2" @click="openDeleteDialog(item)"
-                  >حذف ❌
+                >حذف ❌
                 </v-btn>
                 <v-btn v-if="props.actions?.includes('view')" color="purple" size="small" class="mr-2" @click="goToRoute('view', item)"
-                  >🔍 نمایش
+                >🔍 نمایش
                 </v-btn>
                 <template v-for="(routePath, routeKey) in getRoutesForItem(item)" :key="routeKey">
                   <v-btn color="indigo" size="small" class="mr-2" @click="goToRoute(routeKey, item)">
