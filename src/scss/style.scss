@@ -1,5 +1,9 @@
 @import './variables';
-@import 'vuetify/styles/main.sass';
+// NOTE: Vuetify's full stylesheet is intentionally NOT imported here.
+// `vuetify` is a peerDependency, so the consuming app already imports
+// 'vuetify/styles' itself. Bundling it again only duplicated ~3.5MB of CSS
+// (and could ship a Vuetify CSS version different from the app's runtime).
+// This file ships ONLY the kit's own component/layout overrides.
 @import './override';
 @import './layout/container';
 @import './layout/sidebar';

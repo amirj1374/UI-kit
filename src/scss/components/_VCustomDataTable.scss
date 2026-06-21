@@ -1,8 +1,11 @@
-@use 'vuetify/settings' as *;
-@use 'vuetify/styles' as *;
-
 /* ============================================================
    Custom Data Table Styles (SCSS Version)
+
+   NOTE: This file intentionally does NOT @use 'vuetify/styles' or
+   'vuetify/settings'. It only uses plain CSS + Vuetify CSS custom
+   properties (var(--v-theme-*)), so importing Vuetify's full stylesheet
+   here only duplicated it in the bundle. The base Vuetify CSS is provided
+   once via style.scss (and by the consuming app's own Vuetify install).
    ============================================================ */
 
 .data-table-container {

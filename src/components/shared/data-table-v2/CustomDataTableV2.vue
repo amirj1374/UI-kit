@@ -496,7 +496,9 @@ const handleExportClientSide = () => {
 
   rows.push(totalRow);
 
-  const ws = XLSX.utils.json_to_sheet(rows, { origin: 'A4' });
+  // `origin` is not part of JSON2SheetOpts' type (it's a no-op for json_to_sheet),
+  // cast to satisfy the type-checker without changing runtime behavior.
+  const ws = XLSX.utils.json_to_sheet(rows, { origin: 'A4' } as any);
 
   const range = XLSX.utils.decode_range(ws['!ref']!);
 

@@ -23,14 +23,18 @@ export default defineConfig(({ command, mode }) => {
             }
           }
         }),
+        // styles: 'none' -> do NOT inject Vuetify's component styles into the
+        // library bundle. `vuetify` is a peerDependency, so the consuming app
+        // already ships Vuetify's CSS. This keeps the library's style.css to
+        // only the kit's own component/layout styles.
         vuetify({
-          autoImport: true
+          autoImport: true,
+          styles: 'none'
         })
       ],
       resolve: {
         alias: {
-          '@': path.resolve(__dirname, './src'),
-          '@tabler/icons-vue': '@tabler/icons-vue'
+          '@': path.resolve(__dirname, './src')
         }
       },
       css: {
@@ -46,7 +50,9 @@ export default defineConfig(({ command, mode }) => {
           formats: ['es', 'cjs']
         },
         rollupOptions: {
-          // Externalize deps that shouldn't be bundled
+          // Externalize deps that shouldn't be bundled. These are provided by
+          // the consuming app (declared as peer/normal deps) so they are not
+          // duplicated inside the library bundle.
           external: [
             'vue',
             'vue-router',
@@ -55,12 +61,12 @@ export default defineConfig(({ command, mode }) => {
             'axios',
             '@vueuse/core',
             '@tabler/icons-vue',
-            'date-fns',
+            // Heavy feature deps – kept out of the bundle to keep it lean.
+            'xlsx',
+            'xlsx-js-style',
+            'vue3-lottie',
+            'vue3-perfect-scrollbar',
             // jalaali-js is bundled, not externalized (to avoid CJS/ESM issues)
-            'vue3-apexcharts',
-            'apexcharts',
-            'vee-validate',
-            'yup',
             'vue3-persian-datetime-picker',
             '@dsb-norge/vue-keycloak-js'
           ],
@@ -74,12 +80,11 @@ export default defineConfig(({ command, mode }) => {
               axios: 'axios',
               '@vueuse/core': 'VueUse',
               '@tabler/icons-vue': 'TablerIcons',
-              'date-fns': 'dateFns',
+              xlsx: 'XLSX',
+              'xlsx-js-style': 'XLSXStyle',
+              'vue3-lottie': 'Vue3Lottie',
+              'vue3-perfect-scrollbar': 'Vue3PerfectScrollbar',
               // jalaali-js is bundled, no global needed
-              'vue3-apexcharts': 'VueApexCharts',
-              apexcharts: 'ApexCharts',
-              'vee-validate': 'VeeValidate',
-              yup: 'Yup',
               'vue3-persian-datetime-picker': 'Vue3PersianDatetimePicker',
               '@dsb-norge/vue-keycloak-js': 'VueKeycloakJs'
             },
@@ -127,8 +132,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
-        '@tabler/icons-vue': '@tabler/icons-vue'
+        '@': path.resolve(__dirname, './src')
       }
     },
     css: {
@@ -143,7 +147,6 @@ export default defineConfig(({ command, mode }) => {
           manualChunks: {
             'vendor': ['vue', 'vue-router', 'pinia'],
             'vuetify': ['vuetify'],
-            'charts': ['apexcharts', 'vue3-apexcharts'],
           }
         }
       },

@@ -660,7 +660,9 @@ const handleExportClientSide = () => {
 
   rows.push(totalRow);
 
-  const ws = XLSX.utils.json_to_sheet(rows, { origin: "A4" });
+  // `origin` is not part of JSON2SheetOpts' type (it's a no-op for json_to_sheet),
+  // cast to satisfy the type-checker without changing runtime behavior.
+  const ws = XLSX.utils.json_to_sheet(rows, { origin: "A4" } as any);
 
   const range = XLSX.utils.decode_range(ws["!ref"]!);
 
@@ -1692,7 +1694,7 @@ const download = async (key: string | number, item: TableItem) => {
       });
 
       // If it's XML, convert to text to see the error
-      if (contentType && contentType.includes('xml')) {
+      if (contentType && String(contentType).includes('xml')) {
         const textResponse = await componentAxiosInstance.get(fileUrlString, {
           responseType: 'text'
         });

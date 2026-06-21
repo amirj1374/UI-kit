@@ -96,18 +96,11 @@ $sizes: (
   font-weight: 300;
   font-style: normal;
 }
-@font-face {
-  font-family: 'IranNastaliq';
-  src: url('/src/assets/fonts/IranNastaliq.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Massir';
-  src: url('/src/assets/fonts/A Massir Spray.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-}
+// NOTE: 'IranNastaliq' (~1.2MB) and 'Massir' (~1.1MB) @font-face declarations
+// were removed. They are decorative fonts that are never applied anywhere in
+// the kit, yet were being inlined as ~3MB of base64 into the shipped style.css.
+// Consuming apps that offer these as selectable fonts define their own
+// @font-face for them, so the kit does not need to ship them.
 body {
   font-family: var(--font-theme), sans-serif;
 }
