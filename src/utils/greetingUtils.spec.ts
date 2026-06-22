@@ -40,4 +40,19 @@ describe('GreetingUtils.getTimePeriod', () => {
     expect(GreetingUtils.getTimePeriod(atHour(18))).toBe('عصر');
     expect(GreetingUtils.getTimePeriod(atHour(23))).toBe('شب');
   });
+
+  it('falls back to night for pre-dawn hours', () => {
+    expect(GreetingUtils.getGreeting(atHour(3))).toBe('شب بخیر');
+    expect(GreetingUtils.getTimePeriod(atHour(3))).toBe('شب');
+  });
+});
+
+describe('GreetingUtils.fromUserInfo', () => {
+  it('builds a named greeting from user info', () => {
+    expect(GreetingUtils.fromUserInfo({ authTime: atHour(8), fullName: 'امیر' } as any)).toBe('صبح بخیر امیر');
+  });
+
+  it('falls back to the default name when fullName is missing', () => {
+    expect(GreetingUtils.fromUserInfo({ authTime: atHour(14), fullName: undefined } as any)).toBe('ظهر بخیر کاربر');
+  });
 });

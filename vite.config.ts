@@ -63,7 +63,6 @@ export default defineConfig(({ command, mode }) => {
             '@tabler/icons-vue',
             // Heavy feature deps – kept out of the bundle to keep it lean.
             'xlsx',
-            'xlsx-js-style',
             'vue3-lottie',
             'vue3-perfect-scrollbar',
             // jalaali-js is bundled, not externalized (to avoid CJS/ESM issues)
@@ -81,7 +80,6 @@ export default defineConfig(({ command, mode }) => {
               '@vueuse/core': 'VueUse',
               '@tabler/icons-vue': 'TablerIcons',
               xlsx: 'XLSX',
-              'xlsx-js-style': 'XLSXStyle',
               'vue3-lottie': 'Vue3Lottie',
               'vue3-perfect-scrollbar': 'Vue3PerfectScrollbar',
               // jalaali-js is bundled, no global needed

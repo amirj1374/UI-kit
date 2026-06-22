@@ -19,7 +19,6 @@
  * - Adds ARIA attributes to group headers and busy regions
  * - Keyboard support for toggling groups and activating selection on rows
  */
-import * as XLSX from 'xlsx';
 import MoneyInput from '@/components/shared/MoneyInput.vue';
 import ShamsiDatePicker from '@/components/shared/ShamsiDatePicker.vue';
 import ToggleSwitch from '@/components/shared/ToggleSwitch.vue';
@@ -451,10 +450,15 @@ const base64ToBlob = (base64: string, mimeType: string) => {
   return new Blob([byteArray], { type: mimeType });
 };
 
-const handleExportClientSide = () => {
+const handleExportClientSide = async () => {
   const sourceItems: TableItem[] = (props.items && props.items.length ? props.items : items.value) ?? [];
 
   if (!sourceItems.length) return;
+
+  // Lazy-load the (large) Excel library only when the user actually exports,
+  // so it is not part of the initial bundle.
+  const XLSXmod = await import('xlsx');
+  const XLSX: any = (XLSXmod as any).default ?? XLSXmod;
 
   const headers = props.headers.filter((h: Header) => h.key && h.title);
 
@@ -671,7 +675,7 @@ const onExportClick = async () => {
   else {
     exportLoading.value = true;
     try {
-      handleExportClientSide();
+      await handleExportClientSide();
     } finally {
       exportLoading.value = false;
     }
