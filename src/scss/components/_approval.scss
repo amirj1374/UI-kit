@@ -44,63 +44,13 @@
   }
 }
 
-// Theme-aware table styles
-:deep(th) {
-  background: rgb(var(--v-theme-lightprimary)) !important;
-  color: rgb(var(--v-theme-darkText)) !important;
-  font-weight: 600;
-}
-
-:deep(.v-data-table__wrapper) {
-  background: rgb(var(--v-theme-surface));
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid rgb(var(--v-theme-borderLight));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-:deep(.v-data-table__tbody tr:nth-child(even)) {
-  background: rgb(var(--v-theme-lightprimary)) !important;
-}
-
-:deep(.v-data-table__tbody tr:nth-child(odd)) {
-  background: rgb(var(--v-theme-surface)) !important;
-}
-
-:deep(.v-data-table__tbody tr:hover) {
-  background: rgb(var(--v-theme-lightsecondary)) !important;
-}
-
-// Theme-aware form field styles
-:deep(.v-text-field .v-field) {
-  background: rgb(var(--v-theme-surface));
-  border-color: rgb(var(--v-theme-borderLight));
-  transition: border-color 0.2s ease;
-}
-
-:deep(.v-text-field .v-field:hover) {
-  border-color: rgb(var(--v-theme-secondary));
-}
-
-:deep(.v-select .v-field) {
-  background: rgb(var(--v-theme-surface));
-  border-color: rgb(var(--v-theme-borderLight));
-  transition: border-color 0.2s ease;
-}
-
-:deep(.v-select .v-field:hover) {
-  border-color: rgb(var(--v-theme-secondary));
-}
-
-// Theme-aware button styles
-:deep(.v-btn--variant-outlined) {
-  border-color: rgb(var(--v-theme-borderLight));
-  color: rgb(var(--v-theme-darkText));
-}
-
-:deep(.v-btn--variant-outlined:hover) {
-  background: rgb(var(--v-theme-lightsecondary));
-}
+// NOTE: A block of `:deep(...)` rules (table/field/button theming) was removed
+// here. `:deep()` is a Vue *scoped-style* compiler feature; in this global
+// stylesheet it compiled to a literal `:deep(...)` selector, which is an invalid
+// CSS pseudo-class that browsers reject — so those rules never applied (dead
+// code) and also triggered lightningcss minify warnings. Removing them changes
+// no rendered output. If this theming is wanted, move it into the relevant
+// component's `<style scoped>` block where `:deep()` is valid.
 
 // Utility classes
 .customer-search-btn {

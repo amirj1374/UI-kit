@@ -118,7 +118,7 @@ defineExpose({ currentStepComponentRef });
 </template>
 
 <style lang="scss">
-@import '@/scss/components/_VStepper.scss';
+@use '@/scss/components/_VStepper.scss';
 </style>
 
 <style lang="scss" scoped>

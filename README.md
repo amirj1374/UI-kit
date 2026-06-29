@@ -326,7 +326,7 @@ This will:
 
 Output files will be in the `dist` directory:
 - `ui-kit.es.js` - ES module format
-- `ui-kit.cjs.js` - CommonJS format
+- `ui-kit.cjs` - CommonJS format
 - `ui-kit.umd.js` - UMD format (browser)
 - `style.css` - Compiled CSS
 - `index.d.ts` - TypeScript declarations

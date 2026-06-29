@@ -39,14 +39,20 @@ export default defineConfig(({ command, mode }) => {
       },
       css: {
         preprocessorOptions: {
-          scss: {}
+          scss: {
+            // Dart Sass deprecated @import; silence until SCSS is migrated to @use/@forward
+            silenceDeprecations: ['import']
+          }
         }
       },
       build: {
         lib: {
           entry: resolve(__dirname, 'src/index.ts'),
           name: 'UiKit',
-          fileName: (format) => `ui-kit.${format}.js`,
+          // CJS must use a `.cjs` extension: the package is `"type": "module"`,
+          // so a `.js` CJS file would be parsed as ESM by Node and yield an empty
+          // module on `require()`. ESM stays `.es.js` (correct ESM under type:module).
+          fileName: (format) => (format === 'es' ? 'ui-kit.es.js' : 'ui-kit.cjs'),
           formats: ['es', 'cjs']
         },
         rollupOptions: {
@@ -70,6 +76,10 @@ export default defineConfig(({ command, mode }) => {
             '@dsb-norge/vue-keycloak-js'
           ],
           output: {
+            // Rolldown requires mixed named+default exports to declare 'named'
+            exports: 'named',
+            // Rolldown-native (Oxc) minify with console/debugger stripping.
+            minify: { compress: { dropConsole: true, dropDebugger: true }, mangle: true },
             // Provide global variables for externalized deps
             globals: {
               vue: 'Vue',
@@ -96,16 +106,15 @@ export default defineConfig(({ command, mode }) => {
             }
           }
         },
-        minify: 'terser',
-        terserOptions: {
-          compress: {
-            drop_console: true,
-            drop_debugger: true
-          }
-        },
-        sourcemap: true,
+        minify: 'oxc',
+        // No source maps for the published library: `.npmignore` intentionally
+        // excludes *.map from the package, so emitting them only produces dangling
+        // `sourceMappingURL` references (404s in consumers' devtools) and bloats
+        // the build dir. To ship maps instead, set this to true AND drop the
+        // dist/*.map exclusions in `.npmignore`.
+        sourcemap: false,
         cssCodeSplit: false, // Bundle all CSS into one file
-        cssMinify: true
+        cssMinify: 'lightningcss' // Vite 8 default; fast native CSS minifier
       },
       optimizeDeps: {
         exclude: ['vuetify'],
@@ -135,26 +144,37 @@ export default defineConfig(({ command, mode }) => {
     },
     css: {
       preprocessorOptions: {
-        scss: {}
+        scss: {
+          // Dart Sass deprecated @import; silence until SCSS is migrated to @use/@forward
+          silenceDeprecations: ['import']
+        }
       }
     },
     build: {
       chunkSizeWarningLimit: 1024 * 1024, // Set the limit to 1 MB
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor': ['vue', 'vue-router', 'pinia'],
-            'vuetify': ['vuetify'],
+          // Rolldown (Vite 8) requires manualChunks to be a function, not an object
+          manualChunks(id) {
+            if (['vue', 'vue-router', 'pinia'].some((pkg) => id.includes(`/node_modules/${pkg}/`))) {
+              return 'vendor';
+            }
+            if (id.includes('/node_modules/vuetify/')) {
+              return 'vuetify';
+            }
+          },
+          // Rolldown-native (Oxc) minify; strip console/debugger unless VITE_DEBUG.
+          minify: {
+            compress: {
+              dropConsole: env.VITE_DEBUG !== 'true',
+              dropDebugger: env.VITE_DEBUG !== 'true'
+            },
+            mangle: true
           }
         }
       },
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: env.VITE_DEBUG !== 'true',
-          drop_debugger: env.VITE_DEBUG !== 'true'
-        }
-      }
+      // Use Rolldown's native Oxc minifier instead of terser (much faster, no extra dep)
+      minify: 'oxc'
     },
     optimizeDeps: {
       exclude: ['vuetify'],

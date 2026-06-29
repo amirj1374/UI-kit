@@ -40,7 +40,6 @@ export * from '../types/models/userInfo';
 
 // Re-export composables
 export * from '../composables/useDataTable';
-export * from '../composables/usePermissions';
 export * from '../composables/useRouteGuard';
 export * from '../composables/useTableActions';
 export * from '../composables/useTableHeaders';

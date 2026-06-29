@@ -1,26 +1,31 @@
-@import './variables';
 // NOTE: Vuetify's full stylesheet is intentionally NOT imported here.
 // `vuetify` is a peerDependency, so the consuming app already imports
 // 'vuetify/styles' itself. Bundling it again only duplicated ~3.5MB of CSS
 // (and could ship a Vuetify CSS version different from the app's runtime).
 // This file ships ONLY the kit's own component/layout overrides.
-@import './override';
-@import './layout/container';
-@import './layout/sidebar';
-@import './layout/topbar';
+//
+// Each partial that needs shared variables `@use`s './variables' itself, so
+// this aggregator only needs to load the partials (in the same order as before).
+//
+// Vendor CSS first: a plain-CSS `@import` was previously hoisted to the top of
+// the output by Sass, so `@use`-ing it first preserves the original CSS order.
+@use 'vue3-perfect-scrollbar/style.css';
 
-@import './components/VButtons';
-@import './components/VCard';
-@import './components/VField';
-@import './components/VInput';
-@import './components/VNavigationDrawer';
-@import './components/VShadow';
-@import './components/VTextField';
-@import './components/VTabs';
-@import './components/VCustomDataTable';
-@import './components/VStepper';
-@import './components/approval';
+@use './override';
+@use './layout/container';
+@use './layout/sidebar';
+@use './layout/topbar';
 
-@import './pages/dashboards';
+@use './components/VButtons';
+@use './components/VCard';
+@use './components/VField';
+@use './components/VInput';
+@use './components/VNavigationDrawer';
+@use './components/VShadow';
+@use './components/VTextField';
+@use './components/VTabs';
+@use './components/VCustomDataTable';
+@use './components/VStepper';
+@use './components/approval';
 
-@import 'vue3-perfect-scrollbar/style.css';
+@use './pages/dashboards';

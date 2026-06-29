@@ -2675,5 +2675,5 @@ watch(
   </v-snackbar>
 </template>
 <style lang="scss">
-@import '@/scss/components/VCustomDataTable';
+@use '@/scss/components/VCustomDataTable';
 </style>
