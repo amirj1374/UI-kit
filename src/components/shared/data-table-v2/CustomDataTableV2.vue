@@ -1814,7 +1814,7 @@ watch(
     <h3 class="title-text">{{ props.title }}</h3>
   </div>
   <!-- Action Buttons OUTSIDE the table container -->
-  <div class="action-buttons" v-if="!props.inlineFilter">
+  <div class="action-buttons mb-2" v-if="!props.inlineFilter">
     <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">ایجاد ✅</v-btn>
     <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
