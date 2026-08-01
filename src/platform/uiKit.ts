@@ -1,60 +1,80 @@
 import { computed, inject, shallowReactive, readonly, type App, type ComputedRef, type InjectionKey, type Plugin } from 'vue';
 import { defaultIcons, defaultMessages, defaultThemes } from './defaults';
-import type { ResolvedUiDirection, UiKitConfig, UiKitOptions, UiMessageKey, UiPermissionInput, UiSemanticIconName } from './types';
+import type { ResolvedUiDirection, UiKitConfig, UiKitOptions, UiMessageKey, UiMessageParams, UiPermissionInput, UiSemanticIconName } from './types';
 
 export interface UiKitContext {
   config: Readonly<UiKitOptions>;
   locale: ComputedRef<string>;
   direction: ComputedRef<ResolvedUiDirection>;
-  t: (key: UiMessageKey, params?: Record<string, string | number>) => string;
+  t: (key: UiMessageKey, params?: UiMessageParams) => string;
   icon: (name: UiSemanticIconName) => UiKitOptions['icons'][UiSemanticIconName];
   can: (requirement?: UiPermissionInput) => boolean;
   update: (options: UiKitConfig) => void;
+  reset: () => void;
 }
 
 const uiKitKey: InjectionKey<UiKitContext> = Symbol('ui-kit');
 
 function isRtlLocale(locale: string) { return /^(fa|ar|he|ur)(-|$)/i.test(locale); }
-function interpolate(value: string, params: Record<string, string | number> = {}) { return value.replace(/\{(\w+)\}/g, (_, key: string) => String(params[key] ?? `{${key}}`)); }
+function interpolate(value: string, params: UiMessageParams = {}) { return value.replace(/\{([A-Za-z0-9_]+)\}/g, (_, key: string) => Object.hasOwn(params, key) ? String(params[key]) : `{${key}}`); }
+function cloneConfig(options: UiKitConfig): UiKitConfig {
+  const permissions = typeof options.permissions === 'function' ? options.permissions : options.permissions ? { ...options.permissions } : undefined;
+  return { ...options, messages: options.messages ? Object.fromEntries(Object.entries(options.messages).map(([locale, catalog]) => [locale, { ...catalog }])) : undefined, icons: options.icons ? { ...options.icons } : undefined, theme: options.theme ? { ...options.theme, themes: options.theme.themes ? { ...options.theme.themes } : undefined } : undefined, permissions };
+}
 
 export function createUiKit(options: UiKitConfig = {}): UiKitContext {
-  const locale = options.locale ?? 'fa-IR';
-  const permissionOptions = typeof options.permissions === 'function' ? { evaluator: options.permissions } : options.permissions;
-  const config = shallowReactive<UiKitOptions>({
-    locale,
-    direction: options.direction ?? 'auto',
-    theme: { defaultTheme: options.theme?.defaultTheme ?? 'modern', themes: { ...defaultThemes, ...options.theme?.themes } },
-    messages: options.messages ?? {},
-    icons: { ...defaultIcons, ...options.icons },
+  const initial = cloneConfig(options);
+  const build = (source: UiKitConfig): UiKitOptions => {
+    const permissionOptions = typeof source.permissions === 'function' ? { evaluator: source.permissions } : source.permissions;
+    return {
+    locale: typeof source.locale === 'string' && source.locale ? source.locale : 'fa-IR',
+    direction: source.direction === 'rtl' || source.direction === 'ltr' || source.direction === 'auto' ? source.direction : 'auto',
+    theme: { defaultTheme: source.theme?.defaultTheme ?? 'modern', themes: { ...defaultThemes, ...source.theme?.themes } },
+    messages: source.messages ? Object.fromEntries(Object.entries(source.messages).map(([locale, catalog]) => [locale, { ...catalog }])) : {},
+    icons: { ...defaultIcons, ...source.icons },
     permissions: { missingEvaluator: 'allow', ...permissionOptions }
-  });
+  }};
+  const config = shallowReactive<UiKitOptions>(build(initial));
   const context: UiKitContext = {
     config: readonly(config) as Readonly<UiKitOptions>,
     locale: computed(() => config.locale),
     direction: computed(() => config.direction === 'auto' ? (isRtlLocale(config.locale) ? 'rtl' : 'ltr') : config.direction),
     t(key, params) {
-      const language = config.locale.startsWith('fa') ? 'fa-IR' : 'en-US';
-      const value = config.messages[config.locale]?.[key] ?? config.messages[language]?.[key] ?? defaultMessages[language][key] ?? defaultMessages['en-US'][key];
+      const language = /^fa(?:-|$)/i.test(config.locale) ? 'fa-IR' : 'en-US';
+      const override = config.messages[config.locale] ?? config.messages[language];
+      const custom = override && Object.hasOwn(override, key) ? override[key] : undefined;
+      const value = typeof custom === 'string' ? custom : defaultMessages[language][key];
       return interpolate(value, params);
     },
-    icon: name => config.icons[name] ?? defaultIcons[name],
+    icon: name => {
+      const candidate = config.icons[name];
+      return typeof candidate === 'string' || typeof candidate === 'function' || (candidate !== null && typeof candidate === 'object') ? candidate : defaultIcons[name];
+    },
     can(requirement) {
-      if (!requirement) return true;
-      const evaluate = config.permissions.evaluator ?? (() => config.permissions.missingEvaluator !== 'deny');
+      if (requirement === undefined) return true;
+      const evaluate = (permission: string) => {
+        if (!permission) return false;
+        try { return config.permissions.evaluator?.(permission) ?? config.permissions.missingEvaluator !== 'deny'; }
+        catch { return false; }
+      };
       if (typeof requirement === 'string') return evaluate(requirement);
       if (Array.isArray(requirement)) return requirement.every(evaluate);
       const single = requirement.permission ? evaluate(requirement.permission) : true;
-      const any = requirement.any?.length ? requirement.any.some(evaluate) : true;
-      const all = requirement.all?.length ? requirement.all.every(evaluate) : true;
+      const any = requirement.any === undefined ? true : requirement.any.some(evaluate);
+      const all = requirement.all === undefined ? true : requirement.all.every(evaluate);
       return single && any && all;
     },
-    update(next) {
-      if (next.locale) config.locale = next.locale;
-      if (next.direction) config.direction = next.direction;
+    update(input) {
+      const next = cloneConfig(input);
+      if (typeof next.locale === 'string' && next.locale) config.locale = next.locale;
+      if (next.direction === 'rtl' || next.direction === 'ltr' || next.direction === 'auto') config.direction = next.direction;
       if (next.messages) config.messages = { ...config.messages, ...next.messages };
       if (next.icons) config.icons = { ...config.icons, ...next.icons };
       if (next.theme) config.theme = { ...config.theme, ...next.theme, themes: { ...config.theme.themes, ...next.theme.themes } };
       if (next.permissions) config.permissions = { ...config.permissions, ...(typeof next.permissions === 'function' ? { evaluator: next.permissions } : next.permissions) };
+    },
+    reset() {
+      Object.assign(config, build({}));
     }
   };
   return context;

@@ -159,6 +159,7 @@ export { createUiKit, useUiKit, useUiKitConfig, useUiKitLocale, useUiKitMessages
 export { defaultThemes, mergeThemes, createUiKitThemes } from './platform/themes';
 export type { UiKitThemeName } from './platform/themes';
 export type * from './platform/types';
+export { isUiAsyncLoading, isUiAsyncError, hasUiAsyncData } from './platform/types';
 export type { UiKitContext } from './platform/uiKit';
 
 // Note: All approval, cartable, and other business logic types are excluded
