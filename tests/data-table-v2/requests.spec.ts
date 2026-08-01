@@ -60,7 +60,7 @@ describe('CustomDataTableV2 request contract', () => {
     });
   });
 
-  it('documents that rapid requests currently have no stale-response guard', async () => {
+  it('keeps the newer result when an older response resolves later', async () => {
     let resolveFirst!: (value: unknown) => void;
     const axios = createAxiosMock();
     axios.get
@@ -71,7 +71,7 @@ describe('CustomDataTableV2 request contract', () => {
     await (wrapper.vm as any).fetchData();
     resolveFirst(createPaginatedResponse([{ id: 1, name: 'Older' }]));
     await first;
-    expect((wrapper.vm as any).getItems()[0].name).toBe('Older');
+    expect((wrapper.vm as any).getItems()[0].name).toBe('Newer');
   });
 });
 

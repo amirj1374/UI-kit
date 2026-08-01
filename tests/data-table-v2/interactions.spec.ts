@@ -35,6 +35,22 @@ describe('CustomDataTableV2 selection and grouping', () => {
     expect(group.attributes('aria-expanded')).toBe('true');
     vi.useRealTimers();
   });
+
+  it('preserves expanded group state across local data refresh and supports Space collapse', async () => {
+    vi.useFakeTimers();
+    const { wrapper } = await mountDataTable({ props: { items, groupBy: (item: any) => item.status } });
+    const group = wrapper.find('.group-header');
+    await group.trigger('keydown', { key: 'Enter' });
+    await vi.runAllTimersAsync();
+    await wrapper.setProps({ items: [...items, { code: 'c', name: 'Gamma', status: 'one' }] });
+    await flushTable();
+    expect(wrapper.find('.group-header').attributes('aria-expanded')).toBe('true');
+    await wrapper.find('.group-header').trigger('keydown', { key: ' ' });
+    await vi.runAllTimersAsync();
+    await flushTable();
+    expect(wrapper.find('.group-header').attributes('aria-expanded')).toBe('false');
+    vi.useRealTimers();
+  });
 });
 
 describe('CustomDataTableV2 routing and extension points', () => {
@@ -56,6 +72,25 @@ describe('CustomDataTableV2 routing and extension points', () => {
     await findActionButton(wrapper, 'DETAILS')!.trigger('click');
     await flushTable();
     expect(router.currentRoute.value.path).toBe('/');
+  });
+
+  it('catches rejected navigation and exposes an accessible error', async () => {
+    const { wrapper, router } = await mountDataTable({ props: { items: [items[0]], routes: { details: '/items/{code}' } } });
+    vi.spyOn(router, 'push').mockRejectedValueOnce(new Error('navigation failed'));
+    await findActionButton(wrapper, 'DETAILS')!.trigger('click');
+    await flushTable();
+    expect(wrapper.find('[role="alert"]').text()).toContain('Navigation failed');
+  });
+
+  it('does not invoke disabled custom actions', async () => {
+    const onClick = vi.fn();
+    const { wrapper } = await mountDataTable({
+      props: { items: [items[0]], customButtons: [{ label: 'Disabled', disabled: true, onClick }] }
+    });
+    const button = findActionButton(wrapper, 'Disabled')!;
+    expect(button.attributes('disabled')).toBeDefined();
+    await button.trigger('click');
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('provides the documented inline filter slot props', async () => {
