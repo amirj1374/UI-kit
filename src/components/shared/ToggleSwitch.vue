@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useUiKit } from '../../platform/uiKit';
 
 interface StringOption {
   value: string;
@@ -33,6 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string | boolean): void;
 }>();
+const ui = useUiKit();
 
 const isBooleanMode = computed(() => props.type === 'boolean');
 
@@ -99,7 +101,7 @@ const displayIcon = computed(() => {
 </script>
 
 <template>
-  <div class="mb-6">
+  <div class="mb-6" :dir="ui.direction.value">
     <h6 class="text-subtitle-1 font-weight-medium mb-3">{{ label }}</h6>
     <div class="theme-toggle-container">
       <button

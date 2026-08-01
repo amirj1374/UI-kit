@@ -6,7 +6,8 @@
       role="status"
       aria-live="polite"
       aria-busy="true"
-      :aria-label="label"
+      :aria-label="resolvedLabel"
+      :dir="ui.direction.value"
     >
       <div class="loading-wrapper">
         <Vue3Lottie
@@ -18,7 +19,7 @@
         />
         <!-- Add a separate transition for the span -->
         <transition name="fade-slide">
-          <span v-if="customizer.loading">لطفا منتظر بمانید</span>
+          <span v-if="customizer.loading">{{ resolvedLabel }}</span>
         </transition>
       </div>
     </div>
@@ -28,16 +29,20 @@
 <script setup lang="ts">
 import { Vue3Lottie } from 'vue3-lottie';
 import { useCustomizerStore } from '@/stores/customizer';
+import { computed } from 'vue';
+import { useUiKit } from '../platform/uiKit';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   label?: string;
   animationLink?: string;
 }>(), {
-  label: 'Loading',
+  label: undefined,
   animationLink: '/persian.json'
 });
 
 const customizer = useCustomizerStore();
+const ui = useUiKit();
+const resolvedLabel = computed(() => props.label ?? ui.t('loading'));
 </script>
 
 <style scoped>

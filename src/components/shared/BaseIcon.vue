@@ -1,18 +1,20 @@
 <template>
   <button
-    v-if="icon && isInteractive"
+    v-if="resolvedIcon && isInteractive"
     type="button"
     :class="['base-icon-button', buttonClass]"
     :aria-label="ariaLabel || iconLabel"
     @click="handleClick"
   >
-    <component :is="icon" class="icon" aria-hidden="true" />
+    <component :is="resolvedIcon" class="icon" aria-hidden="true" />
   </button>
-  <component v-else-if="icon" :is="icon" :class="['icon', buttonClass]" aria-hidden="true" />
+  <component v-else-if="resolvedIcon" :is="resolvedIcon" :class="['icon', buttonClass]" aria-hidden="true" />
 </template>
 
 <script lang="ts" setup>
 import { computed, type Component, type PropType } from 'vue';
+import { useUiKit } from '../../platform/uiKit';
+import type { UiSemanticIconName } from '../../platform/types';
 
 const props = defineProps({
   icon: {
@@ -27,6 +29,7 @@ const props = defineProps({
     type: Function,
     required: false,
   },
+  semantic: String as PropType<UiSemanticIconName>,
   rowData: Object,
   ariaLabel: String,
   interactive: {
@@ -39,9 +42,11 @@ const emit = defineEmits<{
   (event: 'action', rowData: unknown): void;
   (event: 'click', mouseEvent: MouseEvent): void;
 }>();
+const ui = useUiKit();
+const resolvedIcon = computed(() => props.icon ?? (props.semantic ? ui.icon(props.semantic) : undefined));
 
 const isInteractive = computed(() => props.interactive ?? typeof props.emitFunc === 'function');
-const iconLabel = computed(() => typeof props.icon === 'string' ? props.icon : 'Icon action');
+const iconLabel = computed(() => props.semantic ?? (typeof props.icon === 'string' ? props.icon : 'Icon action'));
 
 function handleClick(event: MouseEvent) {
   props.emitFunc?.(props.rowData);

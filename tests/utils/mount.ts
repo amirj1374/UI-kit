@@ -2,7 +2,10 @@ import { createPinia, type Pinia } from 'pinia';
 import { mount, type ComponentMountingOptions } from '@vue/test-utils';
 import { createMemoryHistory, createRouter, type Router } from 'vue-router';
 import { createVuetify } from 'vuetify';
-import type { Component } from 'vue';
+import type { App, Component } from 'vue';
+import { provideUiKit } from '../../src/platform/uiKit';
+import type { UiKitConfig } from '../../src/platform/types';
+const UiKit = { install: (app: App, options: UiKitConfig = {}) => provideUiKit(app, options) };
 
 export interface TestPlugins {
   pinia: Pinia;
@@ -19,7 +22,8 @@ export function createTestPlugins(): TestPlugins {
 export function mountWithApp<T extends Component>(
   component: T,
   options: ComponentMountingOptions<T> = {},
-  plugins = createTestPlugins()
+  plugins = createTestPlugins(),
+  uiKitConfig: UiKitConfig = {}
 ) {
   const vuetify = createVuetify();
   const global = options.global ?? {};
@@ -28,7 +32,7 @@ export function mountWithApp<T extends Component>(
       ...options,
       global: {
         ...global,
-        plugins: [vuetify, plugins.pinia, plugins.router, ...(global.plugins ?? [])]
+        plugins: [vuetify, [UiKit, uiKitConfig], plugins.pinia, plugins.router, ...(global.plugins ?? [])]
       }
     }),
     ...plugins

@@ -11,5 +11,5 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(createRouter({ history: createWebHistory(), routes: [] }));
 app.use(createVuetify());
-app.use(UiKit);
+app.use(UiKit, { locale: 'en-US', direction: 'auto', permissions: permission => permission === 'read' });
 app.mount('#app');

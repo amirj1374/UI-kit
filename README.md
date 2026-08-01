@@ -2,6 +2,8 @@
 
 A reusable UI component library built with Vue 3, Vuetify 3, and TypeScript. This library provides a comprehensive set of components, composables, utilities, and directives for building modern web applications.
 
+Provider configuration, localization, themes, semantic icons, permissions, async state, RTL/LTR behavior, public exports, consumer setup, and testing are covered in [UI platform foundations](docs/PLATFORM_FOUNDATIONS.md).
+
 ## Features
 
 - 🎨 Built with Vue 3 Composition API

@@ -33,7 +33,10 @@ export default defineConfig({
         'src/components/shared/data-table-v2/CustomDataTableV2.vue',
         'src/components/shared/data-table-v2/components/DataTableFilterFields.vue',
         'src/components/shared/data-table-v2/headerFieldUtils.ts',
-        'src/components/shared/data-table-v2/computeActionColumnWidth.ts'
+        'src/components/shared/data-table-v2/computeActionColumnWidth.ts',
+        'src/platform/**/*.ts',
+        'src/components/state/*.vue',
+        'src/components/permissions/*.vue'
       ],
       exclude: ['src/**/*.d.ts', 'src/**/*.{test,spec}.ts']
     }

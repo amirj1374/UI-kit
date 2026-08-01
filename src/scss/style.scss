@@ -10,6 +10,7 @@
 // Vendor CSS first: a plain-CSS `@import` was previously hoisted to the top of
 // the output by Sass, so `@use`-ing it first preserves the original CSS order.
 @use 'vue3-perfect-scrollbar/style.css';
+@use './foundation/tokens';
 
 @use './override';
 @use './layout/container';

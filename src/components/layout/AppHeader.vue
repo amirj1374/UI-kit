@@ -2,6 +2,8 @@
 import { computed, type PropType } from 'vue';
 import type { MenuItem } from '../../types/components/layout/menu';
 import { IconMenu2, IconPalette, IconChevronDown } from '@tabler/icons-vue';
+import { useUiKit } from '../../platform/uiKit';
+const ui = useUiKit();
 
 const props = defineProps({
   menuOrientation: {
@@ -43,7 +45,7 @@ const computedHeaderMenu = computed(() => {
 </script>
 
 <template>
-  <v-app-bar elevation="0" height="80" class="app-header topbar">
+  <v-app-bar elevation="0" height="80" class="app-header topbar" :dir="ui.direction.value">
     <!-- MINI SIDEBAR TOGGLE (Desktop) - Only when vertical orientation -->
     <v-btn
       v-if="menuOrientation === 'vertical'"

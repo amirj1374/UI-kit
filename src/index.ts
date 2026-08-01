@@ -34,6 +34,12 @@ export { default as ToggleSwitch } from './components/shared/ToggleSwitch.vue';
 // Components - Common
 export { default as AppStepper } from './components/common/AppStepper.vue';
 export { default as Loading } from './components/Loading.vue';
+export { default as UiLoadingState } from './components/state/UiLoadingState.vue';
+export { default as UiEmptyState } from './components/state/UiEmptyState.vue';
+export { default as UiErrorState } from './components/state/UiErrorState.vue';
+export { default as UiPermissionDenied } from './components/state/UiPermissionDenied.vue';
+export { default as UiAsyncState } from './components/state/UiAsyncState.vue';
+export { default as PermissionGuard } from './components/permissions/PermissionGuard.vue';
 
 // Components - Layout
 export { default as AppSidebar } from './components/layout/AppSidebar.vue';
@@ -149,18 +155,25 @@ export * from './types/componentTypes/DataTableTypes';
 
 // Generic enum types
 export * from './constants/enums/booleanEnum';
+export { createUiKit, useUiKit, useUiKitConfig, usePermission } from './platform/uiKit';
+export { defaultThemes, mergeThemes } from './platform/themes';
+export type * from './platform/types';
+export type { UiKitContext } from './platform/uiKit';
 
 // Note: All approval, cartable, and other business logic types are excluded
 
 // Plugin installation function (for Vue app.use())
 import type { App } from 'vue';
 import DigitLimit from './directives/v-digit-limit';
+import { provideUiKit } from './platform/uiKit';
+import type { UiKitConfig } from './platform/types';
 
 /**
  * Install the UI Kit library in a Vue application
  * @param app - Vue application instance
  */
-export function install(app: App) {
+export function install(app: App, options: UiKitConfig = {}) {
+  provideUiKit(app, options);
   // Register directives globally
   app.directive('digit-limit', DigitLimit);
   // Note: v-permission directive contains app-specific logic and is not registered

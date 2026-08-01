@@ -1,0 +1,16 @@
+:root {
+  --ui-space-1: .25rem; --ui-space-2: .5rem; --ui-space-3: .75rem; --ui-space-4: 1rem; --ui-space-6: 1.5rem; --ui-space-8: 2rem;
+  --ui-radius-sm: .375rem; --ui-radius-md: .75rem; --ui-radius-lg: 1rem;
+  --ui-shadow-sm: 0 1px 3px rgb(0 0 0 / 12%); --ui-shadow-md: 0 8px 24px rgb(0 0 0 / 14%);
+  --ui-color-surface: rgb(var(--v-theme-surface, 255 255 255)); --ui-color-text: rgb(var(--v-theme-on-surface, 31 41 55)); --ui-color-muted: rgb(var(--v-theme-lightText, 107 114 128)); --ui-color-danger: rgb(var(--v-theme-error, 239 68 68));
+}
+.ui-state { display: flex; gap: var(--ui-space-4); align-items: flex-start; justify-content: center; padding: var(--ui-space-8); text-align: start; color: var(--ui-color-text); }
+.ui-state--inline { display: inline-flex; padding: var(--ui-space-2); }
+.ui-state p { margin: var(--ui-space-2) 0 0; color: var(--ui-color-muted); }
+.ui-state__icon { width: 2rem; height: 2rem; flex: none; }
+.ui-state__icon--spin { animation: ui-spin 1s linear infinite; }
+.ui-state__actions { margin-block-start: var(--ui-space-4); }
+.ui-state__button { display: inline-flex; align-items: center; gap: var(--ui-space-2); border: 0; border-radius: var(--ui-radius-sm); padding: var(--ui-space-2) var(--ui-space-4); cursor: pointer; }
+.ui-state__button svg { width: 1rem; }
+.ui-permission-disabled { opacity: .55; cursor: not-allowed; }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
