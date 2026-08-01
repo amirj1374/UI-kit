@@ -53,6 +53,7 @@ const computedHeaderMenu = computed(() => {
       rounded="sm"
       variant="flat"
       size="small"
+      aria-label="Toggle compact sidebar"
       @click.stop="props.onToggleMiniSidebar && props.onToggleMiniSidebar()"
     >
       <IconMenu2 size="20" stroke-width="1.5" />
@@ -66,6 +67,7 @@ const computedHeaderMenu = computed(() => {
       rounded="sm"
       variant="flat"
       size="small"
+      aria-label="Open navigation menu"
       @click.stop="props.onToggleSidebarDrawer && props.onToggleSidebarDrawer()"
     >
       <IconMenu2 size="20" stroke-width="1.5" />
@@ -79,6 +81,7 @@ const computedHeaderMenu = computed(() => {
       rounded="sm"
       variant="flat"
       size="small"
+      aria-label="Open theme customizer"
       @click.stop="props.onToggleCustomizer && props.onToggleCustomizer()"
     >
     <IconPalette size="20" stroke-width="1.5" />
@@ -154,14 +157,14 @@ const computedHeaderMenu = computed(() => {
 
     <!-- NOTIFICATION SLOT -->
     <slot name="notifications">
-      <v-btn icon class="text-secondary mx-3" color="lightsecondary" rounded="sm" size="small" variant="flat">
+      <v-btn icon aria-label="Open notifications" class="text-secondary mx-3" color="lightsecondary" rounded="sm" size="small" variant="flat">
         <v-icon size="20">mdi-bell-outline</v-icon>
       </v-btn>
     </slot>
 
     <!-- PROFILE SLOT -->
     <slot name="profile">
-      <v-btn class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill">
+      <v-btn aria-label="Open profile settings" class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </slot>

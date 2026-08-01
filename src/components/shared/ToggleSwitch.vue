@@ -19,13 +19,15 @@ interface Props {
   falseIcon?: any;
   activeColor?: string;
   inactiveColor?: string;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'boolean',
   options: () => [],
   activeColor: 'rgb(var(--v-theme-primary))',
-  inactiveColor: '#e0e0e0'
+  inactiveColor: '#e0e0e0',
+  disabled: false
 });
 
 const emit = defineEmits<{
@@ -53,6 +55,7 @@ const currentIndex = computed(() => {
 });
 
 const handleToggle = () => {
+  if (props.disabled) return;
   if (isBooleanMode.value) {
     emit('update:modelValue', !props.modelValue);
   } else if (isStringMode.value && props.options.length > 0) {
@@ -99,7 +102,12 @@ const displayIcon = computed(() => {
   <div class="mb-6">
     <h6 class="text-subtitle-1 font-weight-medium mb-3">{{ label }}</h6>
     <div class="theme-toggle-container">
-      <div 
+      <button
+        type="button"
+        role="switch"
+        :aria-label="label"
+        :aria-checked="isToggleActive"
+        :disabled="disabled"
         class="theme-toggle"
         :class="{ 
           'active': isToggleActive,
@@ -117,7 +125,7 @@ const displayIcon = computed(() => {
             </slot>
           </div>
         </div>
-      </div>
+      </button>
     </div>
  
   </div>
@@ -141,6 +149,14 @@ const displayIcon = computed(() => {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  border: 0;
+  padding: 0;
+  color: inherit;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -149,13 +165,13 @@ const displayIcon = computed(() => {
 
   &.active {
     .toggle-slider {
-      transform: translateX(50px);
+      inset-inline-start: 55px;
     }
   }
 
   &:not(.active) {
     .toggle-slider {
-      transform: translateX(0);
+      inset-inline-start: 5px;
       background: #ffffff;
     }
   }
@@ -163,12 +179,12 @@ const displayIcon = computed(() => {
   .toggle-slider {
     position: absolute;
     top: 5px;
-    left: 5px;
+    inset-inline-start: 5px;
     width: 40px;
     height: 40px;
     background: #ffffff;
     border-radius: 50%;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: inset-inline-start 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;

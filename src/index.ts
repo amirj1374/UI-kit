@@ -17,10 +17,8 @@ export { default as BaseBreadcrumb } from './components/shared/BaseBreadcrumb.vu
 export { default as BaseIcon } from './components/shared/BaseIcon.vue';
 export { default as ConfirmDialog } from './components/shared/ConfirmDialog.vue';
 export { default as CustomAutocomplete } from './components/shared/CustomAutocomplete.vue';
-// CustomDataTable is now an alias of CustomDataTableV2. The original V1
-// implementation was removed; V2 is a superset (identical props/emits/slots/
-// exposed methods, plus enableInfiniteScroll), so existing `CustomDataTable`
-// imports keep working unchanged.
+// CustomDataTable is a compatibility alias of the current V2 implementation.
+// There is no separate V1 component on this branch.
 export { CustomDataTableV2, CustomDataTableV2 as CustomDataTable } from './components/shared/data-table-v2';
 export type { DataTableV2Props } from './components/shared/data-table-v2';
 export { default as DescriptionInput } from './components/shared/DescriptionInput.vue';

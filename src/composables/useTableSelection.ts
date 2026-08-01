@@ -32,8 +32,7 @@ export function useTableSelection<T extends Record<string, any> = Record<string,
       return getNestedValue(item, options.uniqueKey);
     }
 
-    // @ts-ignore - Fallback to id
-    return item.id;
+    return (item as Record<string, unknown>).id as string | number;
   };
 
   // Get nested value from object path
