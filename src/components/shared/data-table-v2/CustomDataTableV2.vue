@@ -123,6 +123,8 @@ const filterOperatorModel = ref<Record<string, FilterOperator>>({});
 const tableRef = ref<HTMLElement | null>(null);
 const isLoadingMore = ref(false);
 const hasMore = ref(true);
+let latestRequestId = 0;
+let componentActive = true;
 // Selection & grouping using composable (minimal-risk wiring)
 const selection = useTableSelection(items, {
   multiSelect: props.bulkMode ? false : props.multiSelect, // Force single select in bulk mode
@@ -450,6 +452,25 @@ const base64ToBlob = (base64: string, mimeType: string) => {
   return new Blob([byteArray], { type: mimeType });
 };
 
+const triggerBlobDownload = (blob: Blob, filename: string) => {
+  if (typeof document === 'undefined' || typeof window === 'undefined' || typeof window.URL?.createObjectURL !== 'function') {
+    throw new Error('File download requires browser Blob URL support.');
+  }
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+
+  try {
+    document.body.appendChild(link);
+    link.click();
+  } finally {
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }
+};
+
 const handleExportClientSide = async () => {
   const sourceItems: TableItem[] = (props.items && props.items.length ? props.items : items.value) ?? [];
 
@@ -659,14 +680,7 @@ const handleExport = async () => {
     const blob = base64ToBlob(base64Data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
     // ۴. دانلود فایل
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = props.exportFileName || 'export.xlsx';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    triggerBlobDownload(blob, props.exportFileName || 'export.xlsx');
   } catch (err) {
     console.error('Export Error:', err);
   } finally {
@@ -684,6 +698,12 @@ const onExportClick = async () => {
     exportLoading.value = true;
     try {
       await handleExportClientSide();
+    } catch (exportError) {
+      const message = exportError instanceof Error ? exportError.message : 'Client-side export failed.';
+      console.error('Client Export Error:', exportError);
+      error.value = message;
+      snackbarMessage.value = message;
+      snackbar.value = true;
     } finally {
       exportLoading.value = false;
     }
@@ -798,6 +818,9 @@ const hasFilterComponent = computed(() => {
  * @param queryParams Optional extra query params to merge with filter and pagination
  */
 const fetchData = async (queryParams?: Record<string, unknown>) => {
+  // Requests are not cancelled, so sequence them. Only the newest request may
+  // publish state or clear loading; this prevents stale responses winning races.
+  const requestId = ++latestRequestId;
   loading.value = true;
   error.value = null;
 
@@ -847,6 +870,8 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
      * 5. API Call
      ========================= */
     const response = (await api.fetch(requestParams)) as ApiResponse<TableItem>;
+
+    if (!componentActive || requestId !== latestRequestId) return;
 
     /* =========================
      * 6. Normalize Response
@@ -913,6 +938,7 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
       emit('selection-change', selectedItems.value);
     }
   } catch (err: any) {
+    if (!componentActive || requestId !== latestRequestId) return;
     /* =========================
      * 10. Error Handling
      ========================= */
@@ -926,7 +952,9 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
 
     console.error(err);
   } finally {
-    loading.value = false;
+    if (componentActive && requestId === latestRequestId) {
+      loading.value = false;
+    }
   }
 };
 
@@ -986,7 +1014,8 @@ watch(
 
 // Cleanup on component unmount
 onBeforeUnmount(() => {
-  // Remove cancel call as it's not supported
+  componentActive = false;
+  latestRequestId++;
 });
 
 // Use custom axios instance if provided, otherwise use configured/default instance
@@ -1338,7 +1367,7 @@ const saveItem = async () => {
       }
     });
 
-    if (isEditing.value && dataToSave.id) {
+    if (isEditing.value) {
       await api.update(dataToSave);
       snackbarMessage.value = '✅ آیتم با موفقیت بروزرسانی شد!';
     } else {
@@ -1377,7 +1406,7 @@ const deleteItem = async (id: string) => {
  * Navigates to a dynamic route constructed from the provided route template
  * and the selected item fields. Shows a snackbar if params are missing.
  */
-const goToRoute = (key: string, item?: any) => {
+const goToRoute = async (key: string, item?: any) => {
   const routes = getRoutesForItem(item);
   if (!routes || !routes[key] || !item) return;
 
@@ -1399,7 +1428,14 @@ const goToRoute = (key: string, item?: any) => {
     return;
   }
 
-  router.push(routePath);
+  try {
+    await router.push(routePath);
+  } catch (navigationError) {
+    console.error('Router navigation failed:', navigationError);
+    error.value = 'Navigation failed. Please try again.';
+    snackbarMessage.value = 'Navigation failed. Please try again.';
+    snackbar.value = true;
+  }
 };
 
 /**
@@ -1466,23 +1502,8 @@ const download = async (key: string | number, item: TableItem) => {
     }
 
     const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-
-    // Create download link
-    const link = document.createElement('a');
-    link.href = url;
-
-    // Extract filename from URL or use default
     const filename = fileUrlString.split('/').pop() || 'download';
-    link.download = filename;
-
-    // Add to DOM, click, and cleanup
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Clean up the blob URL
-    window.URL.revokeObjectURL(url);
+    triggerBlobDownload(blob, filename);
 
     snackbarMessage.value = `✅ دانلود شروع شد`;
     snackbar.value = true;
@@ -1520,18 +1541,8 @@ const download = async (key: string | number, item: TableItem) => {
       }
 
       const blob = new Blob([axiosResponse.data]);
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
       const filename = fileUrlString.split('/').pop() || 'download';
-      link.download = filename;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
+      triggerBlobDownload(blob, filename);
 
       snackbarMessage.value = `✅ دانلود شروع شد`;
       snackbar.value = true;
@@ -1924,6 +1935,7 @@ watch(
               :color="button.color || 'primary'"
               size="small"
               class="me-2"
+              :disabled="button.disabled"
               @click="button.onClick(item)"
             >
               <span v-if="(button as any).icon" class="me-1">{{ (button as any).icon }}</span>
@@ -1969,6 +1981,7 @@ watch(
     class="data-table-container"
     v-bind="$attrs"
     role="region"
+    :aria-label="props.title || 'Data table'"
     :aria-busy="loading || isLoadingMore"
     :aria-live="loading || isLoadingMore ? 'polite' : 'off'"
     @scroll.passive="handleScroll"
@@ -2004,6 +2017,7 @@ watch(
                 @keydown.enter.prevent="toggleGroup(group.groupKey)"
                 @keydown.space.prevent="toggleGroup(group.groupKey)"
                 :aria-expanded="group.isExpanded ? 'true' : 'false'"
+                :aria-label="`${group.isExpanded ? 'Collapse' : 'Expand'} group ${group.groupLabel}`"
                 :aria-controls="`group-panel-${group.groupKey}`"
                 :id="`group-header-${group.groupKey}`"
                 :class="{ expanded: group.isExpanded }"
@@ -2043,6 +2057,7 @@ watch(
                         :indeterminate="selectedCount > 0 && selectedCount < items.length"
                         hide-details
                         density="compact"
+                        aria-label="Select all rows"
                       />
                     </template>
                     <template v-slot:item="{ item, columns, index }">
@@ -2080,6 +2095,7 @@ watch(
                               :disabled="!props.selectable"
                               hide-details
                               density="compact"
+                              :aria-label="`Select row ${getUniqueValue(item)}`"
                             />
                             <v-checkbox
                               v-else
@@ -2088,6 +2104,7 @@ watch(
                               :disabled="!props.selectable"
                               hide-details
                               density="compact"
+                              :aria-label="`Select row ${getUniqueValue(item)}`"
                             />
                           </template>
                           <template v-if="column.key === 'actions' && hasAnyActions">
@@ -2155,6 +2172,7 @@ watch(
                                 :color="button.color || 'primary'"
                                 size="small"
                                 class="mr-2"
+                                :disabled="button.disabled"
                                 @click="button.onClick(item)"
                               >
                                 {{ button.label }}
@@ -2210,6 +2228,7 @@ watch(
                                   )
                                 "
                                 style="min-width: 24px; width: 24px; height: 24px"
+                                :aria-label="`Copy ${(column.title || column.key || 'cell') as string}`"
                               >
                                 <IconCopy :size="16" />
                               </v-btn>
@@ -2247,6 +2266,7 @@ watch(
             :indeterminate="selectedCount > 0 && selectedCount < items.length"
             hide-details
             density="compact"
+            aria-label="Select all rows"
           />
         </template>
         <template v-slot:item="{ item, columns, index }">
@@ -2279,6 +2299,7 @@ watch(
                   :disabled="!props.selectable"
                   hide-details
                   density="compact"
+                  :aria-label="`Select row ${getUniqueValue(item)}`"
                 />
                 <v-checkbox
                   v-else
@@ -2287,6 +2308,7 @@ watch(
                   :disabled="!props.selectable"
                   hide-details
                   density="compact"
+                  :aria-label="`Select row ${getUniqueValue(item)}`"
                 />
               </template>
               <template v-if="column.key === 'actions' && hasAnyActions">
@@ -2338,6 +2360,7 @@ watch(
                     :color="button.color || 'primary'"
                     size="small"
                     class="mr-2"
+                    :disabled="button.disabled"
                     @click="button.onClick(item)"
                   >
                     {{ button.label }}
@@ -2392,7 +2415,8 @@ watch(
                         item
                       )
                     "
-                    style="min-width: 24px; width: 24px; height: 24px"
+                  style="min-width: 24px; width: 24px; height: 24px"
+                  :aria-label="`Copy ${(column.title || column.key || 'cell') as string}`"
                   >
                     <IconCopy :size="16" />
                   </v-btn>
@@ -2420,7 +2444,7 @@ watch(
     </div>
   </div>
 
-  <v-dialog v-model="dialog" max-width="1400">
+  <v-dialog v-model="dialog" max-width="1400" aria-label="Create or edit row">
     <v-card>
       <v-card-title>{{ isEditing ? 'ویرایش' : 'ایجاد' }}</v-card-title>
       <v-card-text>
@@ -2509,7 +2533,7 @@ watch(
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="deleteDialog" max-width="400">
+  <v-dialog v-model="deleteDialog" max-width="400" aria-label="Delete row confirmation">
     <v-card>
       <v-card-title>حذف آیتم</v-card-title>
       <v-card-text> آیا مایل به حذف این رکورد هستید ?</v-card-text>
@@ -2521,7 +2545,7 @@ watch(
   </v-dialog>
 
   <!-- Group Delete Confirmation Dialog -->
-  <v-dialog v-model="groupDeleteDialog" max-width="500">
+  <v-dialog v-model="groupDeleteDialog" max-width="500" aria-label="Bulk delete confirmation">
     <v-card>
       <v-card-title class="text-h6">
         <v-icon color="red" class="me-2">🗑️</v-icon>
