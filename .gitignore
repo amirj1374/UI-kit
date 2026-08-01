@@ -6,6 +6,9 @@
 # Node artifact files
 node_modules/
 dist/
+coverage/
+*.tgz
+.consumer-tmp/
 
 # Compiled Java class files
 *.class

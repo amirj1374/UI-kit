@@ -5,6 +5,15 @@ import pluginVue from 'eslint-plugin-vue';
 
 export default [
   {
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**', '.consumer-tmp/**']
+  },
+  {
+    files: ['*.config.{js,ts}', 'scripts/**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: globals.node
+    }
+  },
+  {
     languageOptions: {
       globals: globals.browser,
       parserOptions: {

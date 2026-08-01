@@ -36,12 +36,12 @@ PORT=${ENV_CONFIGS[$ENVIRONMENT]}
 case $ACTION in
     "dev")
         echo -e "${GREEN}🌍 Starting development server for $ENVIRONMENT...${NC}"
-        yarn dev --mode $ENVIRONMENT
+        npm run dev -- --mode $ENVIRONMENT
         ;;
         
     "build")
         echo -e "${GREEN}🔨 Building for $ENVIRONMENT...${NC}"
-        yarn build:$ENVIRONMENT
+        npm run build:$ENVIRONMENT
         
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✅ Build completed successfully!${NC}"
@@ -54,7 +54,7 @@ case $ACTION in
         
     "preview")
         echo -e "${GREEN}🌐 Starting preview server for $ENVIRONMENT on port $PORT...${NC}"
-        yarn preview:$ENVIRONMENT
+        npm run preview -- --mode $ENVIRONMENT
         
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✅ Preview server started successfully!${NC}"
@@ -69,7 +69,7 @@ case $ACTION in
         echo -e "${GREEN}🔨 Building and previewing for $ENVIRONMENT...${NC}"
         
         # Build
-        yarn build:$ENVIRONMENT
+        npm run build:$ENVIRONMENT
         if [ $? -ne 0 ]; then
             echo -e "${RED}❌ Build failed!${NC}"
             exit 1
@@ -77,7 +77,7 @@ case $ACTION in
         
         # Preview
         echo -e "${GREEN}🌐 Starting preview server...${NC}"
-        yarn preview:$ENVIRONMENT
+        npm run preview -- --mode $ENVIRONMENT
         ;;
         
     "clean")
@@ -90,9 +90,9 @@ case $ACTION in
         echo -e "${GREEN}📋 Environment Information:${NC}"
         echo -e "${YELLOW}Environment: $ENVIRONMENT${NC}"
         echo -e "${YELLOW}Port: $PORT${NC}"
-        echo -e "${YELLOW}Build Command: yarn build:$ENVIRONMENT${NC}"
-        echo -e "${YELLOW}Dev Command: yarn dev --mode $ENVIRONMENT${NC}"
-        echo -e "${YELLOW}Preview Command: yarn preview:$ENVIRONMENT${NC}"
+        echo -e "${YELLOW}Build Command: npm run build:$ENVIRONMENT${NC}"
+        echo -e "${YELLOW}Dev Command: npm run dev -- --mode $ENVIRONMENT${NC}"
+        echo -e "${YELLOW}Preview Command: npm run preview -- --mode $ENVIRONMENT${NC}"
         echo ""
         echo -e "${BLUE}Available Commands:${NC}"
         echo "  dev                    - Start development server"
