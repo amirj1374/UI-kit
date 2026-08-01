@@ -159,6 +159,9 @@ export { createUiKit, useUiKit, useUiKitConfig, useUiKitLocale, useUiKitMessages
 export { defaultThemes, mergeThemes, createUiKitThemes } from './platform/themes';
 export type { UiKitThemeName } from './platform/themes';
 export type * from './platform/types';
+// UiAsyncState is also the component name; expose the generic contract under
+// an unambiguous package-root alias so generated declarations retain it.
+export type { UiAsyncState as UiAsyncStateModel } from './platform/types';
 export { isUiAsyncLoading, isUiAsyncError, hasUiAsyncData } from './platform/types';
 export type { UiKitContext } from './platform/uiKit';
 
