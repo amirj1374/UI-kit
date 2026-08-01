@@ -51,6 +51,10 @@ try {
   }
   if (existsSync(join(packageRoot, 'src'))) throw new Error('Packed package unexpectedly includes private src files.');
   if (!installedPackage.exports?.['./dist/style.css']) throw new Error('CSS is not exposed through package exports.');
+  const builtCss = readFileSync(join(packageRoot, 'dist', 'style.css'), 'utf8');
+  for (const token of ['--ui-color-surface', '--ui-duration-normal', '--ui-z-dialog', '--ui-focus-ring']) {
+    if (!builtCss.includes(token)) throw new Error(`Packed CSS is missing semantic token ${token}`);
+  }
 
   console.log(`Packed consumer verification passed: ${basename(tarball)}`);
 } finally {

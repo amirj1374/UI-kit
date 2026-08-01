@@ -1,2 +1,16 @@
-<script setup lang="ts">import type { UiAsyncStatus } from '../../platform/types'; import UiLoadingState from './UiLoadingState.vue'; import UiEmptyState from './UiEmptyState.vue'; import UiErrorState from './UiErrorState.vue'; import UiPermissionDenied from './UiPermissionDenied.vue'; defineProps<{ status: UiAsyncStatus }>(); const emit = defineEmits<{ retry: [] }>();</script>
-<template><UiLoadingState v-if="status === 'loading'"><template v-for="(_, name) in $slots" #[name]="scope"><slot :name="name" v-bind="scope ?? {}" /></template></UiLoadingState><UiEmptyState v-else-if="status === 'empty'"><template v-for="(_, name) in $slots" #[name]="scope"><slot :name="name" v-bind="scope ?? {}" /></template></UiEmptyState><UiErrorState v-else-if="status === 'error'" @retry="emit('retry')"><template v-for="(_, name) in $slots" #[name]="scope"><slot :name="name" v-bind="scope ?? {}" /></template></UiErrorState><UiPermissionDenied v-else-if="status === 'permission-denied'"><template v-for="(_, name) in $slots" #[name]="scope"><slot :name="name" v-bind="scope ?? {}" /></template></UiPermissionDenied><slot v-else /></template>
+<script setup lang="ts">
+import type { UiAsyncStatus } from '../../platform/types';
+import UiLoadingState from './UiLoadingState.vue';
+import UiEmptyState from './UiEmptyState.vue';
+import UiErrorState from './UiErrorState.vue';
+import UiPermissionDenied from './UiPermissionDenied.vue';
+defineProps<{ status: UiAsyncStatus }>();
+const emit = defineEmits<{ retry: [] }>();
+</script>
+<template>
+  <slot v-if="status === 'loading'" name="loading"><UiLoadingState /></slot>
+  <slot v-else-if="status === 'empty'" name="empty"><UiEmptyState /></slot>
+  <slot v-else-if="status === 'error'" name="error" :retry="() => emit('retry')"><UiErrorState @retry="emit('retry')" /></slot>
+  <slot v-else-if="status === 'permission-denied'" name="permission-denied"><UiPermissionDenied /></slot>
+  <slot v-else :status="status" />
+</template>

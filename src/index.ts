@@ -155,8 +155,9 @@ export * from './types/componentTypes/DataTableTypes';
 
 // Generic enum types
 export * from './constants/enums/booleanEnum';
-export { createUiKit, useUiKit, useUiKitConfig, usePermission } from './platform/uiKit';
-export { defaultThemes, mergeThemes } from './platform/themes';
+export { createUiKit, useUiKit, useUiKitConfig, useUiKitLocale, useUiKitMessages, useUiKitIcons, usePermission } from './platform/uiKit';
+export { defaultThemes, mergeThemes, createUiKitThemes } from './platform/themes';
+export type { UiKitThemeName } from './platform/themes';
 export type * from './platform/types';
 export type { UiKitContext } from './platform/uiKit';
 
@@ -178,6 +179,8 @@ export function install(app: App, options: UiKitConfig = {}) {
   app.directive('digit-limit', DigitLimit);
   // Note: v-permission directive contains app-specific logic and is not registered
 }
+
+export const UiKitPlugin = { install };
 
 // Default export for plugin usage
 export default {

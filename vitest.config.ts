@@ -14,6 +14,9 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    // The Vuetify-heavy DataTable integration matrix can exceed Vitest's
+    // 5-second default when all workers run with V8 coverage instrumentation.
+    testTimeout: 30000,
     environment: 'happy-dom',
     server: { deps: { inline: ['vuetify'] } },
     include: ['src/**/*.{test,spec}.{ts,js}', 'tests/**/*.{test,spec}.{ts,js}'],

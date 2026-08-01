@@ -89,7 +89,7 @@ const resolvedLabel = computed(() => props.label ?? ui.t('loading'));
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Ensure it overlays other content */
+  z-index: var(--ui-z-global-loading, 9999); /* Ensure it overlays other content */
   backdrop-filter: blur(8px); /* Apply blur effect to the overlay */
 }
 

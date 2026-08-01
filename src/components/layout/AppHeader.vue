@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, type PropType } from 'vue';
 import type { MenuItem } from '../../types/components/layout/menu';
-import { IconMenu2, IconPalette, IconChevronDown } from '@tabler/icons-vue';
 import { useUiKit } from '../../platform/uiKit';
+import type { UiSemanticIconName } from '../../platform/types';
 const ui = useUiKit();
+const resolveVuetifyIcon = (name: UiSemanticIconName) => ui.icon(name) as never;
 
 const props = defineProps({
   menuOrientation: {
@@ -58,7 +59,7 @@ const computedHeaderMenu = computed(() => {
       aria-label="Toggle compact sidebar"
       @click.stop="props.onToggleMiniSidebar && props.onToggleMiniSidebar()"
     >
-      <IconMenu2 size="20" stroke-width="1.5" />
+      <v-icon :icon="resolveVuetifyIcon('menu')" size="20" />
     </v-btn>
 
     <!-- SIDEBAR DRAWER (Mobile) -->
@@ -72,7 +73,7 @@ const computedHeaderMenu = computed(() => {
       aria-label="Open navigation menu"
       @click.stop="props.onToggleSidebarDrawer && props.onToggleSidebarDrawer()"
     >
-      <IconMenu2 size="20" stroke-width="1.5" />
+      <v-icon :icon="resolveVuetifyIcon('menu')" size="20" />
     </v-btn>
 
     <!-- CUSTOMIZER BUTTON -->
@@ -86,7 +87,7 @@ const computedHeaderMenu = computed(() => {
       aria-label="Open theme customizer"
       @click.stop="props.onToggleCustomizer && props.onToggleCustomizer()"
     >
-    <IconPalette size="20" stroke-width="1.5" />
+    <v-icon :icon="resolveVuetifyIcon('theme')" size="20" />
     </v-btn>
 
     <!-- MENU ITEMS -->
@@ -129,7 +130,7 @@ const computedHeaderMenu = computed(() => {
             >
               <component :is="item.icon" v-if="item.icon" class="mr-2" size="18" />
               <span class="mr-2">{{ item.title }}</span>
-              <IconChevronDown size="20" class="ml-2" stroke-width="1.5" />
+              <v-icon :icon="resolveVuetifyIcon('expand')" size="20" class="ml-2" />
             </v-btn>
           </template>
 
@@ -160,14 +161,14 @@ const computedHeaderMenu = computed(() => {
     <!-- NOTIFICATION SLOT -->
     <slot name="notifications">
       <v-btn icon aria-label="Open notifications" class="text-secondary mx-3" color="lightsecondary" rounded="sm" size="small" variant="flat">
-        <v-icon size="20">mdi-bell-outline</v-icon>
+        <v-icon :icon="resolveVuetifyIcon('notifications')" size="20" />
       </v-btn>
     </slot>
 
     <!-- PROFILE SLOT -->
     <slot name="profile">
       <v-btn aria-label="Open profile settings" class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill">
-        <v-icon>mdi-cog</v-icon>
+        <v-icon :icon="resolveVuetifyIcon('profile')" />
       </v-btn>
     </slot>
   </v-app-bar>
