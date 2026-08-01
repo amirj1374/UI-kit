@@ -12,6 +12,11 @@ Object.defineProperty(globalThis, 'ResizeObserver', {
   value: ResizeObserverStub
 });
 
+Object.defineProperty(globalThis, 'visualViewport', {
+  configurable: true,
+  value: { width: 1024, height: 768, offsetLeft: 0, offsetTop: 0, addEventListener() {}, removeEventListener() {} }
+});
+
 afterEach(() => {
   document.body.innerHTML = '';
 });

@@ -21,5 +21,6 @@ void CustomDataTableV2;
     <ShamsiDatePicker model-value="" />
     <ToggleSwitch :model-value="false" label="Enabled" />
     <CustomDataTableV2 api-resource="/unused" :headers="headers" :items="[]" :height="300" :auto-fetch="false" />
+    <CustomDataTable api-resource="/unused" :headers="headers" :items="[]" :height="300" :auto-fetch="false" />
   </main>
 </template>

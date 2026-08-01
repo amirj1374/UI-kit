@@ -1,11 +1,12 @@
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
+import vuetify from 'vite-plugin-vuetify';
 
 // Dedicated Vitest config (kept separate from vite.config.ts to avoid the
 // library/app branching logic that depends on BUILD_LIB).
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), vuetify({ autoImport: true })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
@@ -14,6 +15,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
+    server: { deps: { inline: ['vuetify'] } },
     include: ['src/**/*.{test,spec}.{ts,js}', 'tests/**/*.{test,spec}.{ts,js}'],
     setupFiles: ['./tests/setup.ts'],
     coverage: {
@@ -28,6 +30,8 @@ export default defineConfig({
         'src/components/common/AppStepper.vue',
         'src/components/layout/AppHeader.vue',
         'src/components/shared/{BaseIcon,ConfirmDialog,ShamsiDatePicker,ToggleSwitch}.vue',
+        'src/components/shared/data-table-v2/CustomDataTableV2.vue',
+        'src/components/shared/data-table-v2/components/DataTableFilterFields.vue',
         'src/components/shared/data-table-v2/headerFieldUtils.ts',
         'src/components/shared/data-table-v2/computeActionColumnWidth.ts'
       ],
