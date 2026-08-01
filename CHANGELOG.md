@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- npm-based CI, packed-package consumer verification, and initial public-component tests.
+- Accessible semantics for shared interactive controls and dialogs.
+
+### Fixed
+
+- Package-manager, lockfile, license, side-effect, lint, and documentation metadata.
+- Disabled date-picker propagation and declared AppStepper event behavior.
+
 ## [1.9.0] - 2026-06-29
 
 Build and packaging modernization for Vite 8 / Rolldown. No changes to the

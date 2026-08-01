@@ -4,7 +4,9 @@ Reusable UI components for common use cases.
 
 ## CustomDataTableV2 (recommended for new work)
 
-Refactored copy of CustomDataTable with bug fixes. The original `CustomDataTable` is unchanged. See **[DATA_TABLE_V2.md](./DATA_TABLE_V2.md)**.
+Current table implementation. Both `CustomDataTable` and `CustomDataTableV2`
+resolve to this component; the old name is a compatibility alias rather than a
+separate unchanged V1 file. See **[DATA_TABLE_V2.md](./DATA_TABLE_V2.md)**.
 
 ```vue
 import { CustomDataTableV2 } from '@amirjalili1374/ui-kit'
