@@ -37,8 +37,10 @@ This document describes the implementation protected by automated tests on the
 - Paged responses use `data.content` and optional `data.page` metadata. Unpaged
   mode accepts an array, `{ content: [] }`, or a single object. Empty or malformed
   bodies normalize to no rows.
-- **Known defect:** requests are not cancelled or sequence-guarded; an older
-  response can overwrite newer data.
+- **Verified:** requests use a monotonically increasing internal identifier.
+  Only the latest active request may publish rows, pagination, loading, or error
+  state. Older resolutions/rejections and post-unmount results are ignored.
+  Requests are still not cancelled.
 
 ## Pagination, sorting, and filtering
 
@@ -53,17 +55,23 @@ This document describes the implementation protected by automated tests on the
 - **Tested:** generated filter changes are debounced by 300 ms; explicit custom
   filter apply calls fetch immediately. A `filterAdapter` may replace generated
   criteria. External criteria can be set through `setCriteria`.
-- Date/date-range, autocomplete, money, textarea, and toggle controls are
-  **supported, not fully tested** at the component-integration level. Their field
-  resolution helpers have focused unit coverage.
+- **Verified:** text, number, false, zero, autocomplete, money, toggle, date,
+  date-range, multiple values, empty-value exclusion, `equals`, `notEquals`,
+  `contains`, `doesNotContain`, `in`, `specified`, `greaterThan`, `lessThan`,
+  `greaterThanOrEqual`, and `lessThanOrEqual` are wired to requests. Gregorian
+  server dates are converted to Jalali display values. `startsWith` and
+  `endsWith` are unsupported because they are not public operators.
 
 ## Selection and grouping
 
 - **Tested:** single/multiple toggling uses `uniqueKey` (including nested keys or
   a function), emits both `update:selectedItems` and `selection-change`, accepts
   external `selectedItems`, and exposes selection getters/clearing.
-- **Partially tested:** bulk mode forces single radio-style selection; multi-select
-  and bulk mode should not be combined. Selection persistence is identity-based
+- **Verified:** bulk mode forces single radio-style selection; multi-select and
+  bulk mode should not be combined. Group delete is the multi-row operation: it
+  sends comma-separated configured entity keys, clears selection, and refreshes
+  after success; failure preserves selection. Partial success is unsupported.
+  Selection persistence is identity-based
   and bulk selections missing after refresh are removed.
 - **Tested:** grouping accepts a field/function, renders sorted flat groups,
   exposes expand/collapse operations, and supports Enter/Space activation with
@@ -78,10 +86,10 @@ This document describes the implementation protected by automated tests on the
   handling are not supported.
 - **Tested:** the generated create dialog posts to the resource and refreshes;
   delete uses the configured `uniqueKey`, deletes `resource/<key>`, and refreshes.
-- **Supported, not fully tested:** edit sends a full-body `PUT`; custom form
-  components replace generated fields; bulk delete sends comma-separated keys.
-- **Known defect:** edit/update detection still requires a truthy `id` in the form
-  payload even when another `uniqueKey` is configured.
+- **Verified:** edit state sends a full-body `PUT` for default IDs, custom string
+  keys, numeric zero, and empty-string keys. Create/edit detection no longer
+  depends on a truthy `id`; selection, delete, and bulk delete use `uniqueKey`.
+  Custom form components remain supported but not fully verified.
 
 ## Infinite scroll and async states
 
@@ -98,15 +106,18 @@ This document describes the implementation protected by automated tests on the
 - **Tested client export:** local/current rows are mapped to titled headers,
   booleans are localized, money totals are appended, and `xlsx.writeFile` receives
   the configured filename plus date. Missing `xlsx` throws a clear installation
-  error from the export routine (**supported by source, missing-dependency branch
-  not yet integration-tested because `xlsx` is installed in the test workspace**).
+  error from the export routine. **Verified:** a mocked missing module produces a
+  visible accessible error, performs no download, and clears export loading.
 - **Tested server export:** `GET exportUrl` receives filters/query/pagination,
   accepts base64 from a string or `data`/`file`/`content`, creates a Blob download,
   and revokes its object URL. Server export errors are logged; no error event is
   emitted.
-- **Tested download:** the row field configured by `downloadLink` is fetched with
+- **Verified download:** the row field configured by `downloadLink` is fetched with
   credentials, downloaded through a temporary anchor, and cleaned up. Axios blob
-  fallback and XML/small-error variants are supported but only partially tested.
+  fallback, repeated downloads, missing Blob URL support, click failure, anchor
+  removal, and URL revocation are covered. Content-Disposition filenames are not
+  supported; filenames come from the URL. XML/small-error variants are partially
+  verified.
 - **Tested clipboard:** preview text uses `navigator.clipboard.writeText`, falling
   back to `document.execCommand('copy')` when necessary.
 
@@ -126,15 +137,26 @@ This document describes the implementation protected by automated tests on the
 ## Accessibility and browser boundaries
 
 - The container exposes busy/live semantics; groups expose keyboard activation
-  and expansion relationships; errors use an assertive alert.
-- Selection controls and several icon-only actions rely on Vuetify defaults and
-  do not consistently have explicit table-specific accessible names.
+  and expansion relationships; errors use an assertive alert. The table region,
+  group controls, row/select-all controls, copy buttons, and owned CRUD dialogs
+  have explicit accessible names.
 - Export, download, clipboard, teleported dialogs, and scrolling are browser-only.
   Tests replace network, Blob URL, anchor, clipboard, timer, and viewport APIs and
   restore state between cases; no test uses a real network.
 
 ## Refactoring candidates (not implemented)
 
-Request sequencing/cancellation, remote sorting, response normalization, router
-decoupling, CRUD key handling, explicit async-state slots, and separation of
+Cancellation, remote sorting, response normalization, router decoupling,
+explicit async-state slots, and separation of
 data/CRUD/export controllers remain candidates for a later staged decomposition.
+
+## Router, dialogs, and remaining browser limitations
+
+- **Verified:** successful template navigation and missing parameters retain the
+  established behavior. Rejected `router.push` promises are caught and surfaced
+  through the existing alert/snackbar state. Unknown-route handling remains the
+  consuming router's responsibility.
+- **Partially verified:** create, edit, delete, and bulk-delete dialogs have
+  accessible names and cancel behavior; teleported DOM is cleaned between tests.
+  happy-dom cannot reliably prove initial focus, Escape behavior, or focus return,
+  so those remain known real-browser verification gaps.
