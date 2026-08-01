@@ -99,7 +99,7 @@ const setCriteria = (criteria: Record<string, any>) => {
 
 defineOptions({ name: 'CustomDataTableV2', inheritAttrs: false });
 
-const items = ref<TableItem[]>([]);
+const items = ref<TableItem[]>([...props.items]);
 const originalServerData = ref<TableItem[]>([]); // Store original server data
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -1573,6 +1573,14 @@ watch(
   { deep: true }
 );
 
+watch(
+  () => props.items,
+  (localItems) => {
+    items.value = [...(localItems ?? [])];
+  },
+  { deep: true }
+);
+
 onMounted(() => {
   initialized.value = true;
   if (props.selectedItems?.length) {
@@ -1965,6 +1973,9 @@ watch(
     :aria-live="loading || isLoadingMore ? 'polite' : 'off'"
     @scroll.passive="handleScroll"
   >
+    <div v-if="error" class="data-table-error pa-4" role="alert" aria-live="assertive">
+      {{ error }}
+    </div>
     <template v-if="loading && !isLoadingMore">
       <div class="skeleton-container" :style="{ height: `${props.height}px` }">
         <v-skeleton-loader type="table" :loading="loading" class="mx-auto" max-width="100%" :boilerplate="false" />
