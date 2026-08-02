@@ -12,7 +12,7 @@ const resolvedIcon = computed<UiIconSource | undefined>(() => {
   return ui.icon(props.variant === 'error' ? 'error' : props.variant);
 });
 const role = computed(() => props.variant === 'error' ? 'alert' : props.variant === 'warning' ? 'status' : undefined);
-const live = computed(() => props.variant === 'warning' || props.variant === 'success' ? 'polite' : undefined);
+const live = computed<'polite' | undefined>(() => props.variant === 'warning' || props.variant === 'success' ? 'polite' : undefined);
 </script>
 
 <template>

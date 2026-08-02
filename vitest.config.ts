@@ -39,7 +39,8 @@ export default defineConfig({
         'src/components/shared/data-table-v2/computeActionColumnWidth.ts',
         'src/platform/**/*.ts',
         'src/components/state/*.vue',
-        'src/components/permissions/*.vue'
+        'src/components/permissions/*.vue',
+        'src/components/form/*.vue'
       ],
       exclude: ['src/**/*.d.ts', 'src/**/*.{test,spec}.ts']
     }
