@@ -274,6 +274,13 @@ const formatted = formatNumberWithCommas(1234567); // "1,234,567"
 - `AppStepper` - Step-by-step wizard component
 - `Loading` - Loading overlay component
 
+### Form Presentation Components
+- `UiField` - Accessible label, hint, error, and success structure for consumer-owned controls
+- `UiFieldMessage` - Semantic hint, error, success, and warning feedback
+- `UiFormActions` - Localized submit, cancel, and secondary action presentation
+
+See [Form presentation components](docs/components/FORM_PRESENTATION.md) for contracts and adoption guidance.
+
 ### Layout Components
 - `AppSidebar` - Navigation sidebar with menu items, logo, and mini sidebar support
 - `AppHeader` - Top header bar with search, notifications, profile menu, and custom actions
