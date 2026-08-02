@@ -40,6 +40,10 @@ export { default as UiErrorState } from './components/state/UiErrorState.vue';
 export { default as UiPermissionDenied } from './components/state/UiPermissionDenied.vue';
 export { default as UiAsyncState } from './components/state/UiAsyncState.vue';
 export { default as PermissionGuard } from './components/permissions/PermissionGuard.vue';
+export { default as UiField } from './components/form/UiField.vue';
+export { default as UiFieldMessage } from './components/form/UiFieldMessage.vue';
+export { default as UiFormActions } from './components/form/UiFormActions.vue';
+export type { UiFieldMessageVariant, UiFormActionsAlign } from './components/form/types';
 
 // Components - Layout
 export { default as AppSidebar } from './components/layout/AppSidebar.vue';

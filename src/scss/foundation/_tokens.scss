@@ -21,3 +21,30 @@
 .ui-permission-disabled { opacity: .55; cursor: not-allowed; }
 @keyframes ui-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .ui-state__icon--spin { animation-duration: 1ms; animation-iteration-count: 1; } }
+
+.ui-field { display: grid; gap: var(--ui-space-2); color: var(--ui-color-text); }
+.ui-field__heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--ui-space-2); }
+.ui-field__label { font-weight: 600; }
+.ui-field__required { margin-inline-start: var(--ui-space-1); color: var(--ui-color-danger); }
+.ui-field--disabled { color: var(--ui-color-disabled); }
+.ui-field__error { display: block; }
+.ui-field-message { display: flex; align-items: flex-start; gap: var(--ui-space-1); margin: 0; color: var(--ui-color-muted); font-size: .875rem; text-align: start; }
+.ui-field-message--error { color: var(--ui-color-danger); }
+.ui-field-message--success { color: var(--ui-color-success); }
+.ui-field-message--warning { color: var(--ui-color-warning); }
+.ui-field-message__icon { width: 1rem; height: 1rem; flex: none; margin-block-start: .125rem; }
+.ui-form-actions { display: flex; align-items: center; gap: var(--ui-space-3); padding-block: var(--ui-space-4); }
+.ui-form-actions--start { justify-content: flex-start; }
+.ui-form-actions--center { justify-content: center; }
+.ui-form-actions--end { justify-content: flex-end; }
+.ui-form-actions--space-between { justify-content: space-between; }
+.ui-form-actions--sticky { position: sticky; inset-block-end: 0; z-index: var(--ui-z-sticky); padding-inline: var(--ui-space-4); background: var(--ui-color-surface); border-block-start: 1px solid var(--ui-color-border); }
+.ui-form-actions__secondary { margin-inline-end: auto; }
+.ui-form-actions__primary { display: flex; gap: var(--ui-space-2); }
+.ui-form-actions__button { display: inline-flex; align-items: center; justify-content: center; gap: var(--ui-space-2); min-height: 2.5rem; border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-sm); padding: var(--ui-space-2) var(--ui-space-4); background: var(--ui-color-surface); color: var(--ui-color-text); cursor: pointer; }
+.ui-form-actions__button--submit { border-color: var(--ui-color-focus); background: var(--ui-color-focus); color: var(--ui-color-surface); }
+.ui-form-actions__button:disabled { opacity: .55; cursor: not-allowed; }
+.ui-form-actions__button:focus-visible { outline: 0; box-shadow: var(--ui-focus-ring); }
+.ui-form-actions__button svg { width: 1rem; height: 1rem; }
+.ui-form-actions__spinner { animation: ui-spin 1s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .ui-form-actions__spinner { animation-duration: 1ms; animation-iteration-count: 1; } }
