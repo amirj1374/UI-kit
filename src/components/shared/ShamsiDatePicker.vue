@@ -163,8 +163,10 @@ const onDateChange = (date: any) => {
 };
 
 const isRangeMode = computed(() => props.mode === 'range');
-const inputClass = computed(() => 'v-text-field v-input v-input--density-comfortable v-text-field--variant-outlined');
-const wrapperClass = computed(() => 'v-field v-field--variant-outlined v-field--density-comfortable');
+// The field appearance is driven by the shared Customizer CSS tokens rather
+// than hard-coded Vuetify variant/density classes.
+const inputClass = computed(() => 'v-text-field v-input shamsi-date-picker__input');
+const wrapperClass = computed(() => 'v-field shamsi-date-picker__field');
 </script>
 
 <style scoped>
@@ -516,5 +518,64 @@ const wrapperClass = computed(() => 'v-field v-field--variant-outlined v-field--
 /* زمانی که روز شروع و پایان یکی باشند */
 .shamsi-date-picker :deep(.vpd-day.vpd-range-start.vpd-range-end) {
   border-radius: 6px !important;
+}
+
+/* Shared field appearance: these tokens are also used by Vuetify inputs. */
+.shamsi-date-picker {
+  --shamsi-date-height: 51px;
+  --shamsi-date-padding: 14px 16px;
+}
+
+:global(html[data-ui-density='compact']) .shamsi-date-picker {
+  --shamsi-date-height: 43px;
+  --shamsi-date-padding: 10px 12px;
+}
+
+:global(html[data-ui-density='comfortable']) .shamsi-date-picker {
+  --shamsi-date-height: 60px;
+  --shamsi-date-padding: 18px 16px;
+}
+
+.shamsi-date-picker :deep(.vpd-input-group) {
+  min-height: var(--shamsi-date-height);
+  border-radius: var(--app-text-field-radius, 10px) !important;
+  border-color: rgba(var(--v-theme-borderLight), 0.72) !important;
+  box-shadow: none !important;
+}
+
+.shamsi-date-picker :deep(.vpd-input-group input) {
+  padding: var(--shamsi-date-padding) !important;
+}
+
+.shamsi-date-picker :deep(.vpd-icon-btn) {
+  background: rgba(var(--v-theme-primary), 0.1) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  border-radius: calc(var(--app-text-field-radius, 10px) - 2px) !important;
+  box-shadow: none !important;
+}
+
+:global(html[data-text-field-variant='filled']) .shamsi-date-picker :deep(.vpd-input-group) {
+  background: rgba(var(--v-theme-primary), 0.08) !important;
+  border-color: transparent !important;
+}
+
+:global(html[data-text-field-variant='solo']) .shamsi-date-picker :deep(.vpd-input-group) {
+  border-color: transparent !important;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.14) !important;
+}
+
+:global(html[data-text-field-variant='plain']) .shamsi-date-picker :deep(.vpd-input-group) {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+:global(html[data-text-field-variant='underlined']) .shamsi-date-picker :deep(.vpd-input-group) {
+  background: transparent !important;
+  border-color: transparent transparent rgba(var(--v-theme-borderLight), 0.85) !important;
+  border-radius: 0 !important;
+}
+
+:global(html[data-text-field-variant='underlined']) .shamsi-date-picker :deep(.vpd-icon-btn) {
+  border-radius: 50% !important;
 }
 </style>
