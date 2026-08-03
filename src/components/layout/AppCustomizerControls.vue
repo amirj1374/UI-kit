@@ -59,7 +59,7 @@ function setScale(value: number) {
   emit('update:textScale', clamp(value, 85, 115));
 }
 
-function applyPreview() {
+function syncPreview() {
   if (!props.applyPreview || typeof document === 'undefined') return;
 
   const root = document.documentElement;
@@ -71,7 +71,7 @@ function applyPreview() {
 
 watch(
   () => [props.textFieldBorderRadius, props.textFieldVariant, props.textFieldHeight, props.textScale],
-  applyPreview,
+  syncPreview,
   { immediate: true }
 );
 </script>
