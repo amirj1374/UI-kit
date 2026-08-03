@@ -5,14 +5,20 @@ import ShamsiDatePicker from '@/components/shared/ShamsiDatePicker.vue';
 
 const PickerStub = defineComponent({
   name: 'Vue3PersianDatetimePicker',
-  props: ['modelValue', 'disabled', 'range'],
+  props: ['modelValue', 'disabled', 'range', 'customInput'],
   emits: ['change', 'update:modelValue'],
   template: '<input data-test="picker" :disabled="disabled" />'
 });
 
+const TextFieldStub = defineComponent({
+  name: 'VTextField',
+  props: ['id', 'label', 'modelValue', 'density', 'variant', 'appendInnerIcon'],
+  template: '<input data-test="date-field" :id="id" />'
+});
+
 const mountPicker = (props: Record<string, unknown> = {}) => mount(ShamsiDatePicker, {
   props: { modelValue: '', ...props },
-  global: { stubs: { Vue3PersianDatetimePicker: PickerStub } }
+  global: { stubs: { Vue3PersianDatetimePicker: PickerStub, VTextField: TextFieldStub } }
 });
 
 describe('ShamsiDatePicker', () => {
@@ -20,6 +26,21 @@ describe('ShamsiDatePicker', () => {
     const wrapper = mountPicker({ disabled: true });
     expect(wrapper.get('input').attributes()).toHaveProperty('disabled');
     expect(wrapper.getComponent(PickerStub).props('modelValue')).toBe('');
+  });
+
+  it('uses a standard text field and forwards the selected field appearance', () => {
+    const wrapper = mountPicker({
+      label: 'تاریخ سررسید',
+      variant: 'filled',
+      density: 'compact'
+    });
+
+    expect(wrapper.attributes('data-variant')).toBe('filled');
+    expect(wrapper.attributes('data-density')).toBe('compact');
+    expect(wrapper.getComponent(TextFieldStub).props('label')).toBe('تاریخ سررسید');
+    expect(wrapper.getComponent(TextFieldStub).props('variant')).toBe('filled');
+    expect(wrapper.getComponent(TextFieldStub).props('density')).toBe('compact');
+    expect(wrapper.getComponent(PickerStub).props('customInput')).toBe(`#${wrapper.get('[data-test="date-field"]').attributes('id')}`);
   });
 
   it('normalizes a valid change to the existing ISO contract', async () => {

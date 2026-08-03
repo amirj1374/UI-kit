@@ -1,7 +1,26 @@
 <template>
-  <div class="shamsi-date-picker">
-    <Vue3PersianDatetimePicker
+  <div
+    class="shamsi-date-picker"
+    :data-variant="resolvedVariant"
+    :data-density="resolvedDensity"
+  >
+    <v-text-field
+      :id="inputId"
       :label="label"
+      :model-value="selectedDate"
+      :disabled="disabled"
+      :clearable="clearable"
+      :density="resolvedDensity"
+      :variant="resolvedVariant"
+      :append-inner-icon="calendarIcon"
+      :placeholder="undefined"
+      readonly
+      hide-details="auto"
+      @click:append-inner="openPicker"
+      @click:clear="clearDate"
+    />
+    <Vue3PersianDatetimePicker
+      ref="pickerRef"
       v-model="selectedDate"
       :type="type"
       :format="internalFormat"
@@ -12,9 +31,7 @@
       :disable="disabledDates"
       :min="minDate"
       :max="maxDate"
-      :placeholder="placeholder"
-      :input-class="inputClass"
-      :wrapper-class="wrapperClass"
+      :custom-input="`#${inputId}`"
       :range="isRangeMode"
       :color="color"
       @change="onDateChange"
@@ -23,10 +40,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue';
+import { mdiCalendarMonth } from '@mdi/js';
 
 type OutputFormat = 'iso' | 'date-only';
 type PickerType = 'date' | 'datetime' | 'time' | 'year' | 'month';
+type FieldVariant = 'outlined' | 'filled' | 'solo' | 'plain' | 'underlined';
+type FieldDensity = 'compact' | 'default' | 'comfortable';
 
 interface Props {
   modelValue?: string | [string, string] | null;
@@ -43,6 +63,10 @@ interface Props {
   format?: string;
   displayFormat?: string;
   disabledDates?: (date: string) => boolean;
+  /** Overrides the active Customizer field variant for this picker only. */
+  variant?: FieldVariant;
+  /** Overrides the active Customizer field density for this picker only. */
+  density?: FieldDensity;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -60,6 +84,10 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string | [string, string] | null];
 }>();
+
+const inputId = `shamsi-date-picker-${useId()}`;
+const pickerRef = ref<{ focus?: () => void } | null>(null);
+const calendarIcon = mdiCalendarMonth;
 
 // فرمت داخلی برای اینکه Picker بفهمد ورودی شامل چه بخش‌هایی است
 const internalFormat = computed(() => {
@@ -163,16 +191,79 @@ const onDateChange = (date: any) => {
 };
 
 const isRangeMode = computed(() => props.mode === 'range');
-// The field appearance is driven by the shared Customizer CSS tokens rather
-// than hard-coded Vuetify variant/density classes.
-const inputClass = computed(() => 'v-text-field v-input shamsi-date-picker__input');
-const wrapperClass = computed(() => 'v-field shamsi-date-picker__field');
+
+const documentAppearance = ref<{ variant: FieldVariant; density: FieldDensity }>({
+  variant: 'outlined',
+  density: 'default'
+});
+
+const readDocumentAppearance = () => {
+  if (typeof document === 'undefined') return;
+
+  const { dataset } = document.documentElement;
+  documentAppearance.value = {
+    variant: isFieldVariant(dataset.textFieldVariant) ? dataset.textFieldVariant : 'outlined',
+    density: isFieldDensity(dataset.uiDensity) ? dataset.uiDensity : 'default'
+  };
+};
+
+const openPicker = () => pickerRef.value?.focus?.();
+const clearDate = () => onDateChange(null);
+
+const isFieldVariant = (value?: string): value is FieldVariant =>
+  value === 'outlined' || value === 'filled' || value === 'solo' || value === 'plain' || value === 'underlined';
+
+const isFieldDensity = (value?: string): value is FieldDensity =>
+  value === 'compact' || value === 'default' || value === 'comfortable';
+
+let appearanceObserver: MutationObserver | undefined;
+
+onMounted(() => {
+  readDocumentAppearance();
+
+  // Customizer writes its active appearance to <html>. Observing that single
+  // source keeps third-party picker markup in sync without app-specific glue.
+  appearanceObserver = new MutationObserver(readDocumentAppearance);
+  appearanceObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-text-field-variant', 'data-ui-density']
+  });
+});
+
+onBeforeUnmount(() => appearanceObserver?.disconnect());
+
+const resolvedVariant = computed(() => props.variant ?? documentAppearance.value.variant);
+const resolvedDensity = computed(() => props.density ?? documentAppearance.value.density);
+
 </script>
 
 <style scoped>
 /* کانتینر اصلی دیت‌پیکر */
 .shamsi-date-picker {
   position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+/* The picker library renders its label inside the calendar trigger. Keeping
+   the label outside gives every field variant a stable, standard field label. */
+.shamsi-date-picker__label {
+  color: rgb(var(--v-theme-onSurface));
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  padding-inline: 2px;
+}
+
+.shamsi-date-picker :deep(.vpd-main) {
+  display: block;
+}
+
+/* Match LookupField: the appended affordance is primary-colored so this
+   read-only field is visibly interactive without changing its field variant. */
+.shamsi-date-picker :deep(.v-field__append-inner .v-icon) {
+  color: rgb(var(--v-theme-primary)) !important;
+  opacity: 1;
 }
 
 /* استایل‌دهی به گروه ورودی (input container) */
@@ -526,56 +617,65 @@ const wrapperClass = computed(() => 'v-field shamsi-date-picker__field');
   --shamsi-date-padding: 14px 16px;
 }
 
-:global(html[data-ui-density='compact']) .shamsi-date-picker {
+.shamsi-date-picker[data-density='compact'] {
   --shamsi-date-height: 43px;
   --shamsi-date-padding: 10px 12px;
 }
 
-:global(html[data-ui-density='comfortable']) .shamsi-date-picker {
+.shamsi-date-picker[data-density='comfortable'] {
   --shamsi-date-height: 60px;
   --shamsi-date-padding: 18px 16px;
 }
 
 .shamsi-date-picker :deep(.vpd-input-group) {
-  min-height: var(--shamsi-date-height);
+  min-height: var(--shamsi-date-height) !important;
+  height: var(--shamsi-date-height) !important;
   border-radius: var(--app-text-field-radius, 10px) !important;
   border-color: rgba(var(--v-theme-borderLight), 0.72) !important;
   box-shadow: none !important;
 }
 
 .shamsi-date-picker :deep(.vpd-input-group input) {
+  min-height: var(--shamsi-date-height) !important;
+  height: var(--shamsi-date-height) !important;
   padding: var(--shamsi-date-padding) !important;
 }
 
 .shamsi-date-picker :deep(.vpd-icon-btn) {
+  height: var(--shamsi-date-height) !important;
+  width: var(--shamsi-date-height) !important;
   background: rgba(var(--v-theme-primary), 0.1) !important;
   color: rgb(var(--v-theme-primary)) !important;
   border-radius: calc(var(--app-text-field-radius, 10px) - 2px) !important;
   box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
-:global(html[data-text-field-variant='filled']) .shamsi-date-picker :deep(.vpd-input-group) {
+.shamsi-date-picker[data-variant='filled'] :deep(.vpd-input-group) {
   background: rgba(var(--v-theme-primary), 0.08) !important;
   border-color: transparent !important;
 }
 
-:global(html[data-text-field-variant='solo']) .shamsi-date-picker :deep(.vpd-input-group) {
+.shamsi-date-picker[data-variant='solo'] :deep(.vpd-input-group) {
+  background: rgb(var(--v-theme-surface)) !important;
   border-color: transparent !important;
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.14) !important;
 }
 
-:global(html[data-text-field-variant='plain']) .shamsi-date-picker :deep(.vpd-input-group) {
+.shamsi-date-picker[data-variant='plain'] :deep(.vpd-input-group) {
   background: transparent !important;
   border-color: transparent !important;
 }
 
-:global(html[data-text-field-variant='underlined']) .shamsi-date-picker :deep(.vpd-input-group) {
+.shamsi-date-picker[data-variant='underlined'] :deep(.vpd-input-group) {
   background: transparent !important;
   border-color: transparent transparent rgba(var(--v-theme-borderLight), 0.85) !important;
   border-radius: 0 !important;
 }
 
-:global(html[data-text-field-variant='underlined']) .shamsi-date-picker :deep(.vpd-icon-btn) {
+.shamsi-date-picker[data-variant='underlined'] :deep(.vpd-icon-btn) {
   border-radius: 50% !important;
 }
 </style>
