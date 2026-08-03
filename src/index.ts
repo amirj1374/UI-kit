@@ -38,6 +38,10 @@ export { default as Loading } from './components/Loading.vue';
 // Components - Layout
 export { default as AppSidebar } from './components/layout/AppSidebar.vue';
 export { default as AppHeader } from './components/layout/AppHeader.vue';
+export { default as AppHeaderMenu } from './components/layout/AppHeaderMenu.vue';
+export { default as AppCustomizerControls } from './components/layout/AppCustomizerControls.vue';
+export { default as AppCustomizerSubmit } from './components/layout/AppCustomizerSubmit.vue';
+export type { TextFieldHeight, TextFieldVariant } from './components/layout/AppCustomizerControls.vue';
 export { default as AppLayout } from './components/layout/AppLayout.vue';
 export type { MenuItem, HeaderAction } from './types/components/layout/menu';
 

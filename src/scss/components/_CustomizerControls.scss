@@ -1,0 +1,64 @@
+// Generic visual tokens applied by AppCustomizerControls. Consumers can opt out
+// by passing `:apply-preview="false"` and handling the emitted values themselves.
+html {
+  --app-text-field-radius: 10px;
+  --app-text-scale: 1;
+  font-size: calc(16px * var(--app-text-scale));
+}
+
+.v-text-field .v-field,
+.v-textarea .v-field,
+.v-select .v-field,
+.v-autocomplete .v-field,
+.v-combobox .v-field {
+  border-radius: var(--app-text-field-radius);
+}
+
+.v-input .v-label {
+  color: rgb(var(--v-theme-darkText)) !important;
+  opacity: .82;
+}
+
+html[data-ui-density='compact'] .v-input {
+  --v-input-control-height: 43px;
+  --v-input-padding-top: 10px;
+}
+
+html[data-ui-density='default'] .v-input {
+  --v-input-control-height: 51px;
+  --v-input-padding-top: 14px;
+}
+
+html[data-ui-density='comfortable'] .v-input {
+  --v-input-control-height: 60px;
+  --v-input-padding-top: 18px;
+}
+
+html[data-text-field-variant='filled'] .v-text-field .v-field,
+html[data-text-field-variant='filled'] .v-textarea .v-field,
+html[data-text-field-variant='filled'] .v-select .v-field,
+html[data-text-field-variant='filled'] .v-autocomplete .v-field,
+html[data-text-field-variant='filled'] .v-combobox .v-field {
+  background: rgba(var(--v-theme-primary), .08);
+}
+
+html[data-text-field-variant='plain'] .v-text-field .v-field__outline,
+html[data-text-field-variant='plain'] .v-textarea .v-field__outline,
+html[data-text-field-variant='plain'] .v-select .v-field__outline,
+html[data-text-field-variant='plain'] .v-autocomplete .v-field__outline,
+html[data-text-field-variant='plain'] .v-combobox .v-field__outline {
+  --v-field-border-opacity: 0;
+}
+
+html[data-text-field-variant='underlined'] .v-text-field .v-field__outline__start,
+html[data-text-field-variant='underlined'] .v-textarea .v-field__outline__start,
+html[data-text-field-variant='underlined'] .v-select .v-field__outline__start,
+html[data-text-field-variant='underlined'] .v-autocomplete .v-field__outline__start,
+html[data-text-field-variant='underlined'] .v-combobox .v-field__outline__start,
+html[data-text-field-variant='underlined'] .v-text-field .v-field__outline__end,
+html[data-text-field-variant='underlined'] .v-textarea .v-field__outline__end,
+html[data-text-field-variant='underlined'] .v-select .v-field__outline__end,
+html[data-text-field-variant='underlined'] .v-autocomplete .v-field__outline__end,
+html[data-text-field-variant='underlined'] .v-combobox .v-field__outline__end {
+  --v-field-border-opacity: 0;
+}

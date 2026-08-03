@@ -9,6 +9,7 @@ describe('AppHeader', () => {
         stubs: {
           VAppBar: { template: '<header><slot /></header>' },
           VBtn: { template: '<button v-bind="$attrs"><slot /></button>' },
+          VMenu: { template: '<div><slot name="activator" :props="{}" /><slot /></div>' },
           VIcon: true,
           VSpacer: true
         }

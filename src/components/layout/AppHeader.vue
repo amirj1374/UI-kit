@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, type PropType } from 'vue';
 import type { MenuItem } from '../../types/components/layout/menu';
-import { IconMenu2, IconPalette, IconChevronDown } from '@tabler/icons-vue';
+import { IconMenu2, IconPalette } from '@tabler/icons-vue';
+import AppHeaderMenu from './AppHeaderMenu.vue';
 
 const props = defineProps({
   menuOrientation: {
@@ -61,6 +62,7 @@ const computedHeaderMenu = computed(() => {
 
     <!-- SIDEBAR DRAWER (Mobile) -->
     <v-btn
+      v-if="menuOrientation === 'vertical'"
       class="hidden-lg-and-up text-secondary ms-3"
       color="lightsecondary"
       icon
@@ -72,6 +74,25 @@ const computedHeaderMenu = computed(() => {
     >
       <IconMenu2 size="20" stroke-width="1.5" />
     </v-btn>
+
+    <!-- HORIZONTAL NAVIGATION (Mobile / Tablet) -->
+    <v-menu v-if="menuOrientation === 'horizontal'" class="hidden-lg-and-up" location="bottom start">
+      <template #activator="{ props: menuProps }">
+        <v-btn
+          v-bind="menuProps"
+          class="text-secondary ms-3"
+          color="lightsecondary"
+          icon
+          rounded="sm"
+          variant="flat"
+          size="small"
+          aria-label="Open navigation menu"
+        >
+          <IconMenu2 size="20" stroke-width="1.5" />
+        </v-btn>
+      </template>
+      <AppHeaderMenu display="menu" :items="computedHeaderMenu" />
+    </v-menu>
 
     <!-- CUSTOMIZER BUTTON -->
     <v-btn
@@ -88,70 +109,9 @@ const computedHeaderMenu = computed(() => {
     </v-btn>
 
     <!-- MENU ITEMS -->
-    <div class="header-menu-container" v-if="menuOrientation === 'horizontal'">
-      <template v-for="(item, i) in computedHeaderMenu" :key="i">
-        <!-- Single Menu Item -->
-        <v-btn
-          v-if="!item.children && !item.header && !item.divider"
-          :to="item.type === 'external' ? '' : item.to"
-          :href="item.type === 'external' ? item.to : ''"
-          :target="item.type === 'external' ? '_blank' : ''"
-          variant="text"
-          :disabled="item.disabled"
-          class="header-menu-btn mr-3"
-          color="primary"
-        >
-          <component :is="item.icon" v-if="item.icon" class="ml-2" size="18" />
-          <span>{{ item.title }}</span>
-          <v-chip
-            v-if="item.chip"
-            :color="item.chipColor"
-            :size="item.chipIcon ? 'small' : 'default'"
-            :variant="item.chipVariant as any"
-            :prepend-icon="item.chipIcon"
-            class="ml-2"
-          >
-            {{ item.chip }}
-          </v-chip>
-        </v-btn>
-
-        <!-- Menu Item with Dropdown -->
-        <v-menu v-else-if="item.children && item.children.length > 0" offset-y>
-          <template v-slot:activator="{ props: mprops }">
-            <v-btn
-              v-bind="mprops"
-              variant="text"
-              :disabled="item.disabled"
-              class="header-menu-btn"
-              color="primary mr-3"
-            >
-              <component :is="item.icon" v-if="item.icon" class="mr-2" size="18" />
-              <span class="mr-2">{{ item.title }}</span>
-              <IconChevronDown size="20" class="ml-2" stroke-width="1.5" />
-            </v-btn>
-          </template>
-
-          <v-list>
-            <v-list-item
-              v-for="(child, childIndex) in item.children"
-              :key="childIndex"
-              :to="child.type === 'external' ? '' : child.to"
-              :href="child.type === 'external' ? child.to : ''"
-              :target="child.type === 'external' ? '_blank' : ''"
-              :disabled="child.disabled"
-            >
-              <template v-slot:prepend v-if="child.icon">
-                <component :is="child.icon" size="18" />
-              </template>
-              <v-list-item-title>{{ child.title }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-
-        <!-- Divider -->
-        <v-divider v-else-if="item.divider" vertical class="mx-2" />
-      </template>
-    </div>
+    <slot name="navigation" :items="computedHeaderMenu">
+      <AppHeaderMenu v-if="menuOrientation === 'horizontal'" class="hidden-md-and-down" :items="computedHeaderMenu" />
+    </slot>
 
     <v-spacer />
 
@@ -207,6 +167,20 @@ const computedHeaderMenu = computed(() => {
     align-items: center;
     gap: 8px;
     margin-left: 16px;
+
+    &--menu {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 2px;
+      margin: 0;
+      min-width: 220px;
+      padding: 8px;
+
+      .header-menu-btn {
+        justify-content: flex-start;
+        margin: 0 !important;
+      }
+    }
   }
 
   .header-menu-btn {
