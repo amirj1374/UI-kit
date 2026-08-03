@@ -5,7 +5,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
   steps: {
-    type: Array as () => { title: string; section: Component }[],
+    type: Array as () => { title: string; section: Component; disabled?: boolean }[],
     required: true
   },
   modelValue: {
@@ -23,6 +23,10 @@ const props = defineProps({
   stepProps: {
     type: Object,
     default: () => ({})
+  },
+  direction: {
+    type: String as () => 'rtl' | 'ltr',
+    default: 'rtl'
   }
 });
 
@@ -60,17 +64,29 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({ currentStepComponentRef });
+
+function selectStep(index: number) {
+  const step = props.steps[index];
+  if (props.disableClick || step?.disabled) return;
+  const value = index + 1;
+  emit('step-click', value);
+  emit('update:modelValue', value);
+}
 </script>
 
 <template>
-  <div class="app-stepper-root" dir="rtl">
+  <div class="app-stepper-root" :dir="direction">
     <div class="app-stepper-header-card">
       <div ref="stepperHeaderRef" class="app-stepper-header">
-        <span
+        <button
           v-for="(step, index) in steps"
           :key="index"
           :ref="el => setStepRef(el, index)"
           class="app-stepper-step"
+          type="button"
+          :disabled="disableClick || step.disabled"
+          :aria-current="modelValue === index + 1 ? 'step' : undefined"
+          @click="selectStep(index)"
           :class="{
             active: modelValue === index + 1,
             resolved: modelValue > index + 1,
@@ -105,7 +121,7 @@ defineExpose({ currentStepComponentRef });
               { 'active': modelValue > index + 1, 'resolved': modelValue > index + 1 }
             ]"
           ></span>
-        </span>
+        </button>
       </div>
     </div>
     <div
@@ -123,6 +139,10 @@ defineExpose({ currentStepComponentRef });
 
 <style lang="scss" scoped>
 .app-stepper-step {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   &.no-click {
     pointer-events: none !important;
     cursor: default !important;
@@ -139,4 +159,4 @@ defineExpose({ currentStepComponentRef });
     pointer-events: none !important;
   }
 }
-</style> 
+</style>

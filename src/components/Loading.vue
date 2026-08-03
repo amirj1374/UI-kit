@@ -1,9 +1,17 @@
 <template>
   <transition name="fade">
-    <div class="loading-overlay" v-if="customizer.loading">
+    <div
+      class="loading-overlay"
+      v-if="customizer.loading"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      :aria-label="label"
+    >
       <div class="loading-wrapper">
         <Vue3Lottie
-          :animation-link="'/persian.json'"
+          v-if="animationLink"
+          :animation-link="animationLink"
           :loop="true"
           :autoplay="true"
           class="lottie-animation"
@@ -20,6 +28,14 @@
 <script setup lang="ts">
 import { Vue3Lottie } from 'vue3-lottie';
 import { useCustomizerStore } from '@/stores/customizer';
+
+withDefaults(defineProps<{
+  label?: string;
+  animationLink?: string;
+}>(), {
+  label: 'Loading',
+  animationLink: '/persian.json'
+});
 
 const customizer = useCustomizerStore();
 </script>

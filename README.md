@@ -9,26 +9,28 @@ A reusable UI component library built with Vue 3, Vuetify 3, and TypeScript. Thi
 - 🎭 Vuetify 3 components
 - 🔧 Composable utilities
 - 📦 Tree-shakeable exports
-- 🎪 Multiple build formats (ES, CJS, UMD)
+- 🎪 ESM and CommonJS package outputs
 
 ## Installation
 
 ```bash
 npm install @amirjalili1374/ui-kit
-# or
-yarn add @amirjalili1374/ui-kit
-# or
-pnpm add @amirjalili1374/ui-kit
 ```
+
+This repository is developed and validated with Node.js `^20.19.0 || >=22.12.0`
+and npm 11. The committed `package-lock.json` is the canonical lockfile.
 
 ## Peer Dependencies
 
 This library requires the following peer dependencies to be installed in your project:
 
-- `vue` >= 3.3.0
-- `vuetify` >= 3.10.0
-- `@vueuse/core` >= 13.0.0 (optional)
-- `axios` >= 1.8.0 (optional)
+- `vue` ^3.4.0
+- `vuetify` ^3.10.0
+- `vue-router` ^4.3.0
+
+`CustomDataTable` currently calls Vue Router directly, so applications that render
+the table must install a router before mounting it. Other package dependencies,
+including Pinia, Axios, and VueUse, are installed through the package metadata.
 
 ## Usage
 
@@ -63,7 +65,7 @@ You can import components individually for better tree-shaking:
 
 ```vue
 <script setup lang="ts">
-1import { 
+import {
   CustomDataTable,
   CustomDataTableV2,
   BaseIcon, 
@@ -255,8 +257,8 @@ const formatted = formatNumberWithCommas(1234567); // "1,234,567"
 - `BaseIcon` - Icon component wrapper
 - `ConfirmDialog` - Confirmation dialog
 - `CustomAutocomplete` - Enhanced autocomplete input
-- `CustomDataTable` - Feature-rich data table (stable; unchanged)
-- `CustomDataTableV2` - Same API as `CustomDataTable` with bug fixes; use for new pages
+- `CustomDataTableV2` - Current feature-rich data table implementation
+- `CustomDataTable` - Backward-compatible alias for `CustomDataTableV2`; there is no separate V1 implementation on this branch
 - `DescriptionInput` - Text area input for descriptions
 - `DownloadButton` - Button with download functionality
 - `MoneyInput` - Currency/money input field
@@ -319,28 +321,42 @@ To build the library for distribution:
 npm run build:lib
 ```
 
-This will:
-1. Run TypeScript type checking
-2. Build the library in multiple formats (ES, CJS, UMD)
-3. Generate TypeScript declaration files
+This runs fail-closed TypeScript checking, builds ESM and CommonJS outputs,
+bundles the kit CSS, and generates TypeScript declarations.
 
 Output files will be in the `dist` directory:
 - `ui-kit.es.js` - ES module format
 - `ui-kit.cjs` - CommonJS format
-- `ui-kit.umd.js` - UMD format (browser)
 - `style.css` - Compiled CSS
 - `index.d.ts` - TypeScript declarations
 
-## Publishing
+The normal `npm run build` command builds the demo application. Use
+`npm run build:lib` for the publishable package.
 
-To publish the library to npm:
+### Optional Excel export
+
+Client-side Excel export dynamically loads the optional `xlsx` dependency. Install
+it before enabling that feature:
 
 ```bash
-npm login
-npm publish
+npm install xlsx
 ```
 
-The `prepublishOnly` script will automatically build the library before publishing.
+Other table features work without XLSX. Missing XLSX produces a clear runtime error
+when client-side export is invoked.
+
+## Publishing
+
+Before publishing, validate and inspect the packed package:
+
+```bash
+npm ci
+npm run validate
+npm pack --dry-run
+```
+
+Publishing remains a manual, separately authorized operation. The `prepublishOnly`
+hook rebuilds the library, but does not replace `npm run validate`.
 
 ## Development
 
@@ -359,8 +375,22 @@ npm run typecheck
 ### Linting
 
 ```bash
-npm run lint
+npm run lint:check  # read-only
+npm run lint:fix    # explicit auto-fix
 ```
+
+### Tests and package consumer validation
+
+```bash
+npm test
+npm run test:coverage
+npm run test:consumer
+```
+
+`test:consumer` packs the built library, installs the tarball into a fresh temporary
+Vite application, and verifies ESM, CommonJS, declarations, CSS exports, and a
+production consumer build. Current tests cover utilities, the digit directive,
+table selection/helpers, and initial public-component accessibility contracts.
 
 ### Formatting
 
@@ -376,7 +406,9 @@ To update and republish the library:
 2. Update the version in `package.json`
 3. Build the library: `npm run build:lib`
 4. Test locally if possible
-5. Publish: `npm publish`
+5. Run `npm run validate`
+6. Inspect `npm pack --dry-run`
+7. Publish only through the separately authorized release process
 
 For npm scoped packages, make sure you have the correct permissions.
 
@@ -401,7 +433,13 @@ For npm scoped packages, make sure you have the correct permissions.
 
 ## License
 
-MIT
+MIT. See [LICENSE](./LICENSE).
+
+## Runtime limitations
+
+The current table export/download behavior, PDF viewer, loading animation, and
+authentication helpers use browser APIs. SSR is not currently claimed or validated.
+The table also requires an installed Vue Router instance when rendered.
 
 ## Contributing
 

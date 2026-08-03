@@ -395,7 +395,7 @@ watch(
       </template>
     </template>
 
-    <template #selection="{ item, index }">
+    <template #selection="{ item }">
       <v-chip class="ca-chip" variant="tonal" :color="isMainGroup(item.raw ?? item) ? 'primary' : 'secondary'">
         <span class="ca-chip-title">{{ resolveTitle(item.raw ?? item) }}</span>
         <template v-if="displayStyle === 'detailed' && resolveSubtitle(item.raw ?? item)">

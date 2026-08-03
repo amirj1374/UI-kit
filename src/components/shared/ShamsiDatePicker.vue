@@ -7,6 +7,7 @@
       :format="internalFormat"
       :display-format="internalDisplayFormat"
       :editable="false"
+      :disabled="disabled"
       :clearable="clearable"
       :disable="disabledDates"
       :min="minDate"

@@ -1,18 +1,24 @@
 <template>
-  <v-dialog v-model="isOpen" :persistent="persistent" :max-width="width">
+  <v-dialog
+    v-model="isOpen"
+    :persistent="persistent"
+    :max-width="width"
+    :aria-labelledby="titleId"
+    :aria-describedby="message ? messageId : undefined"
+  >
     <v-card>
-      <v-card-title class="text-h6">
+      <v-card-title :id="titleId" class="text-h6">
         {{ title }}
       </v-card-title>
       <v-card-text>
-        <div v-if="message" class="mb-2">{{ message }}</div>
+        <div v-if="message" :id="messageId" class="mb-2">{{ message }}</div>
         <slot />
       </v-card-text>
       <v-card-actions class="justify-center">
-        <v-btn :loading="loading" :color="color" variant="flat" @click="onConfirm">
+        <v-btn autofocus :loading="loading" :color="color" variant="flat" :aria-label="confirmText" @click="onConfirm">
           {{ confirmText }}
         </v-btn>
-        <v-btn :disabled="loading" variant="text" @click="onCancel">
+        <v-btn :disabled="loading" variant="text" :aria-label="cancelText" @click="onCancel">
           {{ cancelText }}
         </v-btn>
       </v-card-actions>
@@ -22,7 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
+
+const id = useId()
+const titleId = `confirm-dialog-title-${id}`
+const messageId = `confirm-dialog-message-${id}`
 
 const props = withDefaults(defineProps<{
   modelValue: boolean

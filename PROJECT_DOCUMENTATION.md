@@ -115,7 +115,7 @@ The library is built for **Persian/Iranian enterprise business applications**, e
 │  ┌─────────────────────────────┐   │
 │  │  Library Mode               │   │
 │  │  ├── ui-kit.es.js (ESM)     │   │
-│  │  ├── ui-kit.cjs.js (CJS)    │   │
+│  │  ├── ui-kit.cjs (CJS)       │   │
 │  │  ├── style.css              │   │
 │  │  └── index.d.ts (types)     │   │
 │  └─────────────────────────────┘   │
@@ -156,7 +156,7 @@ src/
 UI-kit/
 ├── dist/                          # Built distribution output
 │   ├── ui-kit.es.js               # ES Module build
-│   ├── ui-kit.cjs.js              # CommonJS build
+│   ├── ui-kit.cjs                 # CommonJS build
 │   ├── style.css                  # Bundled styles
 │   └── index.d.ts                 # TypeScript declarations
 │
@@ -176,8 +176,7 @@ UI-kit/
 │   │   │   ├── BaseIcon.vue
 │   │   │   ├── ConfirmDialog.vue
 │   │   │   ├── CustomAutocomplete.vue
-│   │   │   ├── CustomDataTable.vue        # V1 - stable
-│   │   │   ├── CustomDataTableV2.vue      # V2 - recommended
+│   │   │   ├── data-table-v2/CustomDataTableV2.vue # Current table; exported under both names
 │   │   │   │   ├── components/
 │   │   │   │   │   ├── DataTableCellContent.vue
 │   │   │   │   │   └── DataTableFilterFields.vue
@@ -234,7 +233,7 @@ UI-kit/
 │   │   └── index.ts              # Feature flags
 │   │
 │   ├── plugins/
-│   │   ├── vuetify.ts            # Vuetify 3 + 15 themes
+│   │   ├── vuetify.ts            # Vuetify 3 + 14 themes
 │   │   ├── key-clock.ts          # Keycloak auth
 │   │   └── mdi-icon.ts           # Material Design Icons
 │   │
@@ -250,7 +249,7 @@ UI-kit/
 │   │   └── permissions.ts        # Menu permissions (app-specific)
 │   │
 │   ├── theme/
-│   │   ├── lightThemes/          # 8 light themes
+│   │   ├── lightThemes/          # 7 light themes
 │   │   └── darkThemes/           # 7 dark themes
 │   │
 │   ├── types/                    # TypeScript types
@@ -306,7 +305,7 @@ UI-kit/
 |---------|---------|---------|
 | `vue` | ^3.x | Core framework |
 | `vuetify` | ^3.x | UI component base |
-| `vue-router` | ^4.x | Routing (optional) |
+| `vue-router` | ^4.x | Required by the current data table when rendered |
 
 ### Core Dependencies
 
@@ -362,8 +361,8 @@ UI-kit/
 
 | Component | Description |
 |-----------|-------------|
-| `CustomDataTable.vue` | V1 feature-rich server-side data table |
-| `CustomDataTableV2.vue` | V2 refactored data table (recommended for new code) |
+| `CustomDataTable` | Compatibility alias of the current V2 implementation |
+| `CustomDataTableV2` | Canonical current server-side data table implementation |
 | `CustomAutocomplete.vue` | Enhanced Vuetify autocomplete with extra features |
 | `ShamsiDatePicker.vue` | Persian calendar date/datetime/time picker |
 | `MoneyInput.vue` | Currency amount input with formatting |
@@ -380,22 +379,13 @@ UI-kit/
 | `Loading.vue` | Full-screen loading overlay spinner |
 | `AppStepper.vue` | Multi-step wizard/stepper component |
 
-### CustomDataTable Feature Matrix
+### CustomDataTable compatibility
 
-| Feature | V1 | V2 |
-|---------|----|----|
-| Server-side pagination | ✅ | ✅ |
-| Infinite scroll | ✅ | ✅ |
-| Row selection (single/multi) | ✅ | ✅ |
-| Row grouping + expand/collapse | ✅ | ✅ |
-| CRUD action dialogs | ✅ | ✅ |
-| Date column Shamsi display | ✅ | ✅ |
-| Excel export | ✅ | ✅ |
-| Inline/modal filters | ✅ | ✅ |
-| Custom action buttons | ✅ | ✅ |
-| Cell content logic extracted | ❌ | ✅ (composable) |
-| Filter logic extracted | ❌ | ✅ (composable) |
-| Download logic extracted | ❌ | ✅ (composable) |
+`CustomDataTable` and `CustomDataTableV2` resolve to the same current implementation.
+The former is retained as a compatibility export; no independent V1 component is
+present on this branch. The component supports server pagination, optional infinite
+scroll, selection, grouping, CRUD actions, filters, downloads, and optional XLSX
+export, but most responsibilities remain in the main component.
 
 ---
 
@@ -410,15 +400,11 @@ UI-kit/
 | `useTableHeaders` | Utilities for building and filtering table column definitions |
 | `useTableSelection` | Row selection state, grouping, bulk operations |
 
-### DataTableV2-Specific
+### DataTableV2 internals
 
-| Composable | Description |
-|------------|-------------|
-| `useDataTableFetch` | Data fetching with loading state for V2 |
-| `useDataTableFilters` | Filter state management and application |
-| `useDataTableCellDisplay` | Cell rendering logic (dates, numbers, custom) |
-| `useDataTableExport` | Excel export logic |
-| `useDataTableDownload` | File download handling |
+The table currently extracts `DataTableFilterFields`, `headerFieldUtils`, and
+`computeActionColumnWidth`. Fetch, CRUD, export, download, and most cell behavior
+remain inside `CustomDataTableV2.vue`; additional decomposition is deferred.
 
 ### App-Specific (NOT Exported)
 
@@ -470,7 +456,7 @@ App-specific: stores menu permission rules for the sidebar.
 
 ## 9. Theming System
 
-The library ships **15 pre-built Vuetify 3 themes** — 8 light and 7 dark — registered in `src/plugins/vuetify.ts`.
+The library ships **14 pre-built Vuetify 3 themes** — 7 light and 7 dark — registered in `src/plugins/vuetify.ts`.
 
 ### Light Themes
 
@@ -622,11 +608,11 @@ Two build modes controlled by `BUILD_LIB` env variable:
 ```
 Input:  src/index.ts
 Output: dist/ui-kit.es.js  (ES Module)
-        dist/ui-kit.cjs.js (CommonJS)
+        dist/ui-kit.cjs    (CommonJS)
         dist/style.css
         dist/index.d.ts
 Externals: vue, vuetify, pinia, vue-router, @mdi/js, axios, ...
-Minifier: Terser
+Minifier: Oxc (Rolldown/Vite 8)
 ```
 
 **Application Mode** (default dev):
@@ -638,6 +624,11 @@ Multi-env: dev / prelive / live / demo
 
 ### npm Scripts
 
+The repository standardizes on npm 11 and the committed `package-lock.json`.
+`npm run build` builds the demo application; `npm run build:lib` builds the
+publishable ESM/CJS package. Components are named imports. Calling `app.use(UiKit)`
+registers only `v-digit-limit`.
+
 | Script | Purpose |
 |--------|---------|
 | `dev` | Start development server |
@@ -645,10 +636,20 @@ Multi-env: dev / prelive / live / demo
 | `build:types` | Generate TypeScript declarations |
 | `prepublishOnly` | Auto-runs type gen + lib build before `npm publish` |
 | `typecheck` | Run TypeScript compiler check |
-| `lint` | Run ESLint with auto-fix |
+| `lint` / `lint:check` | Run ESLint without modifying files |
+| `lint:fix` | Run ESLint with explicit auto-fix |
+| `test:consumer` | Verify the packed tarball in a temporary Vite consumer |
+| `validate` | Run lint, types, coverage, library build, and packed consumer gates |
 | `format` | Run Prettier |
 | `clean` | Delete `dist/` |
 | `analyze` | Open bundle analyzer |
+
+Before any separately authorized publish, run `npm ci`, `npm run validate`, and
+`npm pack --dry-run`. The packed consumer check installs the tarball with Vue,
+Vuetify, Pinia, and Vue Router, then verifies declarations, ESM, CommonJS, CSS, and
+a Vite production build. Client-side table export requires optional `xlsx`. The
+table, file/PDF features, loading animation, and authentication helpers use browser
+APIs; SSR is not currently validated.
 
 ---
 
@@ -826,7 +827,7 @@ export { AppBootstrap, AuthModeInitializer, KeycloakInitializer, JwtInitializer 
 ### Directives
 ```typescript
 export { DigitLimit }  // v-digit-limit directive
-export function install(app: App): void  // registers all directives
+export function install(app: App): void  // registers only v-digit-limit; components remain named imports
 ```
 
 ### Types

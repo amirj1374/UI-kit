@@ -1,6 +1,8 @@
 # CustomDataTableV2
 
-Refactored data table with the same props/API as `CustomDataTable`, plus bug fixes. The original component is **unchanged** for existing projects.
+This is the current data-table implementation. `CustomDataTable` and
+`CustomDataTableV2` both export this component; the old name is retained as a
+backward-compatible import alias. There is no separate V1 implementation on `v2`.
 
 ## Migration
 
@@ -19,7 +21,7 @@ import { CustomDataTableV2, type Header } from '@amirjalili1374/ui-kit'
 </template>
 ```
 
-## Bug fixes vs v1
+## Compatibility behavior
 
 - `v-model:selectedItems` syncs from parent (watch + initial mount)
 - Delete uses `uniqueKey`, not hardcoded `id`
@@ -40,10 +42,15 @@ import { CustomDataTableV2, type Header } from '@amirjalili1374/ui-kit'
 ```
 src/components/shared/data-table-v2/
   CustomDataTableV2.vue      # UI (migrating to smaller pieces over time)
-  composables/               # fetch, filters, selection, export, download, …
-  components/                # DataTableFilterFields, DataTableCellContent, …
+  components/                # DataTableFilterFields
   headerFieldUtils.ts
   computeActionColumnWidth.ts
 ```
 
-Further refactors will move CRUD/template blocks into composables without touching `CustomDataTable.vue`.
+The component currently uses Vue Router directly. Consumers that render it must
+install `vue-router` on the application. Client-side Excel export dynamically loads
+the optional `xlsx` package and reports a clear error if the feature is invoked
+without it.
+
+Further decomposition is intentionally deferred until integration coverage exists.
+Compatibility work must preserve both public export names.

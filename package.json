@@ -1,15 +1,18 @@
 {
   "name": "@amirjalili1374/ui-kit",
-  "version": "1.9.2",
+  "version": "1.10.0",
   "description": "A reusable UI component library built with Vue 3, Vuetify, and TypeScript",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/style.css"
+  ],
   "main": "./dist/ui-kit.cjs",
   "module": "./dist/ui-kit.es.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {
@@ -30,6 +33,7 @@
     "ui-kit"
   ],
   "license": "MIT",
+  "packageManager": "npm@11.16.0",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
@@ -43,7 +47,7 @@
     "build:prelive": "npm run typecheck && vite build --mode prelive",
     "build:live": "npm run typecheck && vite build --mode live",
     "build:demo": "npm run typecheck && vite build --mode demo",
-    "build:lib": "cross-env BUILD_LIB=true vite build && npm run build:types",
+    "build:lib": "npm run typecheck && cross-env BUILD_LIB=true vite build && npm run build:types",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly --project tsconfig.lib.json --skipLibCheck",
     "preview": "vite preview --port 5050 --host",
     "test": "vitest run",
@@ -51,11 +55,14 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "vue-tsc --noEmit",
     "typecheck:watch": "vue-tsc --noEmit --watch",
-    "lint": "eslint . --fix",
+    "lint": "npm run lint:check",
     "lint:check": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{js,ts,vue,scss,css,json}\"",
     "clean": "rimraf dist node_modules/.vite",
     "analyze": "vite build && npx vite-bundle-analyzer dist/stats.html",
+    "test:consumer": "node scripts/verify-packed-package.mjs",
+    "validate": "npm run lint:check && npm run typecheck && npm run test:coverage && npm run build:lib && npm run test:consumer",
     "prepublishOnly": "npm run build:lib"
   },
   "dependencies": {
@@ -95,6 +102,7 @@
     "cross-env": "^10.1.0",
     "eslint": "^9.39.0",
     "eslint-plugin-vue": "^10.9.2",
+    "globals": "^16.4.0",
     "happy-dom": "^15.11.7",
     "prettier": "^3.9.1",
     "rimraf": "^6.1.3",

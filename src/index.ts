@@ -17,10 +17,8 @@ export { default as BaseBreadcrumb } from './components/shared/BaseBreadcrumb.vu
 export { default as BaseIcon } from './components/shared/BaseIcon.vue';
 export { default as ConfirmDialog } from './components/shared/ConfirmDialog.vue';
 export { default as CustomAutocomplete } from './components/shared/CustomAutocomplete.vue';
-// CustomDataTable is now an alias of CustomDataTableV2. The original V1
-// implementation was removed; V2 is a superset (identical props/emits/slots/
-// exposed methods, plus enableInfiniteScroll), so existing `CustomDataTable`
-// imports keep working unchanged.
+// CustomDataTable is a compatibility alias of the current V2 implementation.
+// There is no separate V1 component on this branch.
 export { CustomDataTableV2, CustomDataTableV2 as CustomDataTable } from './components/shared/data-table-v2';
 export type { DataTableV2Props } from './components/shared/data-table-v2';
 export { default as DescriptionInput } from './components/shared/DescriptionInput.vue';
@@ -40,6 +38,10 @@ export { default as Loading } from './components/Loading.vue';
 // Components - Layout
 export { default as AppSidebar } from './components/layout/AppSidebar.vue';
 export { default as AppHeader } from './components/layout/AppHeader.vue';
+export { default as AppHeaderMenu } from './components/layout/AppHeaderMenu.vue';
+export { default as AppCustomizerControls } from './components/layout/AppCustomizerControls.vue';
+export { default as AppCustomizerSubmit } from './components/layout/AppCustomizerSubmit.vue';
+export type { TextFieldHeight, TextFieldVariant } from './components/layout/AppCustomizerControls.vue';
 export { default as AppLayout } from './components/layout/AppLayout.vue';
 export type { MenuItem, HeaderAction } from './types/components/layout/menu';
 

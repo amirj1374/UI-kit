@@ -14,7 +14,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
-    include: ['src/**/*.{test,spec}.{ts,js}'],
+    include: ['src/**/*.{test,spec}.{ts,js}', 'tests/**/*.{test,spec}.{ts,js}'],
+    setupFiles: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
@@ -23,6 +24,10 @@ export default defineConfig({
         'src/composables/**/*.ts',
         'src/directives/**/*.ts',
         'src/validators/**/*.ts',
+        'src/components/Loading.vue',
+        'src/components/common/AppStepper.vue',
+        'src/components/layout/AppHeader.vue',
+        'src/components/shared/{BaseIcon,ConfirmDialog,ShamsiDatePicker,ToggleSwitch}.vue',
         'src/components/shared/data-table-v2/headerFieldUtils.ts',
         'src/components/shared/data-table-v2/computeActionColumnWidth.ts'
       ],

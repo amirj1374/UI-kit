@@ -457,7 +457,15 @@ const handleExportClientSide = async () => {
 
   // Lazy-load the (large) Excel library only when the user actually exports,
   // so it is not part of the initial bundle.
-  const XLSXmod = await import('xlsx');
+  let XLSXmod: typeof import('xlsx');
+  try {
+    XLSXmod = await import('xlsx');
+  } catch (error) {
+    throw new Error(
+      'Client-side Excel export requires the optional "xlsx" dependency. Install it with "npm install xlsx".',
+      { cause: error }
+    );
+  }
   const XLSX: any = (XLSXmod as any).default ?? XLSXmod;
 
   const headers = props.headers.filter((h: Header) => h.key && h.title);
@@ -1841,7 +1849,8 @@ watch(
         </v-btn>
 
         <!-- Individual Actions for Selected Items (only in bulk mode) -->
-        <template v-if="props.bulkMode" v-for="item in validSelectedItems" :key="getUniqueValue(item)">
+        <template v-if="props.bulkMode">
+          <template v-for="item in validSelectedItems" :key="getUniqueValue(item)">
           <!-- CRUD Actions -->
           <v-btn v-if="props.actions?.includes('edit')" color="blue" size="small" class="me-2" @click="openDialog(item)">
             <span class="me-1">✏️</span>
@@ -1912,6 +1921,7 @@ watch(
               <span v-if="(button as any).icon" class="me-1">{{ (button as any).icon }}</span>
               {{ button.label }}
             </v-btn>
+          </template>
           </template>
         </template>
       </div>
@@ -2014,7 +2024,7 @@ watch(
                     density="compact"
                   >
                     <!-- Custom Header for Selection -->
-                    <template v-slot:header.selection="{ column }">
+                    <template v-slot:[`header.selection`]>
                       <v-checkbox
                         v-if="props.selectable && props.multiSelect"
                         :model-value="selectAll"
@@ -2218,7 +2228,7 @@ watch(
         density="compact"
       >
         <!-- Custom Header for Selection -->
-        <template v-slot:header.selection="{ column }">
+        <template v-slot:[`header.selection`]>
           <v-checkbox
             v-if="props.selectable && props.multiSelect"
             :model-value="selectAll"
