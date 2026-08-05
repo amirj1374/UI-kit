@@ -69,18 +69,16 @@ function syncPreview() {
   root.dataset.uiDensity = props.textFieldHeight;
 }
 
-watch(
-  () => [props.textFieldBorderRadius, props.textFieldVariant, props.textFieldHeight, props.textScale],
-  syncPreview,
-  { immediate: true }
-);
+watch(() => [props.textFieldBorderRadius, props.textFieldVariant, props.textFieldHeight, props.textScale], syncPreview, {
+  immediate: true
+});
 </script>
 
 <template>
   <section class="app-customizer-controls">
     <div class="app-customizer-controls__section">
       <div class="app-customizer-controls__heading">
-        <h6 class="text-subtitle-1 font-weight-medium">گردی فیلدهای متنی</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">گردی فیلدهای متنی</h6>
         <v-chip size="small" color="primary" variant="tonal">{{ textFieldBorderRadius }}px</v-chip>
       </div>
       <v-slider
@@ -98,7 +96,7 @@ watch(
 
     <div class="app-customizer-controls__section">
       <div class="app-customizer-controls__heading">
-        <h6 class="text-subtitle-1 font-weight-medium">اندازه متن رابط</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">اندازه متن رابط</h6>
         <v-chip size="small" color="primary" variant="tonal">{{ textScale }}%</v-chip>
       </div>
       <v-slider
@@ -116,7 +114,7 @@ watch(
 
     <div class="app-customizer-controls__appearance">
       <div class="app-customizer-controls__row">
-        <h6 class="text-subtitle-1 font-weight-medium">سبک فیلدها</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">سبک فیلدها</h6>
         <div class="app-customizer-controls__toggle">
           <v-btn
             v-for="variant in variants"
@@ -133,7 +131,7 @@ watch(
       </div>
 
       <div class="app-customizer-controls__row">
-        <h6 class="text-subtitle-1 font-weight-medium">ارتفاع فیلدها</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">ارتفاع فیلدها</h6>
         <div class="app-customizer-controls__toggle">
           <v-btn
             v-for="height in heights"
@@ -161,27 +159,117 @@ watch(
 </template>
 
 <style scoped lang="scss">
-.app-customizer-controls { display: grid; gap: 24px; }
-.app-customizer-controls__heading, .app-customizer-controls__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.app-customizer-controls h6 { margin: 0; white-space: nowrap; }
-.app-customizer-controls__appearance { display: grid; gap: 12px; }
-.app-customizer-controls__toggle { display: flex; gap: 4px; }
-.app-customizer-controls__toggle :deep(.v-btn) { min-width: 44px; width: 44px; min-height: 40px; padding-inline: 5px; }
-.app-customizer-controls__variant-preview { color: rgb(var(--v-theme-primary)); width: 34px; height: 20px; display: flex; align-items: center; padding: 0 6px; border: 2px solid currentColor; border-radius: 5px; }
-.app-customizer-controls__variant-preview span { width: 100%; border-top: 2px solid currentColor; opacity: .45; }
-.app-customizer-controls__variant-preview.filled { border: 0; border-bottom: 2px solid currentColor; border-radius: 5px 5px 0 0; background: currentColor; }
-.app-customizer-controls__variant-preview.filled span { border-color: rgb(var(--v-theme-surface)); opacity: .7; }
-.app-customizer-controls__variant-preview.solo { border: 0; background: rgb(var(--v-theme-surface)); box-shadow: 0 2px 5px rgba(0,0,0,.35); }
-.app-customizer-controls__variant-preview.plain { border: 0; border-radius: 0; }
-.app-customizer-controls__variant-preview.underlined { border: 0; border-bottom: 2px solid currentColor; border-radius: 0; }
-.app-customizer-controls__height-preview { display: grid; place-items: center; width: 32px; height: 28px; color: rgb(var(--v-theme-primary)); }
-.app-customizer-controls__height-preview span { display: block; width: 28px; border: 2px solid currentColor; border-radius: 4px; }
-.app-customizer-controls__height-preview.compact span { height: 14px; }
-.app-customizer-controls__height-preview.default span { height: 19px; }
-.app-customizer-controls__height-preview.comfortable span { height: 24px; }
-.app-customizer-controls__toggle :deep(.v-btn--variant-flat) .app-customizer-controls__variant-preview, .app-customizer-controls__toggle :deep(.v-btn--variant-flat) .app-customizer-controls__height-preview { color: rgb(var(--v-theme-on-primary)); }
-.app-customizer-controls__toggle :deep(.v-btn--variant-flat) .app-customizer-controls__variant-preview.filled span { border-color: rgb(var(--v-theme-primary)); }
-.app-customizer-controls__actions { display: grid; gap: 8px; padding: 16px 0 0; border-top: 1px solid rgba(var(--v-theme-borderLight), .5); color: rgb(var(--v-theme-lightText)); font-size: .78rem; text-align: center; }
+.app-customizer-controls {
+  display: grid;
+  gap: 24px;
+}
+.app-customizer-controls__heading,
+.app-customizer-controls__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.app-customizer-controls h6 {
+  margin: 0;
+  white-space: nowrap;
+}
+.app-customizer-controls__appearance {
+  display: grid;
+  gap: 12px;
+}
+.app-customizer-controls__toggle {
+  display: flex;
+  gap: 4px;
+}
+.app-customizer-controls__toggle :deep(.v-btn) {
+  min-width: 44px;
+  width: 44px;
+  min-height: 40px;
+  padding-inline: 5px;
+}
+.app-customizer-controls__variant-preview {
+  color: rgb(var(--v-theme-primary));
+  width: 34px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  border: 2px solid currentColor;
+  border-radius: 5px;
+}
+.app-customizer-controls__variant-preview span {
+  width: 100%;
+  border-top: 2px solid currentColor;
+  opacity: 0.45;
+}
+.app-customizer-controls__variant-preview.filled {
+  border: 0;
+  border-bottom: 2px solid currentColor;
+  border-radius: 5px 5px 0 0;
+  background: currentColor;
+}
+.app-customizer-controls__variant-preview.filled span {
+  border-color: rgb(var(--v-theme-surface));
+  opacity: 0.7;
+}
+.app-customizer-controls__variant-preview.solo {
+  border: 0;
+  background: rgb(var(--v-theme-surface));
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+.app-customizer-controls__variant-preview.plain {
+  border: 0;
+  border-radius: 0;
+}
+.app-customizer-controls__variant-preview.underlined {
+  border: 0;
+  border-bottom: 2px solid currentColor;
+  border-radius: 0;
+}
+.app-customizer-controls__height-preview {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 28px;
+  color: rgb(var(--v-theme-primary));
+}
+.app-customizer-controls__height-preview span {
+  display: block;
+  width: 28px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+}
+.app-customizer-controls__height-preview.compact span {
+  height: 14px;
+}
+.app-customizer-controls__height-preview.default span {
+  height: 19px;
+}
+.app-customizer-controls__height-preview.comfortable span {
+  height: 24px;
+}
+.app-customizer-controls__toggle :deep(.v-btn--variant-flat) .app-customizer-controls__variant-preview,
+.app-customizer-controls__toggle :deep(.v-btn--variant-flat) .app-customizer-controls__height-preview {
+  color: rgb(var(--v-theme-on-primary));
+}
+.app-customizer-controls__toggle :deep(.v-btn--variant-flat) .app-customizer-controls__variant-preview.filled span {
+  border-color: rgb(var(--v-theme-primary));
+}
+.app-customizer-controls__actions {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0 0;
+  border-top: 1px solid rgba(var(--v-theme-borderLight), 0.5);
+  color: rgb(var(--v-theme-lightText));
+  font-size: 0.78rem;
+  text-align: center;
+}
 
-@media (max-width: 420px) { .app-customizer-controls__row { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 420px) {
+  .app-customizer-controls__row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
 </style>
