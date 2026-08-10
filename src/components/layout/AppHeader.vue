@@ -96,7 +96,7 @@ const computedHeaderMenu = computed(() => {
 
     <!-- CUSTOMIZER BUTTON -->
     <v-btn
-      class="hidden-md-and-down text-secondary mr-2 ml-2"
+      class="text-secondary mr-2 ml-2"
       color="lightsecondary"
       icon
       rounded="sm"

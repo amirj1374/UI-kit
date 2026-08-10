@@ -1,0 +1,5 @@
+<script setup lang="ts">
+withDefaults(defineProps<{ title: string; description?: string; columns?: number }>(), { columns: 2 });
+</script>
+<template><section class="app-form-section"><header><div><h2>{{ title }}</h2><p v-if="description">{{ description }}</p></div><slot name="actions" /></header><div class="app-form-section__fields" :style="{ '--columns': columns }"><slot /></div></section></template>
+<style scoped>.app-form-section{padding:22px;border-radius:var(--app-text-field-radius,12px);background:rgb(var(--v-theme-surface))}.app-form-section header{display:flex;justify-content:space-between;gap:16px;margin-bottom:20px}.app-form-section h2{margin:0;font-size:1.05rem;font-weight:800}.app-form-section p{margin:6px 0 0;color:rgb(var(--v-theme-lightText));font-size:.88rem}.app-form-section__fields{display:grid;grid-template-columns:repeat(var(--columns),minmax(0,1fr));gap:18px}@media(max-width:700px){.app-form-section{padding:16px}.app-form-section__fields{grid-template-columns:1fr}}</style>
