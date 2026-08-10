@@ -30,6 +30,16 @@ export { default as UiChildCard } from './components/shared/UiChildCard.vue';
 export { default as UiParentCard } from './components/shared/UiParentCard.vue';
 export { default as VPriceTextField } from './components/shared/VPriceTextField.vue';
 export { default as ToggleSwitch } from './components/shared/ToggleSwitch.vue';
+export { default as AppPageHeader } from './components/shared/AppPageHeader.vue';
+export { default as AppFilterBar } from './components/shared/AppFilterBar.vue';
+export { default as AppEmptyState } from './components/shared/AppEmptyState.vue';
+export { default as AppStatusBadge } from './components/shared/AppStatusBadge.vue';
+export { default as AppConfirmAction } from './components/shared/AppConfirmAction.vue';
+export { default as AppFilePreview } from './components/shared/AppFilePreview.vue';
+export type { PreviewFile } from './components/shared/AppFilePreview.vue';
+export { default as AppFormSection } from './components/shared/AppFormSection.vue';
+export { default as AppNotificationCenter } from './components/shared/AppNotificationCenter.vue';
+export type { AppNotification } from './components/shared/AppNotificationCenter.vue';
 
 // Components - Common
 export { default as AppStepper } from './components/common/AppStepper.vue';
@@ -41,9 +51,12 @@ export { default as AppHeader } from './components/layout/AppHeader.vue';
 export { default as AppHeaderMenu } from './components/layout/AppHeaderMenu.vue';
 export { default as AppCustomizerControls } from './components/layout/AppCustomizerControls.vue';
 export { default as AppCustomizerPanel } from './components/layout/AppCustomizerPanel.vue';
-export type { CustomizerThemeOption, MenuOrientation } from './components/layout/AppCustomizerPanel.vue';
+export { default as AppCustomizer } from './components/layout/AppCustomizer.vue';
+export type { CustomizerThemeOption } from './components/layout/AppCustomizerPanel.vue';
 export { default as AppCustomizerSubmit } from './components/layout/AppCustomizerSubmit.vue';
 export type { TextFieldHeight, TextFieldVariant } from './components/layout/AppCustomizerControls.vue';
+export { parseCustomizerPreferences, serializeCustomizerPreferences, customizerPreferenceDefaults } from './utils/customizerPreferences';
+export type { ContentWidth, CustomizerPreferences, MenuOrientation, SurfaceStyle } from './utils/customizerPreferences';
 export { default as AppLayout } from './components/layout/AppLayout.vue';
 export type { MenuItem, HeaderAction } from './types/components/layout/menu';
 

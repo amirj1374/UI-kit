@@ -1,0 +1,150 @@
+// Visual surface modes deliberately change presentation only. They rely on the
+// active Vuetify theme for colour, so Light/Dark remain independent of a mode.
+.surface-elevated {
+  background: rgb(var(--v-theme-background));
+
+  .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel, .v-navigation-drawer, .v-app-bar {
+    border: 0 !important;
+    box-shadow: 0 12px 28px rgba(21, 28, 52, .14), 0 2px 5px rgba(21, 28, 52, .06) !important;
+  }
+
+  .v-card { border-radius: 16px !important; overflow: hidden; transform: translateY(-1px); }
+
+  &[class*='v-theme--Dark'] .v-card,
+  &[class*='v-theme--Dark'] .v-sheet:not(.v-snackbar__wrapper),
+  &[class*='v-theme--Dark'] .v-expansion-panel {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .26), 0 1px 0 rgba(255, 255, 255, .035) !important;
+  }
+}
+
+.surface-rounded {
+  background: rgb(var(--v-theme-lightprimary));
+
+  .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel, .v-navigation-drawer, .v-app-bar {
+    border: 0 !important;
+    border-radius: 28px !important;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(var(--v-theme-primary), .12) !important;
+  }
+
+  .v-card { border-radius: 32px !important; }
+  .v-card__underlay { border-radius: inherit; }
+  .v-field, .v-btn { border-radius: 18px !important; }
+
+  &[class*='v-theme--Dark'] {
+    background: rgb(var(--v-theme-background));
+
+    .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel {
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .24), 0 1px 0 rgba(255, 255, 255, .04) !important;
+    }
+  }
+}
+
+.surface-tonal {
+  background: linear-gradient(145deg, rgb(var(--v-theme-lightprimary)), rgb(var(--v-theme-background)) 52%, rgb(var(--v-theme-lightsecondary)));
+
+  .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel, .v-navigation-drawer, .v-app-bar {
+    border: 1px solid rgba(var(--v-theme-primary), .12) !important;
+    box-shadow: none !important;
+  }
+
+  .v-card {
+    border-radius: 18px !important;
+    overflow: hidden;
+    background: color-mix(in srgb, rgb(var(--v-theme-surface)) 86%, rgb(var(--v-theme-lightprimary))) !important;
+  }
+
+  .v-card__underlay { border-radius: inherit; }
+
+  &[class*='v-theme--Dark'] {
+    background: linear-gradient(145deg, rgb(var(--v-theme-background)), color-mix(in srgb, rgb(var(--v-theme-background)) 78%, rgb(var(--v-theme-primary))) 52%, rgb(var(--v-theme-background)));
+
+    .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel {
+      border-color: rgba(255, 255, 255, .09) !important;
+      background: color-mix(in srgb, rgb(var(--v-theme-surface)) 92%, rgb(var(--v-theme-primary))) !important;
+    }
+  }
+}
+
+// Premium Executive: a distinct operational banking shell. It deliberately
+// defines separate light and dark surfaces so dark mode never inherits a light
+// workspace by accident. The accent remains the active Vuetify primary colour.
+.surface-premium-executive {
+  background: #e8edf4;
+  color: #18263a;
+
+  .page-wrapper { padding: 28px 32px; border-radius: 0; background: #f4f7fa !important; }
+
+  .rightSidebar {
+    background: #132035 !important;
+    border-left: 1px solid rgba(255, 255, 255, .09) !important;
+    box-shadow: 12px 0 30px rgba(14, 22, 36, .16) !important;
+
+    .sidebar-logo { padding: 28px 24px !important; border-bottom: 1px solid rgba(255, 255, 255, .1); }
+    .v-list { background: transparent !important; color: #c2cedd !important; }
+    .v-list-item { min-height: 46px; margin-block: 3px; border-radius: 7px !important; color: #c2cedd !important; }
+    .v-list-item:hover { background: rgba(255, 255, 255, .075) !important; color: #fff !important; }
+    .v-list-item--active { background: rgba(var(--v-theme-primary), .28) !important; color: #fff !important; box-shadow: inset -3px 0 0 rgb(var(--v-theme-primary)); }
+    .v-list-group { background: transparent !important; }
+    .sidebar-footer { border-top: 1px solid rgba(255, 255, 255, .08); color: #9eacbe !important; }
+  }
+
+  .app-header, .topbar { background: #fff !important; border-bottom: 1px solid #dce3eb !important; box-shadow: 0 4px 14px rgba(21, 32, 51, .05) !important; }
+
+  .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel { border: 1px solid #dfe6ee !important; border-radius: 10px !important; box-shadow: 0 8px 22px rgba(20, 33, 52, .065) !important; }
+  .v-card { overflow: hidden; background: #fff !important; }
+  .v-card-item { padding: 22px 24px; border-bottom: 1px solid #edf1f5; }
+  .v-card-text { padding: 24px; }
+
+  .v-field { border-radius: 7px !important; background: #fff; }
+  .v-field--variant-outlined .v-field__outline { color: #c9d4df; }
+  .v-field--focused .v-field__outline { color: rgb(var(--v-theme-primary)); }
+  .v-btn { border-radius: 6px; font-weight: 650; letter-spacing: 0; }
+
+  .v-tabs { border-bottom: 1px solid #e5eaf0; }
+  .v-tab.v-btn { min-width: 100px; border-radius: 0 !important; background: transparent !important; color: #66758a; font-weight: 700; }
+  .v-tab.v-btn.v-tab--selected { color: rgb(var(--v-theme-primary)); }
+
+  .v-data-table, .v-table { border: 1px solid #dfe6ee; border-radius: 9px; overflow: hidden; }
+  .v-data-table thead tr, .v-table thead tr { background: #f0f3f7; }
+  .v-data-table thead th, .v-table thead th { height: 44px !important; color: #33445b !important; font-size: .8rem; font-weight: 800; border-bottom: 1px solid #d6dee8 !important; }
+  .v-data-table tbody td, .v-table tbody td { height: 42px !important; border-bottom: 1px solid #edf1f5; }
+  .v-data-table tbody tr:hover, .v-table tbody tr:hover { background: rgba(var(--v-theme-primary), .045) !important; }
+  .v-data-table-footer { padding: 12px 16px; background: #fafbfd; border-top: 1px solid #e5eaf0; }
+
+  .text-h1, .text-h2, .text-h3 { color: #17243a; font-weight: 750 !important; letter-spacing: -.01em; }
+
+  &[class*='v-theme--Dark'] {
+    background: #0d1420;
+    color: #e8eef7;
+
+    .page-wrapper { background: #111a27 !important; }
+    .rightSidebar { background: #0a111c !important; box-shadow: 12px 0 30px rgba(0, 0, 0, .34) !important; }
+    .app-header, .topbar { background: #162130 !important; border-bottom-color: #263448 !important; box-shadow: 0 4px 14px rgba(0, 0, 0, .16) !important; }
+
+    .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel { border-color: #27364a !important; box-shadow: 0 10px 25px rgba(0, 0, 0, .2) !important; }
+    .v-card { background: #182333 !important; }
+    .v-card-item { border-bottom-color: #26364a; }
+    .v-field { background: #1d2a3b; }
+    .v-field--variant-outlined .v-field__outline { color: #53657a; }
+
+    .v-tabs { border-bottom-color: #2b3a4d; }
+    .v-tab.v-btn { color: #aab8c8; }
+    .v-data-table, .v-table { border-color: #2b3b4f; }
+    .v-data-table thead tr, .v-table thead tr { background: #1d2a3a; }
+    .v-data-table thead th, .v-table thead th { color: #d6e0eb !important; border-bottom-color: #34465b !important; }
+    .v-data-table tbody td, .v-table tbody td { border-bottom-color: #26374a; }
+    .v-data-table tbody tr:hover, .v-table tbody tr:hover { background: rgba(var(--v-theme-primary), .12) !important; }
+    .v-data-table-footer { background: #152031; border-top-color: #2b3b4f; }
+    .text-h1, .text-h2, .text-h3 { color: #f3f7fb; }
+  }
+
+  @media (max-width: 960px) { .page-wrapper { padding: 18px; } }
+}
+
+// Vuetify teleports overlays to the document body; mirror Premium both in
+// light and dark mode instead of forcing a light dialog over a dark workspace.
+:root[data-surface-style='premium-executive'] .v-overlay__content > .v-card,
+:root[data-surface-style='premium-executive'] .v-overlay__content > .v-sheet { border: 1px solid #dfe6ee !important; border-top: 3px solid rgb(var(--v-theme-primary)) !important; border-radius: 10px !important; box-shadow: 0 18px 40px rgba(20, 33, 52, .16) !important; }
+:root[data-surface-style='premium-executive'][data-theme-mode='dark'] .v-overlay__content > .v-card,
+:root[data-surface-style='premium-executive'][data-theme-mode='dark'] .v-overlay__content > .v-sheet { background: #182333 !important; border-color: #2b3b4f !important; box-shadow: 0 18px 40px rgba(0, 0, 0, .34) !important; }
