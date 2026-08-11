@@ -45,6 +45,13 @@
   }
 }
 
+// This lives in the global stylesheet deliberately. In a scoped component
+// stylesheet, the compiler can reduce `:global(.surface-rounded)` to the
+// unsafe `.surface-rounded { border-radius: 50% }` rule.
+.surface-rounded .app-customizer-panel__width-options .v-btn {
+  border-radius: 50%;
+}
+
 .surface-tonal {
   background: linear-gradient(145deg, rgb(var(--v-theme-lightprimary)), rgb(var(--v-theme-background)) 52%, rgb(var(--v-theme-lightsecondary)));
 
