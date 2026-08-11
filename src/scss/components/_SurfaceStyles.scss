@@ -18,18 +18,20 @@
 }
 
 .surface-rounded {
-  background: rgb(var(--v-theme-lightprimary));
+  // Keep the application shell stable. "Rounded" is a card surface treatment,
+  // not a request to turn the header and navigation drawer into floating pills.
+  background: rgb(var(--v-theme-containerBg));
 
-  .v-card, .v-sheet:not(.v-snackbar__wrapper), .v-expansion-panel, .v-navigation-drawer, .v-app-bar {
+  .v-card, .v-expansion-panel {
     border: 0 !important;
-    border-radius: 28px !important;
+    border-radius: 26px !important;
     overflow: hidden;
     box-shadow: 0 10px 24px rgba(var(--v-theme-primary), .12) !important;
   }
 
-  .v-card { border-radius: 32px !important; }
+  .v-card { border-radius: 28px !important; }
   .v-card__underlay { border-radius: inherit; }
-  .v-field, .v-btn { border-radius: 18px !important; }
+  .v-field, .v-btn { border-radius: 16px !important; }
 
   &[class*='v-theme--Dark'] {
     background: rgb(var(--v-theme-background));
