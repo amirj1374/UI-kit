@@ -24,14 +24,17 @@
 
   .v-card, .v-expansion-panel {
     border: 0 !important;
-    border-radius: 26px !important;
+    border-radius: 16px !important;
     overflow: hidden;
-    box-shadow: 0 10px 24px rgba(var(--v-theme-primary), .12) !important;
+    box-shadow: 0 8px 20px rgba(var(--v-theme-primary), .10) !important;
   }
 
-  .v-card { border-radius: 28px !important; }
+  // A rounded surface should be distinct without making ordinary business
+  // content look pill-shaped. Keep the stronger radius for top-level cards.
+  .v-card { border-radius: 20px !important; }
   .v-card__underlay { border-radius: inherit; }
-  .v-field, .v-btn { border-radius: 16px !important; }
+  // Field radius is a separate Customizer setting; do not override it here.
+  .v-btn { border-radius: 12px !important; }
 
   &[class*='v-theme--Dark'] {
     background: rgb(var(--v-theme-background));
