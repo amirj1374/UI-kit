@@ -4,6 +4,7 @@ import ShamsiDatePicker from '@/components/shared/ShamsiDatePicker.vue';
 import ToggleSwitch from '@/components/shared/ToggleSwitch.vue';
 import { IconCheck, IconSquareX } from '@tabler/icons-vue';
 import type { FilterOperator, Header } from '@/types/componentTypes/DataTableTypes';
+import { useUiKit } from '../../../../platform/uiKit';
 import {
   getFieldInputType,
   hasAutocomplete,
@@ -29,6 +30,7 @@ defineProps<{
 
 const filterModel = defineModel<Record<string, any>>('filterModel', { required: true });
 const filterOperatorModel = defineModel<Record<string, FilterOperator>>('filterOperatorModel', { required: true });
+const ui = useUiKit();
 </script>
 
 <template>
@@ -100,8 +102,8 @@ const filterOperatorModel = defineModel<Record<string, FilterOperator>>('filterO
         activeColor="#3bd32a"
         inactiveColor="#d32a2a"
         :options="[
-          { value: 'true', label: 'فعال', icon: IconCheck },
-          { value: 'false', label: 'غیر فعال', icon: IconSquareX }
+          { value: 'true', label: ui.t('yes'), icon: IconCheck },
+          { value: 'false', label: ui.t('no'), icon: IconSquareX }
         ]"
       />
       <v-text-field

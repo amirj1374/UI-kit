@@ -37,8 +37,8 @@ const emit = defineEmits<{
 }>();
 
 const copy = computed(() => props.language === 'en'
-  ? { radius: 'Text field radius', radiusSlider: 'Adjust text field radius', textScale: 'Interface text size', textScaleSlider: 'Adjust interface text size', fieldStyle: 'Field style', fieldHeight: 'Field height', outlined: 'Outlined', filled: 'Filled', solo: 'Elevated', plain: 'Plain', underlined: 'Underlined', compact: 'Compact', default: 'Default', comfortable: 'Comfortable' }
-  : { radius: 'گردی فیلدهای متنی', radiusSlider: 'تنظیم گردی فیلدهای متنی', textScale: 'اندازه متن رابط', textScaleSlider: 'تنظیم اندازه متن رابط', fieldStyle: 'سبک فیلدها', fieldHeight: 'ارتفاع فیلدها', outlined: 'دورخطی', filled: 'پرشده', solo: 'سایه‌دار', plain: 'تخت', underlined: 'زیرخطی', compact: 'کوتاه', default: 'متوسط', comfortable: 'بلند' });
+  ? { radius: 'Text field radius', radiusSlider: 'Adjust text field radius', textScale: 'Interface text size', textScaleSlider: 'Adjust interface text size', fieldStyle: 'Field style', fieldHeight: 'Field height', outlined: 'Outlined', filled: 'Filled', solo: 'Elevated', plain: 'Plain', underlined: 'Underlined', compact: 'Compact', default: 'Default', comfortable: 'Comfortable', saveHint: 'Changes are saved after confirmation.', save: 'Apply and save settings' }
+  : { radius: 'گردی فیلدهای متنی', radiusSlider: 'تنظیم گردی فیلدهای متنی', textScale: 'اندازه متن رابط', textScaleSlider: 'تنظیم اندازه متن رابط', fieldStyle: 'سبک فیلدها', fieldHeight: 'ارتفاع فیلدها', outlined: 'دورخطی', filled: 'پرشده', solo: 'سایه‌دار', plain: 'تخت', underlined: 'زیرخطی', compact: 'کوتاه', default: 'متوسط', comfortable: 'بلند', saveHint: 'تغییرات پس از تأیید ذخیره می‌شوند.', save: 'اعمال و ذخیره تنظیمات' });
 const variants = computed<Array<{ value: TextFieldVariant; title: string }>>(() => [
   { value: 'outlined', title: copy.value.outlined }, { value: 'filled', title: copy.value.filled }, { value: 'solo', title: copy.value.solo }, { value: 'plain', title: copy.value.plain }, { value: 'underlined', title: copy.value.underlined }
 ]);
@@ -148,10 +148,10 @@ watch(() => [props.textFieldBorderRadius, props.textFieldVariant, props.textFiel
     </div>
 
     <div v-if="showActions" class="app-customizer-controls__actions">
-      <div>تغییرات پس از تأیید ذخیره می‌شوند.</div>
+      <div>{{ copy.saveHint }}</div>
       <v-btn color="primary" size="large" block @click="emit('apply')">
         <IconCheck size="20" class="ml-2" />
-        اعمال و ذخیره تنظیمات
+        {{ copy.save }}
       </v-btn>
     </div>
   </section>

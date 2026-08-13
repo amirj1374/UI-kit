@@ -33,6 +33,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { type Component, type Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUiKit } from '../../../platform/uiKit';
 import DataTableFilterFields from './components/DataTableFilterFields.vue';
 import { computeActionColumnWidth } from './computeActionColumnWidth';
 const initialized = ref(false);
@@ -120,6 +121,7 @@ const itemToDelete = ref<TableItem | null>(null);
 const snackbar = ref(false);
 const snackbarMessage = ref('');
 const router = useRouter();
+const ui = useUiKit();
 const itemsPerPage = ref(props.pageSize);
 const totalSize = ref(0);
 const totalPages = ref(0);
@@ -294,7 +296,7 @@ const buildTableHeaders = () => {
   const visibleHeaders = autoHeaders.value.filter((header) => isColumnVisible(header.key));
   const base = [...(props.selectable ? [selectionHeader] : []), ...visibleHeaders];
   if (!hasAnyActions.value) return base;
-  return [...base, { title: 'عملیات', key: 'actions', sortable: false, width: computeActionColumnWidth(props) }];
+  return [...base, { title: ui.t('actions'), key: 'actions', sortable: false, width: computeActionColumnWidth(props) }];
 };
 
 const groupedHeaders = computed(() => buildTableHeaders());
@@ -571,7 +573,7 @@ const handleExportClientSide = async () => {
 
   const exportDate = now.toLocaleDateString('fa-IR') + ' ' + now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
 
-  const title = props.exportFileName || 'گزارش';
+  const title = props.exportFileName || ui.t('exportReport');
 
   const moneyTotals: Record<string, number> = {};
 
@@ -587,7 +589,7 @@ const handleExportClientSide = async () => {
         moneyTotals[h.title] = (moneyTotals[h.title] || 0) + value;
       }
 
-      if (typeof value === 'boolean') value = value ? 'بله' : 'خیر';
+      if (typeof value === 'boolean') value = value ? ui.t('yes') : ui.t('no');
 
       row[h.title] = value ?? '';
     });
@@ -599,7 +601,7 @@ const handleExportClientSide = async () => {
 
   headers.forEach((h, i) => {
     if (h.type === 'money') totalRow[h.title] = moneyTotals[h.title] || 0;
-    else if (i === 0) totalRow[h.title] = 'جمع کل';
+    else if (i === 0) totalRow[h.title] = ui.t('total');
     else totalRow[h.title] = '';
   });
 
@@ -631,7 +633,7 @@ const handleExportClientSide = async () => {
     return { wch: max + 4 };
   });
 
-  XLSX.utils.sheet_add_aoa(ws, [[title], [`تاریخ چاپ: ${exportDate}`], []], { origin: 'A1' });
+  XLSX.utils.sheet_add_aoa(ws, [[title], [`${ui.t('printDate')}: ${exportDate}`], []], { origin: 'A1' });
 
   ws['!merges'] = [
     {
@@ -1025,11 +1027,11 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
      * 10. Error Handling
      ========================= */
     if (err.response) {
-      error.value = `خطای سرور: ${err.response.status}`;
+      error.value = `${ui.t('serverError')}: ${err.response.status}`;
     } else if (err.request) {
-      error.value = 'خطای شبکه. لطفا دوباره تلاش کنید.';
+      error.value = ui.t('networkError');
     } else {
-      error.value = 'یک خطای غیرمنتظره رخ داد.';
+      error.value = ui.t('unexpectedError');
     }
 
     console.error(err);
@@ -1934,11 +1936,11 @@ watch(
   </div>
   <!-- Action Buttons OUTSIDE the table container -->
   <div class="action-buttons d-flex align-center mb-2" v-if="!props.inlineFilter || props.settings">
-    <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">ایجاد ✅</v-btn>
-    <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
-    <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
-    <v-btn v-if="props.showRefreshButton" @click="debouncedFetchData()" :loading="loading">بروزرسانی 🔄</v-btn>
-    <v-btn v-if="props.globalFetch" color="primary" class="me-2" @click="resetFilter()" :loading="loading">جستجو کلی</v-btn>
+    <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">{{ ui.t('create') }} ✅</v-btn>
+    <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">{{ ui.t('filters') }} 🔍</v-btn>
+    <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">{{ ui.t('search') }} 🔍</v-btn>
+    <v-btn v-if="props.showRefreshButton" @click="debouncedFetchData()" :loading="loading">{{ ui.t('refresh') }} 🔄</v-btn>
+    <v-btn v-if="props.globalFetch" color="primary" class="me-2" @click="resetFilter()" :loading="loading">{{ ui.t('globalSearch') }}</v-btn>
     <v-btn
       v-if="enableExport"
       color="primary"
@@ -1949,7 +1951,7 @@ watch(
       :disabled="loading"
       >
       <IconFileExport :size="18" class="me-1" />
-      گزارش کلی</v-btn
+      {{ ui.t('exportReport') }}</v-btn
     >
 
     <!-- Action Buttons for Selected Items -->
@@ -1958,7 +1960,7 @@ watch(
         <!-- Group Actions -->
         <v-btn v-if="props.enableGroupDelete" color="red" size="small" class="me-2" @click="openGroupDeleteDialog">
           <span class="me-1">🗑️</span>
-          حذف گروهی ({{ selectedCount }})
+          {{ ui.t('bulkDelete') }} ({{ selectedCount }})
         </v-btn>
 
         <!-- Individual Actions for Selected Items (only in bulk mode) -->
@@ -1967,17 +1969,17 @@ watch(
           <!-- CRUD Actions -->
           <v-btn v-if="props.actions?.includes('edit')" color="blue" size="small" class="me-2" @click="openDialog(item)">
             <span class="me-1">✏️</span>
-            ویرایش
+            {{ ui.t('edit') }}
           </v-btn>
 
           <v-btn v-if="props.actions?.includes('delete')" color="red" size="small" class="me-2" @click="openDeleteDialog(item)">
             <span class="me-1">🗑️</span>
-            حذف
+            {{ ui.t('delete') }}
           </v-btn>
 
           <v-btn v-if="props.actions?.includes('view')" color="purple" size="small" class="me-2" @click="goToRoute('view', item)">
             <span class="me-1">👁️</span>
-            نمایش
+            {{ ui.t('view') }}
           </v-btn>
 
           <!-- Route Actions -->
@@ -2048,7 +2050,7 @@ watch(
           class="data-table-settings-button"
           color="primary"
           variant="tonal"
-          aria-label="تنظیمات جدول"
+          :aria-label="ui.t('tableSettings')"
         >
           <IconSettings :size="19" />
         </v-btn>
@@ -2057,19 +2059,19 @@ watch(
         <div class="data-table-column-settings__header">
           <div class="data-table-column-settings__icon"><IconSettings :size="18" /></div>
           <div>
-            <strong>نمای جدول</strong>
-            <span>مرتب‌سازی و ستون‌های قابل نمایش</span>
+            <strong>{{ ui.t('tableView') }}</strong>
+            <span>{{ ui.t('tableViewDescription') }}</span>
           </div>
         </div>
         <v-divider />
         <v-card-text class="data-table-column-settings__section">
-          <div class="data-table-column-settings__section-title">مرتب‌سازی</div>
+          <div class="data-table-column-settings__section-title">{{ ui.t('sort') }}</div>
           <v-select
             v-model="selectedSortKey"
             :items="sortableHeaders"
             item-title="title"
             item-value="key"
-            label="مرتب‌سازی بر اساس"
+            :label="ui.t('sortBy')"
             clearable
             density="compact"
             variant="outlined"
@@ -2084,14 +2086,14 @@ watch(
             divided
             class="data-table-column-settings__order mt-3 w-100"
           >
-            <v-btn value="asc" class="flex-1">صعودی</v-btn>
-            <v-btn value="desc" class="flex-1">نزولی</v-btn>
+            <v-btn value="asc" class="flex-1">{{ ui.t('ascending') }}</v-btn>
+            <v-btn value="desc" class="flex-1">{{ ui.t('descending') }}</v-btn>
           </v-btn-toggle>
-          <div class="data-table-column-settings__section-title data-table-column-settings__page-size-title">تعداد ردیف هر صفحه</div>
+          <div class="data-table-column-settings__section-title data-table-column-settings__page-size-title">{{ ui.t('rowsPerPage') }}</div>
           <v-select
             :model-value="itemsPerPage"
             :items="pageSizeOptions"
-            label="تعداد رکورد در درخواست"
+            :label="ui.t('requestPageSize')"
             density="compact"
             variant="outlined"
             hide-details
@@ -2101,15 +2103,15 @@ watch(
         </v-card-text>
         <v-divider />
         <div class="data-table-column-settings__columns-title">
-          <span>نمایش ستون‌ها</span>
-          <small>{{ visibleDataColumnKeys.length }} از {{ configurableHeaders.length }}</small>
+          <span>{{ ui.t('visibleColumns') }}</span>
+          <small>{{ visibleDataColumnKeys.length }} / {{ configurableHeaders.length }}</small>
         </div>
         <v-list density="compact" max-height="260" class="data-table-column-settings__list overflow-y-auto">
           <v-list-item v-for="header in configurableHeaders" :key="header.key" :title="header.title" class="data-table-column-settings__item">
             <template #prepend>
               <v-checkbox-btn
                 :model-value="isColumnVisible(header.key)"
-                :aria-label="`نمایش ستون ${header.title}`"
+                :aria-label="`${ui.t('visibleColumns')}: ${header.title}`"
                 @update:model-value="setColumnVisible(header.key, Boolean($event))"
               />
             </template>
@@ -2144,8 +2146,8 @@ watch(
   </v-card>
   <!-- Selection Actions -->
   <div v-if="props.selectable && hasSelection" class="selection-actions mb-2">
-    <v-chip color="primary" class="me-2"> {{ selectedCount }} آیتم انتخاب شده </v-chip>
-    <v-btn color="error" size="small" class="me-2" @click="clearSelection"> پاک کردن انتخاب </v-btn>
+    <v-chip color="primary" class="me-2"> {{ selectedCount }} {{ ui.t('items') }} </v-chip>
+    <v-btn color="error" size="small" class="me-2" @click="clearSelection">{{ ui.t('clearSelection') }}</v-btn>
   </div>
   <!-- Data Table Container (fills parent height) -->
   <div
@@ -2170,8 +2172,8 @@ watch(
       <div v-if="props.groupBy && groupedItems.length > 0" class="grouped-table">
         <!-- Group Controls -->
         <div class="group-controls mb-3">
-          <v-btn size="small" color="primary" @click="expandAllGroups" class="me-2"> گسترش همه </v-btn>
-          <v-btn size="small" color="secondary" @click="collapseAllGroups" class="me-2"> جمع کردن همه </v-btn>
+          <v-btn size="small" color="primary" @click="expandAllGroups" class="me-2">{{ ui.t('expandAll') }}</v-btn>
+          <v-btn size="small" color="secondary" @click="collapseAllGroups" class="me-2">{{ ui.t('collapseAll') }}</v-btn>
         </div>
 
         <!-- Single Scrollable Container for All Groups -->
@@ -2215,7 +2217,7 @@ watch(
                     :items-per-page="itemsPerPage"
                     hide-default-footer
                     class="elevation-1 group-table"
-                    no-data-text="رکوردی یافت نشد"
+                    :no-data-text="ui.t('noRecords')"
                     hover
                     :height="'auto'"
                     density="compact"
@@ -2443,7 +2445,7 @@ watch(
         :items-per-page="itemsPerPage"
         hide-default-footer
         class="elevation-1"
-        no-data-text="رکوردی یافت نشد"
+        :no-data-text="ui.t('noRecords')"
         hover
         :height="props.height"
         density="compact"
@@ -2646,7 +2648,7 @@ watch(
     <div v-if="props.showPagination" class="pagination-wrapper">
       <div class="d-flex justify-space-between align-center pa-3">
         <div class="text-subtitle-3">
-          نمایش {{ (currentPage - 1) * itemsPerPage + 1 }} تا {{ Math.min(currentPage * itemsPerPage, totalSize) }} از {{ totalSize }} رکورد
+          {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, totalSize) }} / {{ totalSize }} {{ ui.t('records') }}
         </div>
         <v-pagination v-model="currentPage" :length="totalPages" :total-visible="5" size="small" @update:model-value="handlePageChange" />
       </div>
@@ -2655,7 +2657,7 @@ watch(
 
   <v-dialog v-model="dialog" max-width="1400" aria-label="Create or edit row">
     <v-card>
-      <v-card-title>{{ isEditing ? 'ویرایش' : 'ایجاد' }}</v-card-title>
+      <v-card-title>{{ isEditing ? ui.t('editTitle') : ui.t('createTitle') }}</v-card-title>
       <v-card-text>
         <v-container>
           <component v-if="props.formComponent" :is="props.formComponent" v-model="formModel" />
@@ -2716,8 +2718,8 @@ watch(
                     activeColor="#3bd32a"
                     inactiveColor="#d32a2a"
                     :options="[
-                      { value: 'true', label: 'فعال', icon: IconCheck },
-                      { value: 'false', label: 'غیر فعال', icon: IconSquareX }
+                      { value: 'true', label: ui.t('yes'), icon: IconCheck },
+                      { value: 'false', label: ui.t('no'), icon: IconSquareX }
                     ]"
                   />
                   <v-text-field
@@ -2736,19 +2738,19 @@ watch(
         </v-container>
       </v-card-text>
       <v-card-actions>
-        <v-btn variant="tonal" color="error" @click="dialog = false">انصراف</v-btn>
-        <v-btn color="primary" @click="saveItem">{{ isEditing ? 'ذخیره' : 'ایجاد' }}</v-btn>
+        <v-btn variant="tonal" color="error" @click="dialog = false">{{ ui.t('cancel') }}</v-btn>
+        <v-btn color="primary" @click="saveItem">{{ isEditing ? ui.t('save') : ui.t('create') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 
   <v-dialog v-model="deleteDialog" max-width="400" aria-label="Delete row confirmation">
     <v-card>
-      <v-card-title>حذف آیتم</v-card-title>
-      <v-card-text> آیا مایل به حذف این رکورد هستید ?</v-card-text>
+      <v-card-title>{{ ui.t('deleteItemTitle') }}</v-card-title>
+      <v-card-text>{{ ui.t('deleteItemDescription') }}</v-card-text>
       <v-card-actions>
-        <v-btn color="grey" @click="deleteDialog = false">انصراف</v-btn>
-        <v-btn color="red" @click="deleteItem(String(itemToDelete ? getUniqueValue(itemToDelete) : ''))">حذف</v-btn>
+        <v-btn color="grey" @click="deleteDialog = false">{{ ui.t('cancel') }}</v-btn>
+        <v-btn color="red" @click="deleteItem(String(itemToDelete ? getUniqueValue(itemToDelete) : ''))">{{ ui.t('delete') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -2758,18 +2760,18 @@ watch(
     <v-card>
       <v-card-title class="text-h6">
         <v-icon color="red" class="me-2">🗑️</v-icon>
-        حذف گروهی
+        {{ ui.t('bulkDelete') }}
       </v-card-title>
       <v-card-text>
         <p>
-          آیا مایل به حذف <strong>{{ selectedCount }}</strong> آیتم انتخاب شده هستید؟
+          {{ ui.t('deleteSelectedDescription', { count: selectedCount }) }}
         </p>
-        <v-alert type="warning" variant="tonal" class="mt-3"> این عمل قابل بازگشت نیست! </v-alert>
+        <v-alert type="warning" variant="tonal" class="mt-3">{{ ui.t('irreversibleAction') }}</v-alert>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="grey" @click="groupDeleteDialog = false">انصراف</v-btn>
-        <v-btn color="red" @click="deleteGroupItems" :loading="loading"> حذف {{ selectedCount }} آیتم </v-btn>
+        <v-btn color="grey" @click="groupDeleteDialog = false">{{ ui.t('cancel') }}</v-btn>
+        <v-btn color="red" @click="deleteGroupItems" :loading="loading">{{ ui.t('delete') }} {{ selectedCount }} {{ ui.t('items') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -2787,7 +2789,7 @@ watch(
   <!-- Filter Dialog -->
   <v-dialog v-model="filterDialog" max-width="1600" content-class="white-list-filter-dialog">
     <v-card>
-      <v-card-title>فیلتر</v-card-title>
+      <v-card-title>{{ ui.t('filters') }}</v-card-title>
       <v-card-text>
         <component
           v-if="props.filterComponent"
@@ -2866,8 +2868,8 @@ watch(
                     activeColor="#3bd32a"
                     inactiveColor="#d32a2a"
                     :options="[
-                      { value: 'true', label: 'فعال', icon: IconCheck },
-                      { value: 'false', label: 'غیر فعال', icon: IconSquareX }
+                      { value: 'true', label: ui.t('yes'), icon: IconCheck },
+                      { value: 'false', label: ui.t('no'), icon: IconSquareX }
                     ]"
                   />
                   <v-text-field
@@ -2887,8 +2889,8 @@ watch(
       </v-card-text>
       <v-card-actions v-if="!props.filterComponent">
         <v-spacer></v-spacer>
-        <v-btn color="grey" variant="tonal" @click="resetFilter">حذف فیلترها</v-btn>
-        <v-btn color="primary" @click="applyFilter">اعمال فیلتر</v-btn>
+        <v-btn color="grey" variant="tonal" @click="resetFilter">{{ ui.t('resetFilters') }}</v-btn>
+        <v-btn color="primary" @click="applyFilter">{{ ui.t('applyFilters') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -2909,13 +2911,13 @@ watch(
         <v-spacer></v-spacer>
         <v-btn color="primary" @click="copyToClipboard(previewText)">
           <IconCopy :size="18" class="me-1" />
-          کپی متن
+          {{ ui.t('copyText') }}
         </v-btn>
         <v-btn color="success" @click="copyCompleteRecord">
           <IconCopy :size="18" class="me-1" />
-          کپی رکورد کامل
+          {{ ui.t('copyRecord') }}
         </v-btn>
-        <v-btn color="grey" @click="textPreviewDialog = false">بستن</v-btn>
+        <v-btn color="grey" @click="textPreviewDialog = false">{{ ui.t('closeDialog') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -2924,7 +2926,7 @@ watch(
   <v-snackbar v-if="snackbar" v-model="snackbar" :timeout="3000" location="top">
     {{ snackbarMessage }}
     <template v-slot:actions>
-      <v-btn color="white" variant="text" @click="snackbar = false"> بستن </v-btn>
+      <v-btn color="white" variant="text" @click="snackbar = false">{{ ui.t('closeDialog') }}</v-btn>
     </template>
   </v-snackbar>
 </template>

@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useUiKit } from '../../platform/uiKit';
 withDefaults(defineProps<{ title?: string; modelValue?: boolean; showToggle?: boolean }>(), { modelValue: true, showToggle: true });
 const emit = defineEmits<{ 'update:modelValue': [value: boolean]; reset: []; submit: [] }>();
+const ui = useUiKit();
+const resolvedTitle = computed(() => ui.t('filters'));
 </script>
 
 <template>
   <section class="app-filter-bar">
-    <div class="app-filter-bar__head"><div class="app-filter-bar__title"><slot name="title">{{ title || 'فیلترها' }}</slot></div><div class="app-filter-bar__head-actions"><slot name="head-actions" /><v-btn v-if="showToggle" icon="$expand" variant="text" size="small" @click="emit('update:modelValue', !modelValue)" /></div></div>
-    <v-expand-transition><div v-show="modelValue" class="app-filter-bar__body"><div class="app-filter-bar__fields"><slot /></div><div class="app-filter-bar__actions"><slot name="actions"><v-btn variant="text" @click="emit('reset')">پاک‌کردن</v-btn><v-btn color="primary" @click="emit('submit')">اعمال فیلتر</v-btn></slot></div></div></v-expand-transition>
+    <div class="app-filter-bar__head"><div class="app-filter-bar__title"><slot name="title">{{ title || resolvedTitle }}</slot></div><div class="app-filter-bar__head-actions"><slot name="head-actions" /><v-btn v-if="showToggle" icon="$expand" variant="text" size="small" @click="emit('update:modelValue', !modelValue)" /></div></div>
+    <v-expand-transition><div v-show="modelValue" class="app-filter-bar__body"><div class="app-filter-bar__fields"><slot /></div><div class="app-filter-bar__actions"><slot name="actions"><v-btn variant="text" @click="emit('reset')">{{ ui.t('resetFilters') }}</v-btn><v-btn color="primary" @click="emit('submit')">{{ ui.t('applyFilters') }}</v-btn></slot></div></div></v-expand-transition>
   </section>
 </template>
 

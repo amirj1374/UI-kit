@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useUiKit } from '../../platform/uiKit';
 
 export interface RemoteAutocompleteResult<T = Record<string, unknown>> { items: T[]; total?: number }
 export type RemoteAutocompleteLoader<T = Record<string, unknown>> = (context: { search: string; page: number; pageSize: number }) => Promise<T[] | RemoteAutocompleteResult<T>>;
@@ -18,7 +19,11 @@ const props = withDefaults(defineProps<{
   cache?: boolean;
   noDataText?: string;
   errorText?: string;
-}>(), { itemTitle: 'title', itemValue: 'value', pageSize: 20, debounce: 300, loadOnFocus: true, cache: true, clearable: true, noDataText: 'موردی یافت نشد', errorText: 'دریافت اطلاعات ناموفق بود' });
+}>(), { itemTitle: 'title', itemValue: 'value', pageSize: 20, debounce: 300, loadOnFocus: true, cache: true, clearable: true });
+
+const ui = useUiKit();
+const resolvedNoDataText = computed(() => props.noDataText ?? ui.t('noData'));
+const resolvedErrorText = computed(() => props.errorText ?? ui.t('error'));
 
 const model = defineModel<any>();
 const items = ref<any[]>([]);
@@ -52,7 +57,7 @@ defineExpose({ reload: () => load(true) });
 </script>
 
 <template>
-  <v-autocomplete v-model="model" v-model:search="search" :items="items" :label="label" :item-title="itemTitle" :item-value="itemValue" :multiple="multiple" :clearable="clearable" :disabled="disabled" :loading="loading" :no-data-text="error ? errorText : noDataText" @update:focused="onFocus">
+  <v-autocomplete v-model="model" v-model:search="search" :items="items" :label="label" :item-title="itemTitle" :item-value="itemValue" :multiple="multiple" :clearable="clearable" :disabled="disabled" :loading="loading" :no-data-text="error ? resolvedErrorText : resolvedNoDataText" @update:focused="onFocus">
     <template v-for="(_, name) in $slots" #[name]="slotData"><slot :name="name" v-bind="slotData || {}" /></template>
   </v-autocomplete>
 </template>

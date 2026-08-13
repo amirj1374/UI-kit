@@ -6,7 +6,7 @@
   >
     <v-text-field
       :id="inputId"
-      :label="label"
+      :label="resolvedLabel"
       :model-value="selectedDate"
       :disabled="disabled"
       :clearable="clearable"
@@ -42,6 +42,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue';
 import { mdiCalendarMonth } from '@mdi/js';
+import { useUiKit } from '../../platform/uiKit';
 
 type OutputFormat = 'iso' | 'date-only';
 type PickerType = 'date' | 'datetime' | 'time' | 'year' | 'month';
@@ -71,8 +72,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
-  label: 'تاریخ',
-  placeholder: 'انتخاب کنید',
+  label: undefined,
+  placeholder: undefined,
   color: 'primary',
   disabled: false,
   clearable: true,
@@ -86,6 +87,8 @@ const emit = defineEmits<{
 }>();
 
 const inputId = `shamsi-date-picker-${useId()}`;
+const ui = useUiKit();
+const resolvedLabel = computed(() => props.label ?? ui.t('date'));
 const pickerRef = ref<{ focus?: () => void } | null>(null);
 const calendarIcon = mdiCalendarMonth;
 

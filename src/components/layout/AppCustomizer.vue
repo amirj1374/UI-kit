@@ -3,9 +3,11 @@ import { computed, nextTick, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AppCustomizerPanel from './AppCustomizerPanel.vue';
 import { useCustomizerStore } from '../../stores/customizer';
+import { useUiKit } from '../../platform/uiKit';
 
 const emit = defineEmits<{ save: [payload: string]; 'suggest-language-change': [language: 'fa' | 'en'] }>();
 const customizer = useCustomizerStore();
+const ui = useUiKit();
 const { width } = useDisplay();
 const drawerWidth = computed(() => Math.min(width.value, 400));
 const colors = [
@@ -27,7 +29,9 @@ const colors = [
   { themeName: 'GoldenLuxuryTheme', primary: '#D4AF37', secondary: '#C9A227' }
 ];
 const fonts = ['vazir', 'iranSans', 'kalamehLight', 'vazirmatn', 'sahel', 'samim', 'IranNastaliq'];
-const labels: Record<string, string> = { vazir: 'وزیر', iranSans: 'ایران‌سنس', kalamehLight: 'کلمه سبک', vazirmatn: 'وزیرمتن', sahel: 'ساحل', samim: 'صمیم', IranNastaliq: 'ایران نستعلیق' };
+const fontLabels = computed<Record<string, string>>(() => customizer.language === 'en'
+  ? { vazir: 'Vazir', iranSans: 'Iran Sans', kalamehLight: 'Kalameh Light', vazirmatn: 'Vazirmatn', sahel: 'Sahel', samim: 'Samim', IranNastaliq: 'Iran Nastaliq' }
+  : { vazir: 'وزیر', iranSans: 'ایران‌سنس', kalamehLight: 'کلمه سبک', vazirmatn: 'وزیرمتن', sahel: 'ساحل', samim: 'صمیم', IranNastaliq: 'ایران نستعلیق' });
 const mode = computed<'light' | 'dark'>(() => customizer.themeMode === 'dark' ? 'dark' : 'light');
 watch(() => customizer.fontTheme, value => document.documentElement.style.setProperty('--font-theme', value), { immediate: true });
 watch(() => customizer.textFieldBorderRadius, value => document.documentElement.style.setProperty('--app-text-field-radius', `${value}px`), { immediate: true });
@@ -39,8 +43,12 @@ watch(() => customizer.contentWidth, value => document.documentElement.dataset.c
 watch(() => customizer.direction, value => {
   document.documentElement.dir = value;
   document.documentElement.dataset.direction = value;
+  ui.update({ direction: value });
 }, { immediate: true });
-watch(() => customizer.language, value => document.documentElement.lang = value, { immediate: true });
+watch(() => customizer.language, value => {
+  document.documentElement.lang = value;
+  ui.update({ locale: value === 'en' ? 'en-US' : 'fa-IR' });
+}, { immediate: true });
 watch(() => customizer.actTheme, async () => {
   await nextTick();
   const primary = getComputedStyle(document.querySelector('.v-application') ?? document.documentElement)
@@ -58,7 +66,7 @@ function reset() { customizer.LOAD_PREFERENCES(undefined); }
     :text-field-variant="customizer.textFieldVariant" :text-field-height="customizer.uiDensity" :text-scale="customizer.textScale"
     :menu-orientation="customizer.menuOrientation" :surface-style="customizer.surfaceStyle" v-model:content-width="customizer.contentWidth"
     :language="customizer.language" :direction="customizer.direction"
-    :input-bg="customizer.inputBg" :layout-type="customizer.layoutType" :font-label="font => labels[font] || font"
+    :input-bg="customizer.inputBg" :layout-type="customizer.layoutType" :font-label="font => fontLabels[font] || font"
     @update:model-value="customizer.SET_CUSTOMIZER_DRAWER" @update:theme-mode="customizer.SET_THEME_MODE" @update:active-theme="customizer.SET_THEME"
     @update:font-theme="customizer.SET_FONT" @update:text-field-border-radius="customizer.SET_TEXT_FIELD_BORDER_RADIUS"
     @update:text-field-variant="customizer.SET_TEXT_FIELD_VARIANT" @update:text-field-height="customizer.SET_UI_DENSITY"

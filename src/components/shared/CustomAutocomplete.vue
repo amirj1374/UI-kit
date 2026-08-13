@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
+import { useUiKit } from '../../platform/uiKit';
 
 type DisplayStyle = 'compact' | 'detailed';
 
@@ -66,6 +67,7 @@ const props = withDefaults(
     isMainGroupField: 'isMainGroup'
   }
 );
+const ui = useUiKit();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: any): void;
@@ -337,9 +339,9 @@ watch(
               <template #title>
                 <div class="ca-item-title">
                   {{ resolveTitle(item.raw ?? item) }}
-                  <v-chip size="small" color="primary" variant="tonal" class="ca-group-chip"> گروه </v-chip>
+                  <v-chip size="small" color="primary" variant="tonal" class="ca-group-chip"> {{ ui.t('group') }} </v-chip>
                   <v-chip v-if="isItemDisabled(item.raw ?? item)" size="small" color="error" variant="outlined" class="ca-disabled-chip">
-                    غیرفعال
+                    {{ ui.t('disabled') }}
                   </v-chip>
                 </div>
               </template>
@@ -354,7 +356,7 @@ watch(
               <div class="ca-group-tooltip">
                 <div class="ca-group-tooltip-header">
                   <strong>{{ resolveTitle(item.raw ?? item) }}</strong>
-                  <span class="ca-group-count">{{ getGroupMembers(item.raw ?? item).length }} آیتم</span>
+                  <span class="ca-group-count">{{ getGroupMembers(item.raw ?? item).length }} {{ ui.t('items') }}</span>
                 </div>
                 <div class="ca-group-members">
                   <div
@@ -383,7 +385,7 @@ watch(
             <div class="ca-item-title">
               {{ resolveTitle(item.raw ?? item) }}
               <v-chip v-if="isItemDisabled(item.raw ?? item)" size="small" color="error" variant="outlined" class="ca-disabled-chip">
-                غیرفعال
+                {{ ui.t('disabled') }}
               </v-chip>
             </div>
           </template>

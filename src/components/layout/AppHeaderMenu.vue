@@ -2,6 +2,7 @@
 import { computed, type PropType } from 'vue';
 import { IconChevronDown } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
+import { useUiKit } from '../../platform/uiKit';
 import type { MenuItem } from '../../types/components/layout/menu';
 
 const props = defineProps({
@@ -23,6 +24,7 @@ const props = defineProps({
 });
 
 const route = useRoute();
+const ui = useUiKit();
 const navigableItems = computed(() => props.items.filter((item) => !item.header && !item.divider));
 const visibleItems = computed(() => (props.display === 'bar' ? navigableItems.value.slice(0, props.maxVisible) : props.items));
 const overflowItems = computed(() => (props.display === 'bar' ? navigableItems.value.slice(props.maxVisible) : []));
@@ -103,10 +105,10 @@ const overflowContainsActiveItem = computed(() => overflowItems.value.some(itemM
           :class="['header-menu-btn', 'header-menu-more-btn', { 'header-menu-more-btn--active': overflowContainsActiveItem }]"
           color="primary"
           variant="text"
-          aria-label="منوهای بیشتر"
+          :aria-label="ui.t('more')"
         >
           <v-icon size="20">mdi-dots-horizontal</v-icon>
-          <span>بیشتر</span>
+          <span>{{ ui.t('more') }}</span>
           <IconChevronDown size="18" stroke-width="1.5" />
         </v-btn>
       </template>
