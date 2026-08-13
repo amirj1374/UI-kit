@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { parseCustomizerPreferences, type ContentWidth, type CustomizerPreferences, type MenuOrientation, type SurfaceStyle } from '../utils/customizerPreferences';
+import { parseCustomizerPreferences, type AppDirection, type AppLanguage, type ContentWidth, type CustomizerPreferences, type MenuOrientation, type SurfaceStyle } from '../utils/customizerPreferences';
 
 export const useCustomizerStore = defineStore({
   id: 'customizer',
@@ -19,7 +19,9 @@ export const useCustomizerStore = defineStore({
     actTheme: 'PurpleTheme',
     loading: false,
     themeMode: 'light', // 'light' or 'dark'
-    menuOrientation: 'vertical' as MenuOrientation
+    menuOrientation: 'vertical' as MenuOrientation,
+    language: 'fa' as AppLanguage,
+    direction: 'rtl' as AppDirection
   }),
 
   getters: {
@@ -55,6 +57,7 @@ export const useCustomizerStore = defineStore({
       this.SET_TEXT_FIELD_BORDER_RADIUS(preferences.textFieldBorderRadius); this.SET_TEXT_FIELD_VARIANT(preferences.textFieldVariant);
       this.SET_UI_DENSITY(preferences.uiDensity); this.SET_TEXT_SCALE(preferences.textScale);
       this.SET_SURFACE_STYLE(preferences.surfaceStyle); this.SET_CONTENT_WIDTH(preferences.contentWidth);
+      this.SET_LANGUAGE(preferences.language); this.SET_DIRECTION(preferences.direction);
     },
     APPLY_PREFERENCES(preferences: CustomizerPreferences) { this.LOAD_PREFERENCES(preferences); },
     SET_THEME(payload: string) {
@@ -71,6 +74,12 @@ export const useCustomizerStore = defineStore({
     },
     SET_MENU_ORIENTATION(payload: string) {
       this.menuOrientation = payload === 'horizontal' ? 'horizontal' : 'vertical';
+    },
+    SET_LANGUAGE(payload: string) {
+      this.language = payload === 'en' ? 'en' : 'fa';
+    },
+    SET_DIRECTION(payload: string) {
+      this.direction = payload === 'ltr' ? 'ltr' : 'rtl';
     }
   }
 

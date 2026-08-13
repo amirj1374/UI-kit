@@ -8,12 +8,114 @@
    once via style.scss (and by the consuming app's own Vuetify install).
    ============================================================ */
 
+.data-table-settings-button {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 4px;
+}
+
+// The settings control follows the selected surface treatment without making
+// every icon-only table action circular.
+.surface-rounded .data-table-settings-button {
+  border-radius: 50%;
+}
+
+.data-table-column-settings {
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-theme-primary), 0.14);
+  border-radius: var(--ui-shell-radius, 10px) !important;
+  box-shadow: 0 14px 34px rgba(20, 30, 48, 0.16) !important;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 16px 13px;
+
+    strong, span { display: block; }
+    strong { color: rgb(var(--v-theme-on-surface)); font-size: .9rem; font-weight: 750; }
+    span { color: rgb(var(--v-theme-lightText)); font-size: .73rem; margin-top: 2px; }
+  }
+
+  &__icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), .11);
+    border-radius: 8px;
+  }
+
+  &__section { padding: 14px 16px 16px; }
+  &__section-title, &__columns-title {
+    color: rgb(var(--v-theme-lightText));
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+  &__section-title { margin-bottom: 12px; }
+  &__page-size-title { margin-top: 18px; margin-bottom: 14px; }
+
+  &__select .v-field { border-radius: 7px; background: rgba(var(--v-theme-primary), .025); }
+  &__order { border-radius: 7px; overflow: hidden; border: 1px solid rgba(var(--v-theme-primary), .2); }
+  &__order .v-btn { min-height: 34px; font-size: .78rem; font-weight: 650; }
+
+  &__columns-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px 7px;
+
+    small { color: rgb(var(--v-theme-primary)); font-size: .7rem; font-weight: 750; }
+  }
+
+  &__list { padding: 3px 9px 10px; }
+  &__item {
+    min-height: 38px;
+    margin-bottom: 2px;
+    border-radius: 7px;
+    transition: background-color .16s ease;
+
+    &:hover { background: rgba(var(--v-theme-primary), .07); }
+    .v-list-item-title { font-size: .82rem; font-weight: 550; }
+  }
+}
+
+.surface-rounded .data-table-column-settings__icon,
+.surface-rounded .data-table-column-settings__item,
+.surface-rounded .data-table-column-settings__select .v-field,
+.surface-rounded .data-table-column-settings__order {
+  border-radius: 16px;
+}
+
+// Teleported by Vuetify, so this deliberately relies on theme variables rather
+// than a fixed dark tooltip. It follows the active light/dark palette and the
+// application's inherited Persian font.
+.data-table-cell-tooltip {
+  max-width: min(380px, calc(100vw - 32px));
+  padding: 8px 11px !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-primary), .28);
+  border-radius: var(--ui-shell-radius, 8px) !important;
+  box-shadow: 0 10px 26px rgba(13, 22, 38, .22) !important;
+  direction: inherit;
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: 550;
+  line-height: 1.85;
+  white-space: normal;
+}
+
 .data-table-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   background: rgb(var(--v-theme-surface));
-  border-radius: 8px;
+  border-radius: var(--ui-shell-radius, 8px);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform, margin-top;
@@ -24,7 +126,6 @@
       table-layout: fixed !important;
 
       thead th {
-        min-width: 120px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -92,9 +193,30 @@
   /* Cell Padding */
   .v-table__wrapper table {
     td, th {
+      min-width: 0;
       padding: 8px 12px !important;
       line-height: 1.6 !important;
       font-size: 0.875rem;
+    }
+
+    // Keep cell content inside the exact same column box used by its header.
+    // Long labels and values truncate instead of expanding one side of a row.
+    td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+
+      > .d-flex {
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      > .d-flex > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
   }
 

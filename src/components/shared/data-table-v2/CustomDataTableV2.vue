@@ -28,7 +28,7 @@ import getAxiosInstance from '@/services/axiosInstance';
 import { DateConverter } from '@/utils/date-convertor';
 import { formatNumberWithCommas } from '@/utils/number-formatter';
 import { defaultFilterAdapter } from '@/utils/defaultFilterAdapter';
-import { IconCheck, IconChevronDown, IconChevronRight, IconCopy, IconSquareX, IconFileExport, IconX } from '@tabler/icons-vue';
+import { IconCheck, IconChevronDown, IconChevronRight, IconCopy, IconSquareX, IconFileExport, IconSettings, IconX } from '@tabler/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import { type Component, type Ref } from 'vue';
 import { computed, isRef, onBeforeUnmount, onMounted, ref, shallowRef, unref, watch } from 'vue';
@@ -59,6 +59,10 @@ interface Props extends Omit<DataTableProps, 'routes' | 'filters'> {
   filters?: Record<string, any>;
   /** Load next page when scrolling near the bottom (requires showPagination) */
   enableInfiniteScroll?: boolean;
+  /** Shows a settings menu that lets the user toggle data columns. */
+  settings?: boolean;
+  /** Controlled list of visible data-column keys. Omit to keep all columns visible. */
+  visibleColumns?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -81,12 +85,16 @@ const props = withDefaults(defineProps<Props>(), {
   enableExport: false,
   exportUrl: '',
   exportFileName: '',
-  enableInfiniteScroll: false
+  enableInfiniteScroll: false,
+  settings: false
 });
 
 const emit = defineEmits<{
   (e: 'update:selectedItems', items: TableItem[]): void;
   (e: 'selection-change', items: TableItem[]): void;
+  (e: 'update:visibleColumns', keys: string[]): void;
+  (e: 'column-visibility-change', keys: string[]): void;
+  (e: 'page-size-change', size: number): void;
 }>();
 
 const externalCriteria = ref({});
@@ -117,6 +125,7 @@ const totalSize = ref(0);
 const totalPages = ref(0);
 const currentPage = ref(1);
 const sortBy = ref<{ key: string; order: 'asc' | 'desc' } | null>(null);
+const pageSizeOptions = [10, 25, 50, 100];
 const filterDialog = ref(false);
 const filterModel = ref<Record<string, any>>({});
 const filterOperatorModel = ref<Record<string, FilterOperator>>({});
@@ -191,30 +200,97 @@ const getRoutesForItem = (item: any): Record<string, string> => {
   return props.routes;
 };
 
-// Estimate auto width based on header title and type when width is not provided
+// A column starts at the width of its heading. This provides a predictable,
+// compact baseline while explicit consumer widths remain fully authoritative.
 const estimateColumnWidth = (header: Header): number => {
-  const title = header.title || '';
-  const basePadding = 32; // left/right padding
-  const avgCharWidth = 10; // heuristic average per character
-  const typeExtra = header.type && String(header.type).toLowerCase() === 'money' ? 40 : 0;
-  const computed = basePadding + title.length * avgCharWidth + typeExtra;
-  const min = 100;
-  const max = 300;
-  return Math.min(Math.max(computed, min), max);
+  if (header.width) return header.width;
+
+  const titleLength = [...(header.title || '')].length;
+  const sortIconSpace = header.sortable === false ? 0 : 22;
+  const contentWidth = titleLength * 10 + 32 + sortIconSpace;
+  return Math.min(Math.max(contentWidth, 88), 280);
 };
 
-// Headers with auto width applied when not specified
+const getCellTooltipText = (value: unknown, column: { width?: number | string }): string | undefined => {
+  if (value === null || value === undefined || value === '') return undefined;
+
+  const text = String(value);
+  const columnWidth = typeof column.width === 'number' ? column.width : Number.parseFloat(column.width ?? '') || 88;
+  const availableWidth = Math.max(columnWidth - 32, 1);
+  return [...text].length * 8.5 > availableWidth ? text : undefined;
+};
+
+// Explicit consumer widths always win; otherwise the heading defines the width.
 const autoHeaders = computed(() => {
   return props.headers.map((h) => ({
     ...h,
-    width: h.width ?? estimateColumnWidth(h)
+    width: estimateColumnWidth(h)
   }));
 });
+
+const internalVisibleColumns = ref<string[] | null>(null);
+const configurableHeaders = computed(() =>
+  autoHeaders.value.filter((header) => typeof header.key === 'string' && header.key.length > 0 && header.title)
+);
+const sortableHeaders = computed(() => configurableHeaders.value.filter((header) => header.sortable !== false));
+const visibleDataColumnKeys = computed(() => internalVisibleColumns.value ?? configurableHeaders.value.map((header) => header.key));
+const tableSortBy = computed({
+  get: () => (sortBy.value ? [sortBy.value] : []),
+  set: (value: Array<{ key: string; order: 'asc' | 'desc' }>) => {
+    sortBy.value = value[0] ?? null;
+  }
+});
+const selectedSortKey = computed({
+  get: () => sortBy.value?.key ?? null,
+  set: (key: string | null) => {
+    sortBy.value = key ? { key, order: sortBy.value?.order ?? 'asc' } : null;
+  }
+});
+const selectedSortOrder = computed({
+  get: () => sortBy.value?.order ?? 'asc',
+  set: (order: 'asc' | 'desc') => {
+    if (sortBy.value) sortBy.value = { ...sortBy.value, order };
+  }
+});
+
+watch(
+  () => props.visibleColumns,
+  (keys) => {
+    internalVisibleColumns.value = Array.isArray(keys) ? [...new Set(keys)] : null;
+  },
+  { immediate: true }
+);
+
+function isColumnVisible(key: string): boolean {
+  return visibleDataColumnKeys.value.includes(key);
+}
+
+function setColumnVisible(key: string, visible: boolean): void {
+  const available = configurableHeaders.value.map((header) => header.key);
+  const next = visible
+    ? available.filter((columnKey) => columnKey === key || visibleDataColumnKeys.value.includes(columnKey))
+    : visibleDataColumnKeys.value.filter((columnKey) => columnKey !== key);
+
+  internalVisibleColumns.value = next;
+  emit('update:visibleColumns', next);
+  emit('column-visibility-change', next);
+}
+
+function setItemsPerPage(value: number | string | null): void {
+  const next = Number(value);
+  if (!Number.isFinite(next) || next < 1 || next === itemsPerPage.value) return;
+
+  itemsPerPage.value = next;
+  currentPage.value = 1;
+  emit('page-size-change', next);
+  debouncedFetchData();
+}
 
 const selectionHeader = { title: '', key: 'selection', sortable: false, width: 50 } as const;
 
 const buildTableHeaders = () => {
-  const base = [...(props.selectable ? [selectionHeader] : []), ...autoHeaders.value];
+  const visibleHeaders = autoHeaders.value.filter((header) => isColumnVisible(header.key));
+  const base = [...(props.selectable ? [selectionHeader] : []), ...visibleHeaders];
   if (!hasAnyActions.value) return base;
   return [...base, { title: 'عملیات', key: 'actions', sortable: false, width: computeActionColumnWidth(props) }];
 };
@@ -830,6 +906,12 @@ const fetchData = async (queryParams?: Record<string, unknown>) => {
       };
     }
 
+    // Spring-style server sorting. The selected header key is deliberately
+    // forwarded as-is so consumers do not need a second field-name mapping.
+    if (sortBy.value) {
+      params.sort = `${sortBy.value.key},${sortBy.value.order}`;
+    }
+
     /* =========================
      * 4. Pagination
      ========================= */
@@ -941,6 +1023,16 @@ watch(
     if (!props.filterComponent && props.autoFetch && initialized.value) {
       debouncedFetchData();
     }
+  },
+  { deep: true }
+);
+
+watch(
+  sortBy,
+  () => {
+    if (!initialized.value) return;
+    currentPage.value = 1;
+    debouncedFetchData();
   },
   { deep: true }
 );
@@ -1822,7 +1914,7 @@ watch(
     <h3 class="title-text">{{ props.title }}</h3>
   </div>
   <!-- Action Buttons OUTSIDE the table container -->
-  <div class="action-buttons mb-2" v-if="!props.inlineFilter">
+  <div class="action-buttons d-flex align-center mb-2" v-if="!props.inlineFilter || props.settings">
     <v-btn v-if="props.actions?.includes('create')" color="green" class="me-2" @click="openDialog()">ایجاد ✅</v-btn>
     <v-btn v-if="props.actions?.includes('filter')" class="me-2" @click="filterDialog = true">فیلتر 🔍</v-btn>
     <v-btn v-if="props.actions?.includes('manual')" color="primary" class="me-2" @click="fetchData()">جستجو 🔍</v-btn>
@@ -1836,7 +1928,9 @@ watch(
       @click="onExportClick"
       :loading="exportLoading"
       :disabled="loading"
-      >گزارش کلی</v-btn
+      >
+      <IconFileExport :size="18" class="me-1" />
+      گزارش کلی</v-btn
     >
 
     <!-- Action Buttons for Selected Items -->
@@ -1926,6 +2020,83 @@ watch(
         </template>
       </div>
     </transition>
+    <v-spacer />
+    <v-menu v-if="props.settings" :close-on-content-click="false" location="bottom start">
+      <template #activator="{ props: menuProps }">
+        <v-btn
+          v-bind="menuProps"
+          class="data-table-settings-button"
+          color="primary"
+          variant="tonal"
+          aria-label="تنظیمات جدول"
+        >
+          <IconSettings :size="19" />
+        </v-btn>
+      </template>
+      <v-card min-width="300" class="data-table-column-settings">
+        <div class="data-table-column-settings__header">
+          <div class="data-table-column-settings__icon"><IconSettings :size="18" /></div>
+          <div>
+            <strong>نمای جدول</strong>
+            <span>مرتب‌سازی و ستون‌های قابل نمایش</span>
+          </div>
+        </div>
+        <v-divider />
+        <v-card-text class="data-table-column-settings__section">
+          <div class="data-table-column-settings__section-title">مرتب‌سازی</div>
+          <v-select
+            v-model="selectedSortKey"
+            :items="sortableHeaders"
+            item-title="title"
+            item-value="key"
+            label="مرتب‌سازی بر اساس"
+            clearable
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="data-table-column-settings__select"
+          />
+          <v-btn-toggle
+            v-if="selectedSortKey"
+            v-model="selectedSortOrder"
+            color="primary"
+            mandatory
+            divided
+            class="data-table-column-settings__order mt-3 w-100"
+          >
+            <v-btn value="asc" class="flex-1">صعودی</v-btn>
+            <v-btn value="desc" class="flex-1">نزولی</v-btn>
+          </v-btn-toggle>
+          <div class="data-table-column-settings__section-title data-table-column-settings__page-size-title">تعداد ردیف هر صفحه</div>
+          <v-select
+            :model-value="itemsPerPage"
+            :items="pageSizeOptions"
+            label="تعداد رکورد در درخواست"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="data-table-column-settings__select"
+            @update:model-value="setItemsPerPage"
+          />
+        </v-card-text>
+        <v-divider />
+        <div class="data-table-column-settings__columns-title">
+          <span>نمایش ستون‌ها</span>
+          <small>{{ visibleDataColumnKeys.length }} از {{ configurableHeaders.length }}</small>
+        </div>
+        <v-list density="compact" max-height="260" class="data-table-column-settings__list overflow-y-auto">
+          <v-list-item v-for="header in configurableHeaders" :key="header.key" :title="header.title" class="data-table-column-settings__item">
+            <template #prepend>
+              <v-checkbox-btn
+                :model-value="isColumnVisible(header.key)"
+                :aria-label="`نمایش ستون ${header.title}`"
+                @update:model-value="setColumnVisible(header.key, Boolean($event))"
+              />
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-menu>
   </div>
   <!-- Inline Filter Section -->
   <v-card v-if="props.inlineFilter && formHeaders.length > 0" class="mb-2 pa-2" elevation="1">
@@ -2015,6 +2186,7 @@ watch(
                   <v-data-table
                     :headers="groupedHeaders"
                     :items="group.items"
+                    v-model:sort-by="tableSortBy"
                     :items-per-page="itemsPerPage"
                     hide-default-footer
                     class="elevation-1 group-table"
@@ -2152,39 +2324,57 @@ watch(
                           </template>
                           <template v-else>
                             <div class="d-flex align-center" style="gap: 4px">
-                              <span
+                              <v-tooltip
                                 v-if="
                                   shouldTruncate(
                                     getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
                                     getHeaderForColumn(column.key || '')
                                   )
                                 "
-                                class="truncated-text"
-                                :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
-                                @click.stop="
-                                  openTextPreview(
-                                    getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
-                                    (column.title || column.key || '') as string,
-                                    item
-                                  )
-                                "
+                                :text="getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column) ?? ''"
+                                :disabled="!getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column)"
+                                content-class="data-table-cell-tooltip"
                               >
-                                {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
-                              </span>
-                              <span
+                                <template #activator="{ props: tooltipProps }">
+                                  <span
+                                    v-bind="tooltipProps"
+                                    class="truncated-text"
+                                    :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
+                                    @click.stop="
+                                      openTextPreview(
+                                        getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                                        (column.title || column.key || '') as string,
+                                        item
+                                      )
+                                    "
+                                  >
+                                    {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
+                                  </span>
+                                </template>
+                              </v-tooltip>
+                              <v-tooltip
                                 v-else
-                                @click.stop="
-                                  shouldShowCopyButton(getHeaderForColumn(column.key || '')) &&
-                                    openTextPreview(
-                                      getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
-                                      (column.title || column.key || '') as string,
-                                      item
-                                    )
-                                "
-                                :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
+                                :text="getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column) ?? ''"
+                                :disabled="!getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column)"
+                                content-class="data-table-cell-tooltip"
                               >
-                                {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
-                              </span>
+                                <template #activator="{ props: tooltipProps }">
+                                  <span
+                                    v-bind="tooltipProps"
+                                    @click.stop="
+                                      shouldShowCopyButton(getHeaderForColumn(column.key || '')) &&
+                                        openTextPreview(
+                                          getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                                          (column.title || column.key || '') as string,
+                                          item
+                                        )
+                                    "
+                                    :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
+                                  >
+                                    {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
+                                  </span>
+                                </template>
+                              </v-tooltip>
                               <v-btn
                                 v-if="shouldShowCopyButton(getHeaderForColumn(column.key || ''))"
                                 icon
@@ -2219,6 +2409,7 @@ watch(
         v-else
         :headers="normalHeaders"
         :items="items"
+        v-model:sort-by="tableSortBy"
         :items-per-page="itemsPerPage"
         hide-default-footer
         class="elevation-1"
@@ -2335,39 +2526,57 @@ watch(
               </template>
               <template v-else>
                 <div class="d-flex align-center" style="gap: 4px">
-                  <span
+                  <v-tooltip
                     v-if="
                       shouldTruncate(
                         getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
                         getHeaderForColumn(column.key || '')
                       )
                     "
-                    class="truncated-text"
-                    :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
-                    @click.stop="
-                      openTextPreview(
-                        getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
-                        (column.title || column.key || '') as string,
-                        item
-                      )
-                    "
+                    :text="getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column) ?? ''"
+                    :disabled="!getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column)"
+                    content-class="data-table-cell-tooltip"
                   >
-                    {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
-                  </span>
-                  <span
+                    <template #activator="{ props: tooltipProps }">
+                      <span
+                        v-bind="tooltipProps"
+                        class="truncated-text"
+                        :style="{ cursor: 'pointer', color: 'rgb(var(--v-theme-primary))', textDecoration: 'underline' }"
+                        @click.stop="
+                          openTextPreview(
+                            getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                            (column.title || column.key || '') as string,
+                            item
+                          )
+                        "
+                      >
+                        {{ truncateText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item)) }}
+                      </span>
+                    </template>
+                  </v-tooltip>
+                  <v-tooltip
                     v-else
-                    @click.stop="
-                      shouldShowCopyButton(getHeaderForColumn(column.key || '')) &&
-                        openTextPreview(
-                          getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
-                          (column.title || column.key || '') as string,
-                          item
-                        )
-                    "
-                    :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
+                    :text="getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column) ?? ''"
+                    :disabled="!getCellTooltipText(getTranslatedValue(getNestedValue(item, column.key || ''), column, item), column)"
+                    content-class="data-table-cell-tooltip"
                   >
-                    {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
-                  </span>
+                    <template #activator="{ props: tooltipProps }">
+                      <span
+                        v-bind="tooltipProps"
+                        @click.stop="
+                          shouldShowCopyButton(getHeaderForColumn(column.key || '')) &&
+                            openTextPreview(
+                              getTranslatedValue(getNestedValue(item, column.key || ''), column, item),
+                              (column.title || column.key || '') as string,
+                              item
+                            )
+                        "
+                        :style="{ cursor: shouldShowCopyButton(getHeaderForColumn(column.key || '')) ? 'pointer' : 'default' }"
+                      >
+                        {{ getTranslatedValue(getNestedValue(item, column.key || ''), column, item) }}
+                      </span>
+                    </template>
+                  </v-tooltip>
                   <v-btn
                     v-if="shouldShowCopyButton(getHeaderForColumn(column.key || ''))"
                     icon

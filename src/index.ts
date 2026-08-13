@@ -56,7 +56,7 @@ export type { CustomizerThemeOption } from './components/layout/AppCustomizerPan
 export { default as AppCustomizerSubmit } from './components/layout/AppCustomizerSubmit.vue';
 export type { TextFieldHeight, TextFieldVariant } from './components/layout/AppCustomizerControls.vue';
 export { parseCustomizerPreferences, serializeCustomizerPreferences, customizerPreferenceDefaults } from './utils/customizerPreferences';
-export type { ContentWidth, CustomizerPreferences, MenuOrientation, SurfaceStyle } from './utils/customizerPreferences';
+export type { AppDirection, AppLanguage, ContentWidth, CustomizerPreferences, MenuOrientation, SurfaceStyle } from './utils/customizerPreferences';
 export { default as AppLayout } from './components/layout/AppLayout.vue';
 export type { MenuItem, HeaderAction } from './types/components/layout/menu';
 

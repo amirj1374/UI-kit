@@ -200,6 +200,35 @@ const computedHeaderMenu = computed(() => {
   .header-menu-btn:active {
     transform: translateY(0);
   }
+
+  .header-menu-more-btn {
+    gap: 5px;
+    margin: 0 0 0 4px;
+    padding-inline: 12px;
+
+    &--active {
+      color: rgb(var(--v-theme-primary)) !important;
+      background: rgba(var(--v-theme-primary), .1);
+      box-shadow: inset 0 0 0 1px rgba(var(--v-theme-primary), .18);
+    }
+  }
+
+  .header-menu-overflow-list {
+    padding: 6px;
+    border: 1px solid rgba(var(--v-theme-primary), .12);
+    border-radius: var(--ui-shell-radius, 8px);
+    box-shadow: 0 12px 30px rgba(17, 26, 43, .14);
+
+    .v-list-item {
+      min-height: 42px;
+      border-radius: calc(var(--ui-shell-radius, 8px) - 2px);
+    }
+
+    .v-list-item--active {
+      color: rgb(var(--v-theme-primary));
+      background: rgba(var(--v-theme-primary), .1);
+    }
+  }
 }
 </style>
 

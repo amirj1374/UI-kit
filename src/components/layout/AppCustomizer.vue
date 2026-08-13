@@ -4,7 +4,7 @@ import { useDisplay } from 'vuetify';
 import AppCustomizerPanel from './AppCustomizerPanel.vue';
 import { useCustomizerStore } from '../../stores/customizer';
 
-const emit = defineEmits<{ save: [payload: string] }>();
+const emit = defineEmits<{ save: [payload: string]; 'suggest-language-change': [language: 'fa' | 'en'] }>();
 const customizer = useCustomizerStore();
 const { width } = useDisplay();
 const drawerWidth = computed(() => Math.min(width.value, 400));
@@ -36,6 +36,11 @@ watch(() => customizer.uiDensity, value => document.documentElement.dataset.uiDe
 watch(() => customizer.textScale, value => document.documentElement.style.setProperty('--app-text-scale', String(value / 100)), { immediate: true });
 watch(() => customizer.surfaceStyle, value => document.documentElement.dataset.surfaceStyle = value, { immediate: true });
 watch(() => customizer.contentWidth, value => document.documentElement.dataset.contentWidth = value, { immediate: true });
+watch(() => customizer.direction, value => {
+  document.documentElement.dir = value;
+  document.documentElement.dataset.direction = value;
+}, { immediate: true });
+watch(() => customizer.language, value => document.documentElement.lang = value, { immediate: true });
 watch(() => customizer.actTheme, async () => {
   await nextTick();
   const primary = getComputedStyle(document.querySelector('.v-application') ?? document.documentElement)
@@ -52,11 +57,13 @@ function reset() { customizer.LOAD_PREFERENCES(undefined); }
     :colors="colors" :font-theme="customizer.fontTheme" :fonts="fonts" :text-field-border-radius="customizer.textFieldBorderRadius"
     :text-field-variant="customizer.textFieldVariant" :text-field-height="customizer.uiDensity" :text-scale="customizer.textScale"
     :menu-orientation="customizer.menuOrientation" :surface-style="customizer.surfaceStyle" v-model:content-width="customizer.contentWidth"
+    :language="customizer.language" :direction="customizer.direction"
     :input-bg="customizer.inputBg" :layout-type="customizer.layoutType" :font-label="font => labels[font] || font"
     @update:model-value="customizer.SET_CUSTOMIZER_DRAWER" @update:theme-mode="customizer.SET_THEME_MODE" @update:active-theme="customizer.SET_THEME"
     @update:font-theme="customizer.SET_FONT" @update:text-field-border-radius="customizer.SET_TEXT_FIELD_BORDER_RADIUS"
     @update:text-field-variant="customizer.SET_TEXT_FIELD_VARIANT" @update:text-field-height="customizer.SET_UI_DENSITY"
     @update:text-scale="customizer.SET_TEXT_SCALE" @update:menu-orientation="customizer.SET_MENU_ORIENTATION"
-    @update:surface-style="customizer.SET_SURFACE_STYLE" @reset="reset" @apply="emit('save', $event)"
+    @update:surface-style="customizer.SET_SURFACE_STYLE" @update:direction="customizer.SET_DIRECTION"
+    @reset="reset" @apply="emit('save', $event)" @suggest-language-change="emit('suggest-language-change', $event)"
   />
 </template>

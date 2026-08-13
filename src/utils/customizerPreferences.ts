@@ -3,6 +3,8 @@ import type { TextFieldHeight, TextFieldVariant } from '../components/layout/App
 export type SurfaceStyle = 'elevated' | 'rounded' | 'tonal' | 'premium-executive';
 export type ContentWidth = 'wide' | 'compact';
 export type MenuOrientation = 'vertical' | 'horizontal';
+export type AppLanguage = 'fa' | 'en';
+export type AppDirection = 'rtl' | 'ltr';
 
 /** A schema-free, versioned preference payload for consumer applications. */
 export interface CustomizerPreferences {
@@ -19,13 +21,15 @@ export interface CustomizerPreferences {
   textScale: number;
   surfaceStyle: SurfaceStyle;
   contentWidth: ContentWidth;
+  language: AppLanguage;
+  direction: AppDirection;
 }
 
 export const customizerPreferenceDefaults: CustomizerPreferences = {
   version: 1, actTheme: 'PurpleTheme', themeMode: 'light', fontTheme: 'vazir', inputBg: false,
   layoutType: 'SideBar', menuOrientation: 'vertical', textFieldBorderRadius: 10,
   textFieldVariant: 'outlined', uiDensity: 'default', textScale: 100,
-  surfaceStyle: 'elevated', contentWidth: 'wide'
+  surfaceStyle: 'elevated', contentWidth: 'wide', language: 'fa', direction: 'rtl'
 };
 
 const variants: TextFieldVariant[] = ['outlined', 'filled', 'solo', 'plain', 'underlined'];
@@ -59,7 +63,9 @@ export function parseCustomizerPreferences(value: unknown): CustomizerPreference
     uiDensity: densities.includes(source.uiDensity as TextFieldHeight) ? source.uiDensity as TextFieldHeight : customizerPreferenceDefaults.uiDensity,
     textScale: numberValue(source.textScale, customizerPreferenceDefaults.textScale, 85, 115),
     surfaceStyle: surfaces.includes(source.surfaceStyle as SurfaceStyle) ? source.surfaceStyle as SurfaceStyle : customizerPreferenceDefaults.surfaceStyle,
-    contentWidth: source.contentWidth === 'compact' ? 'compact' : 'wide'
+    contentWidth: source.contentWidth === 'compact' ? 'compact' : 'wide',
+    language: source.language === 'en' ? 'en' : 'fa',
+    direction: source.direction === 'ltr' ? 'ltr' : 'rtl'
   };
 }
 

@@ -19,7 +19,7 @@ const props = defineProps({
 <template>
   <v-row class="page-breadcrumb mb-1 mt-1">
     <v-col cols="12" md="12">
-      <v-card variant="flat" class="px-4 py-3">
+      <v-card variant="flat" class="app-breadcrumb-card px-4 py-3">
         <v-row no-gutters class="align-center">
           <v-col md="5">
             <h3 class="text-h3">{{ props.title }}</h3>
@@ -48,6 +48,10 @@ const props = defineProps({
 
 <style lang="scss">
 .page-breadcrumb {
+  .app-breadcrumb-card {
+    border-radius: var(--ui-shell-radius, 8px);
+  }
+
   .v-toolbar {
     background: transparent;
   }

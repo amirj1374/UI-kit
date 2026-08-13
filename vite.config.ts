@@ -6,6 +6,7 @@ import { resolve } from 'path';
 
 // Check if we're building the library
 const isLibrary = process.env.BUILD_LIB === 'true';
+const isLibraryWatch = process.env.BUILD_LIB_WATCH === 'true';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -46,6 +47,9 @@ export default defineConfig(({ command, mode }) => {
         }
       },
       build: {
+        // `vite build --watch` runs after declaration generation in `dev:link`.
+        // Preserve those declarations so linked consumers retain type safety.
+        emptyOutDir: !isLibraryWatch,
         lib: {
           entry: resolve(__dirname, 'src/index.ts'),
           name: 'UiKit',

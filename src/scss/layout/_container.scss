@@ -27,7 +27,7 @@ html {
 .page-wrapper {
   min-height: calc(100vh - 100px);
   padding: 15px;
-  border-radius: $border-radius-root;
+  border-radius: var(--ui-shell-radius, 8px);
   background: rgb(var(--v-theme-containerBg));
 }
 

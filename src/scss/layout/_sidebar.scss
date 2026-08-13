@@ -29,7 +29,7 @@
   /* General Menu css */
   .v-list-group__items .v-list-item,
   .v-list-item {
-    border-radius: $border-radius-root;
+    border-radius: var(--ui-navigation-radius, 7px);
     padding-inline-start: calc(12px + var(--indent-padding) / 2) !important;
     transition: background-color 0.3s ease, color 0.3s ease; // ✅ Smooth transitions
 

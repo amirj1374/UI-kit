@@ -31,6 +31,10 @@ export interface DataTableV2Props extends Omit<DataTableProps, 'routes' | 'filte
   filters?: Record<string, any>;
   /** Enable infinite scroll when paginating (loads next page near bottom) */
   enableInfiniteScroll?: boolean;
+  /** Show the end-user column visibility settings menu. */
+  settings?: boolean;
+  /** Controlled list of visible data-column keys. */
+  visibleColumns?: string[];
   axiosInstance?: AxiosInstance;
 }
 

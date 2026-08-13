@@ -34,6 +34,22 @@ html[data-ui-density='comfortable'] .v-input {
   --v-input-padding-top: 18px;
 }
 
+// Consumer layouts keep their workspace canvas fluid; this token constrains
+// only the common page content wrapper on large displays.
+html .page-wrapper {
+  width: 100%;
+  max-width: 100%;
+  transition: max-width .28s cubic-bezier(.2, .75, .25, 1), margin-inline .28s cubic-bezier(.2, .75, .25, 1);
+}
+
+@media (min-width: 1280px) {
+  html[data-content-width='compact'] .page-wrapper {
+    max-width: 1120px;
+    margin-inline: auto;
+    background: transparent;
+  }
+}
+
 html[data-text-field-variant='filled'] .v-text-field .v-field,
 html[data-text-field-variant='filled'] .v-textarea .v-field,
 html[data-text-field-variant='filled'] .v-select .v-field,
