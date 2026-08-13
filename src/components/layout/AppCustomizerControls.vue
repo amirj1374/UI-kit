@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IconCheck } from '@tabler/icons-vue';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
+import type { AppLanguage } from '../../utils/customizerPreferences';
 
 export type TextFieldVariant = 'outlined' | 'filled' | 'solo' | 'plain' | 'underlined';
 export type TextFieldHeight = 'compact' | 'default' | 'comfortable';
@@ -11,6 +12,7 @@ const props = withDefaults(
     textFieldVariant?: TextFieldVariant;
     textFieldHeight?: TextFieldHeight;
     textScale?: number;
+    language?: AppLanguage;
     applyPreview?: boolean;
     showActions?: boolean;
   }>(),
@@ -19,6 +21,7 @@ const props = withDefaults(
     textFieldVariant: 'outlined',
     textFieldHeight: 'default',
     textScale: 100,
+    language: 'fa',
     applyPreview: true,
     showActions: true
   }
@@ -33,19 +36,15 @@ const emit = defineEmits<{
   reset: [];
 }>();
 
-const variants: Array<{ value: TextFieldVariant; title: string }> = [
-  { value: 'outlined', title: 'دورخطی' },
-  { value: 'filled', title: 'پرشده' },
-  { value: 'solo', title: 'سایه‌دار' },
-  { value: 'plain', title: 'تخت' },
-  { value: 'underlined', title: 'زیرخطی' }
-];
-
-const heights: Array<{ value: TextFieldHeight; title: string }> = [
-  { value: 'compact', title: 'کوتاه' },
-  { value: 'default', title: 'متوسط' },
-  { value: 'comfortable', title: 'بلند' }
-];
+const copy = computed(() => props.language === 'en'
+  ? { radius: 'Text field radius', radiusSlider: 'Adjust text field radius', textScale: 'Interface text size', textScaleSlider: 'Adjust interface text size', fieldStyle: 'Field style', fieldHeight: 'Field height', outlined: 'Outlined', filled: 'Filled', solo: 'Elevated', plain: 'Plain', underlined: 'Underlined', compact: 'Compact', default: 'Default', comfortable: 'Comfortable' }
+  : { radius: 'گردی فیلدهای متنی', radiusSlider: 'تنظیم گردی فیلدهای متنی', textScale: 'اندازه متن رابط', textScaleSlider: 'تنظیم اندازه متن رابط', fieldStyle: 'سبک فیلدها', fieldHeight: 'ارتفاع فیلدها', outlined: 'دورخطی', filled: 'پرشده', solo: 'سایه‌دار', plain: 'تخت', underlined: 'زیرخطی', compact: 'کوتاه', default: 'متوسط', comfortable: 'بلند' });
+const variants = computed<Array<{ value: TextFieldVariant; title: string }>>(() => [
+  { value: 'outlined', title: copy.value.outlined }, { value: 'filled', title: copy.value.filled }, { value: 'solo', title: copy.value.solo }, { value: 'plain', title: copy.value.plain }, { value: 'underlined', title: copy.value.underlined }
+]);
+const heights = computed<Array<{ value: TextFieldHeight; title: string }>>(() => [
+  { value: 'compact', title: copy.value.compact }, { value: 'default', title: copy.value.default }, { value: 'comfortable', title: copy.value.comfortable }
+]);
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, Math.round(value)));
@@ -78,7 +77,7 @@ watch(() => [props.textFieldBorderRadius, props.textFieldVariant, props.textFiel
   <section class="app-customizer-controls">
     <div class="app-customizer-controls__section">
       <div class="app-customizer-controls__heading">
-        <h6 class="text-subtitle-1 font-weight-bold">گردی فیلدهای متنی</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">{{ copy.radius }}</h6>
         <v-chip size="small" color="primary" variant="tonal">{{ textFieldBorderRadius }}px</v-chip>
       </div>
       <v-slider
@@ -89,14 +88,14 @@ watch(() => [props.textFieldBorderRadius, props.textFieldVariant, props.textFiel
         color="primary"
         thumb-label
         hide-details
-        aria-label="تنظیم گردی فیلدهای متنی"
+        :aria-label="copy.radiusSlider"
         @update:model-value="setRadius"
       />
     </div>
 
     <div class="app-customizer-controls__section">
       <div class="app-customizer-controls__heading">
-        <h6 class="text-subtitle-1 font-weight-bold">اندازه متن رابط</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">{{ copy.textScale }}</h6>
         <v-chip size="small" color="primary" variant="tonal">{{ textScale }}%</v-chip>
       </div>
       <v-slider
@@ -107,14 +106,14 @@ watch(() => [props.textFieldBorderRadius, props.textFieldVariant, props.textFiel
         color="primary"
         thumb-label
         hide-details
-        aria-label="تنظیم اندازه متن رابط"
+        :aria-label="copy.textScaleSlider"
         @update:model-value="setScale"
       />
     </div>
 
     <div class="app-customizer-controls__appearance">
       <div class="app-customizer-controls__row">
-        <h6 class="text-subtitle-1 font-weight-bold">سبک فیلدها</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">{{ copy.fieldStyle }}</h6>
         <div class="app-customizer-controls__toggle">
           <v-btn
             v-for="variant in variants"
@@ -131,7 +130,7 @@ watch(() => [props.textFieldBorderRadius, props.textFieldVariant, props.textFiel
       </div>
 
       <div class="app-customizer-controls__row">
-        <h6 class="text-subtitle-1 font-weight-bold">ارتفاع فیلدها</h6>
+        <h6 class="text-subtitle-1 font-weight-bold">{{ copy.fieldHeight }}</h6>
         <div class="app-customizer-controls__toggle">
           <v-btn
             v-for="height in heights"

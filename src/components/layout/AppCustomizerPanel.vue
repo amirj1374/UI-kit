@@ -59,12 +59,17 @@ const emit = defineEmits<{
 
 const activeBaseTheme = computed(() => props.activeTheme.replace(/^Dark/, ''));
 const activeTab = ref('style');
-const surfaceOptions: Array<{ value: SurfaceStyle; title: string; description: string }> = [
-  { value: 'elevated', title: 'برجسته', description: 'کارت با سایه و تفکیک واضح' },
-  { value: 'rounded', title: 'گرد', description: 'لبه‌های نرم و کارت‌های گرد' },
-  { value: 'tonal', title: 'صاف', description: 'سطوح تخت با مرزبندی ملایم' },
-  { value: 'premium-executive', title: 'مدیریتی', description: 'پوستهٔ حرفه‌ای با ناوبری تیره' }
-];
+const copy = computed(() => props.language === 'en'
+  ? {
+      title: 'Customize', reset: 'Reset', styleTab: 'Appearance', surfacesTab: 'Surfaces', fontTab: 'Font', themeMode: 'Light / dark mode', colors: 'Color theme', direction: 'Layout direction', rtl: 'Right to left', ltr: 'Left to right', contentWidth: 'Page content width', compact: 'Compact content', wide: 'Wide content', projectStyle: 'Project surface style', projectStyleHint: 'The color theme stays the same; only surfaces, cards, menus, and panels change.', menuLayout: 'Menu layout', menuLayoutHint: 'Choose navigation in the sidebar or top bar.', sidebarMenu: 'Sidebar menu', topMenu: 'Top menu', font: 'Font selection', elevated: 'Elevated', elevatedDescription: 'Cards with a clear shadow and separation', rounded: 'Rounded', roundedDescription: 'Soft edges and rounded cards', tonal: 'Tonal', tonalDescription: 'Flat surfaces with subtle boundaries', executive: 'Executive', executiveDescription: 'Professional shell with dark navigation'
+    }
+  : {
+      title: 'شخصی سازی', reset: 'بارنشانی', styleTab: 'ظاهر', surfacesTab: 'سبک', fontTab: 'فونت', themeMode: 'حالت روز / شب', colors: 'رنگ بندی', direction: 'جهت چیدمان', rtl: 'راست به چپ', ltr: 'چپ به راست', contentWidth: 'عرض محتوای صفحه', compact: 'محتوای کم‌عرض', wide: 'محتوای عریض', projectStyle: 'سبک کلی پروژه', projectStyleHint: 'رنگ‌بندی ثابت می‌ماند؛ فقط جنس سطوح، کارت‌ها، منوها و پنل‌ها تغییر می‌کند.', menuLayout: 'چیدمان منو', menuLayoutHint: 'نمایش ناوبری را در سایدبار یا نوار بالایی انتخاب کنید.', sidebarMenu: 'منوی کناری', topMenu: 'منوی بالایی', font: 'انتخاب فونت', elevated: 'برجسته', elevatedDescription: 'کارت با سایه و تفکیک واضح', rounded: 'گرد', roundedDescription: 'لبه‌های نرم و کارت‌های گرد', tonal: 'صاف', tonalDescription: 'سطوح تخت با مرزبندی ملایم', executive: 'مدیریتی', executiveDescription: 'پوستهٔ حرفه‌ای با ناوبری تیره'
+    });
+const surfaceOptions = computed<Array<{ value: SurfaceStyle; title: string; description: string }>>(() => [
+  { value: 'elevated', title: copy.value.elevated, description: copy.value.elevatedDescription }, { value: 'rounded', title: copy.value.rounded, description: copy.value.roundedDescription },
+  { value: 'tonal', title: copy.value.tonal, description: copy.value.tonalDescription }, { value: 'premium-executive', title: copy.value.executive, description: copy.value.executiveDescription }
+]);
 function chooseTheme(themeName: string) {
   emit('update:activeTheme', props.themeMode === 'dark' ? `Dark${themeName}` : themeName);
 }
@@ -72,9 +77,13 @@ function updateFontTheme(value: unknown) {
   if (typeof value === 'string') emit('update:fontTheme', value);
 }
 function selectDirection(value: AppDirection) {
+  // Language and direction are independent preferences. Only offer a language
+  // change after the user actually changes the layout direction and they
+  // currently conflict: LTR + Persian, or RTL + English.
+  if (props.direction === value) return;
   emit('update:direction', value);
-  const suggestedLanguage: AppLanguage = value === 'ltr' ? 'en' : 'fa';
-  if (props.language !== suggestedLanguage) emit('suggest-language-change', suggestedLanguage);
+  if (value === 'ltr' && props.language === 'fa') emit('suggest-language-change', 'en');
+  if (value === 'rtl' && props.language === 'en') emit('suggest-language-change', 'fa');
 }
 
 function applyCustomizer() {
@@ -114,23 +123,23 @@ function applyCustomizer() {
   >
     <div class="app-customizer-panel__scroll">
       <header class="app-customizer-panel__header">
-        <div class="text-h6 font-weight-medium">شخصی سازی</div>
+        <div class="text-h6 font-weight-medium">{{ copy.title }}</div>
         <div>
-          <v-btn color="error" variant="outlined" size="small" class="ml-2" @click="emit('reset')">بارنشانی</v-btn>
+          <v-btn color="error" variant="outlined" size="small" class="ml-2" @click="emit('reset')">{{ copy.reset }}</v-btn>
           <v-btn variant="text" color="lightText" icon="$close" density="compact" @click="emit('update:modelValue', false)" />
         </div>
       </header>
 
       <v-card class="app-customizer-panel__card">
         <v-tabs v-model="activeTab" bg-color="lightprimary" align-tabs="center" fixed-tabs color="primary">
-          <v-tab value="style">ظاهر</v-tab><v-tab value="surfaces">سبک</v-tab><v-tab value="font">فونت</v-tab>
+          <v-tab value="style">{{ copy.styleTab }}</v-tab><v-tab value="surfaces">{{ copy.surfacesTab }}</v-tab><v-tab value="font">{{ copy.fontTab }}</v-tab>
         </v-tabs>
         <v-card-text>
           <v-tabs-window v-model="activeTab">
             <v-tabs-window-item value="style">
               <div class="app-customizer-panel__content pa-4">
                 <section>
-                  <h6 class="text-subtitle-1 font-weight-bold">حالت روز / شب</h6>
+                  <h6 class="text-subtitle-1 font-weight-bold">{{ copy.themeMode }}</h6>
                   <div class="theme-toggle-container">
                     <div
                       class="theme-toggle"
@@ -151,7 +160,7 @@ function applyCustomizer() {
                   </div>
                 </section>
                 <section>
-                  <h6 class="text-subtitle-1 font-weight-bold">رنگ بندی</h6>
+                  <h6 class="text-subtitle-1 font-weight-bold">{{ copy.colors }}</h6>
                   <div class="custom-theme-colors">
                     <button
                       v-for="color in colors"
@@ -164,10 +173,10 @@ function applyCustomizer() {
                   </div>
                 </section>
                 <section class="app-customizer-panel__direction">
-                  <h6 class="text-subtitle-1 font-weight-bold">جهت چیدمان</h6>
+                  <h6 class="text-subtitle-1 font-weight-bold">{{ copy.direction }}</h6>
                   <div class="app-customizer-panel__direction-options">
-                    <v-btn :color="direction === 'rtl' ? 'primary' : undefined" :variant="direction === 'rtl' ? 'flat' : 'outlined'" icon aria-label="راست به چپ" title="راست به چپ" @click="selectDirection('rtl')"><span class="direction-preview direction-preview--rtl" aria-hidden="true" /></v-btn>
-                    <v-btn :color="direction === 'ltr' ? 'primary' : undefined" :variant="direction === 'ltr' ? 'flat' : 'outlined'" icon aria-label="چپ به راست" title="چپ به راست" @click="selectDirection('ltr')"><span class="direction-preview direction-preview--ltr" aria-hidden="true" /></v-btn>
+                    <v-btn :color="direction === 'rtl' ? 'primary' : undefined" :variant="direction === 'rtl' ? 'flat' : 'outlined'" icon :aria-label="copy.rtl" :title="copy.rtl" @click="selectDirection('rtl')"><span class="direction-preview direction-preview--rtl" aria-hidden="true" /></v-btn>
+                    <v-btn :color="direction === 'ltr' ? 'primary' : undefined" :variant="direction === 'ltr' ? 'flat' : 'outlined'" icon :aria-label="copy.ltr" :title="copy.ltr" @click="selectDirection('ltr')"><span class="direction-preview direction-preview--ltr" aria-hidden="true" /></v-btn>
                   </div>
                 </section>
                 <AppCustomizerControls
@@ -175,6 +184,7 @@ function applyCustomizer() {
                   :text-field-variant="textFieldVariant"
                   :text-field-height="textFieldHeight"
                   :text-scale="textScale"
+                  :language="language"
                   :apply-preview="false"
                   :show-actions="false"
                   @update:text-field-border-radius="emit('update:textFieldBorderRadius', $event)"
@@ -183,14 +193,14 @@ function applyCustomizer() {
                   @update:text-scale="emit('update:textScale', $event)"
                 />
                 <section class="app-customizer-panel__content-width">
-                  <div><h6 class="text-subtitle-1 font-weight-bold">عرض محتوای صفحه</h6></div>
+                  <div><h6 class="text-subtitle-1 font-weight-bold">{{ copy.contentWidth }}</h6></div>
                   <div class="app-customizer-panel__width-options">
                     <v-btn
                       :color="contentWidth === 'compact' ? 'primary' : undefined"
                       :variant="contentWidth === 'compact' ? 'flat' : 'outlined'"
                       icon
-                      aria-label="محتوای کم‌عرض"
-                      title="محتوای کم‌عرض"
+                      :aria-label="copy.compact"
+                      :title="copy.compact"
                       @click="emit('update:contentWidth', 'compact')"
                       ><span class="content-width-preview content-width-preview--compact" aria-hidden="true"
                     /></v-btn>
@@ -198,8 +208,8 @@ function applyCustomizer() {
                       :color="contentWidth === 'wide' ? 'primary' : undefined"
                       :variant="contentWidth === 'wide' ? 'flat' : 'outlined'"
                       icon
-                      aria-label="محتوای عریض"
-                      title="محتوای عریض"
+                      :aria-label="copy.wide"
+                      :title="copy.wide"
                       @click="emit('update:contentWidth', 'wide')"
                       ><span class="content-width-preview content-width-preview--wide" aria-hidden="true"
                     /></v-btn>
@@ -210,8 +220,8 @@ function applyCustomizer() {
             <v-tabs-window-item value="surfaces">
               <div class="app-customizer-panel__content pa-4">
                 <section>
-                  <h6 class="text-subtitle-1 font-weight-bold">سبک کلی پروژه</h6>
-                  <p class="app-customizer-panel__hint">رنگ‌بندی ثابت می‌ماند؛ فقط جنس سطوح، کارت‌ها، منوها و پنل‌ها تغییر می‌کند.</p>
+                  <h6 class="text-subtitle-1 font-weight-bold">{{ copy.projectStyle }}</h6>
+                  <p class="app-customizer-panel__hint">{{ copy.projectStyleHint }}</p>
                   <div class="app-customizer-panel__surfaces">
                     <button
                       v-for="style in surfaceOptions"
@@ -227,14 +237,14 @@ function applyCustomizer() {
                     </button>
                   </div>
                   <div class="app-customizer-panel__menu-orientation">
-                    <h6 class="text-subtitle-1 font-weight-bold">چیدمان منو</h6>
-                    <p class="app-customizer-panel__hint">نمایش ناوبری را در سایدبار یا نوار بالایی انتخاب کنید.</p>
+                    <h6 class="text-subtitle-1 font-weight-bold">{{ copy.menuLayout }}</h6>
+                    <p class="app-customizer-panel__hint">{{ copy.menuLayoutHint }}</p>
                     <div class="d-flex gap-2">
                       <v-btn
                         :class="['menu-orientation-option', { active: menuOrientation === 'vertical' }]"
                         variant="outlined"
                         :color="menuOrientation === 'vertical' ? 'primary' : 'grey'"
-                        aria-label="منوی کناری"
+                        :aria-label="copy.sidebarMenu"
                         @click="emit('update:menuOrientation', 'vertical')"
                         class="flex-1"
                         ><span class="sidebar-preview closed" /></v-btn
@@ -242,7 +252,7 @@ function applyCustomizer() {
                         :class="['menu-orientation-option', { active: menuOrientation === 'horizontal' }]"
                         variant="outlined"
                         :color="menuOrientation === 'horizontal' ? 'primary' : 'grey'"
-                        aria-label="منوی بالایی"
+                        :aria-label="copy.topMenu"
                         @click="emit('update:menuOrientation', 'horizontal')"
                         class="flex-1"
                         ><span class="sidebar-preview open"
@@ -257,7 +267,7 @@ function applyCustomizer() {
              font requests to the application's initial render. -->
             <v-tabs-window-item value="font"
               ><div class="app-customizer-panel__content pa-4">
-                <h6 class="text-subtitle-1 font-weight-bold mb-4">انتخاب فونت</h6>
+                <h6 class="text-subtitle-1 font-weight-bold mb-4">{{ copy.font }}</h6>
                 <v-radio-group :model-value="fontTheme" hide-details class="custom-font" @update:model-value="updateFontTheme"
                   ><v-radio
                     v-for="font in fonts"
@@ -273,7 +283,7 @@ function applyCustomizer() {
         </v-card-text>
       </v-card>
     </div>
-    <div class="app-customizer-panel__actions"><AppCustomizerSubmit @apply="applyCustomizer" /></div>
+    <div class="app-customizer-panel__actions"><AppCustomizerSubmit :language="language" @apply="applyCustomizer" /></div>
   </v-navigation-drawer>
 </template>
 
