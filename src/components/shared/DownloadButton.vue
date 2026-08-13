@@ -4,16 +4,17 @@
     :loading="loading"
     @click="handleDownload"
     class="download-button"
+    :dir="ui.direction.value"
   >
     <v-icon v-if="icon" :start="iconStart" :end="iconEnd" :class="iconClass">{{ icon }}</v-icon>
-    <span class="download-title">{{ title }}</span>
-    <v-icon v-if="!icon" start :icon="icons.download" :class="iconClass"></v-icon>
+    <span class="download-title">{{ resolvedTitle }}</span>
+    <v-icon v-if="!icon" start :icon="resolvedIcon" :class="iconClass"></v-icon>
   </v-btn>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { icons } from '@/plugins/mdi-icon'
+import { useUiKit } from '../../platform/uiKit'
 
 interface Props {
   url: string
@@ -26,7 +27,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'دانلود',
+  title: undefined,
   iconStart: true,
   iconEnd: false,
   method: 'anchor'
@@ -39,6 +40,9 @@ const emit = defineEmits<{
 }>()
 
 const loading = ref(false)
+const ui = useUiKit()
+const resolvedTitle = computed(() => props.title ?? ui.t('download'))
+const resolvedIcon = computed(() => ui.icon('download') as never)
 
 // Computed class for icon positioning
 const iconClass = computed(() => {
@@ -63,7 +67,6 @@ const handleDownload = async () => {
       await downloadWithAnchor()
     }
   } catch (error) {
-    console.error('Download failed:', error)
     emit('error', error as Error)
   } finally {
     loading.value = false

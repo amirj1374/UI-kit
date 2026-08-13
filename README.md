@@ -2,6 +2,8 @@
 
 A reusable UI component library built with Vue 3, Vuetify 3, and TypeScript. This library provides a comprehensive set of components, composables, utilities, and directives for building modern web applications.
 
+Provider configuration, localization, themes, semantic icons, permissions, async state, RTL/LTR behavior, public exports, consumer setup, and testing are covered in [UI platform foundations](docs/PLATFORM_FOUNDATIONS.md).
+
 ## Features
 
 - 🎨 Built with Vue 3 Composition API
@@ -271,6 +273,13 @@ const formatted = formatNumberWithCommas(1234567); // "1,234,567"
 ### Common Components
 - `AppStepper` - Step-by-step wizard component
 - `Loading` - Loading overlay component
+
+### Form Presentation Components
+- `UiField` - Accessible label, hint, error, and success structure for consumer-owned controls
+- `UiFieldMessage` - Semantic hint, error, success, and warning feedback
+- `UiFormActions` - Localized submit, cancel, and secondary action presentation
+
+See [Form presentation components](docs/components/FORM_PRESENTATION.md) for contracts and adoption guidance.
 
 ### Layout Components
 - `AppSidebar` - Navigation sidebar with menu items, logo, and mini sidebar support

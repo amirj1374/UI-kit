@@ -1,23 +1,26 @@
 <script setup lang="ts">
-import { IconArrowBadgeLeft   , IconHome } from '@tabler/icons-vue';
+import { IconArrowBadgeLeft, IconHome } from '@tabler/icons-vue';
 import type { PropType } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
+import { useUiKit } from '../../platform/uiKit';
 
 type Breadcrumb = {
   title: string;
   disabled?: boolean;
   href?: string;
-  to?: any;
+  to?: RouteLocationRaw;
 };
 const props = defineProps({
   title: String,
   breadcrumbs: Array as PropType<Breadcrumb[]>,
   icon: String
 });
+const ui = useUiKit();
 </script>
 
 // ===============================|| Theme Breadcrumb ||=============================== //
 <template>
-  <v-row class="page-breadcrumb mb-1 mt-1">
+  <v-row class="page-breadcrumb mb-1 mt-1" :dir="ui.direction.value">
     <v-col cols="12" md="12">
       <v-card variant="flat" class="app-breadcrumb-card px-4 py-3">
         <v-row no-gutters class="align-center">
