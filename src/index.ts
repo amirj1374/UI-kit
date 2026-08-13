@@ -40,6 +40,13 @@ export type { PreviewFile } from './components/shared/AppFilePreview.vue';
 export { default as AppFormSection } from './components/shared/AppFormSection.vue';
 export { default as AppNotificationCenter } from './components/shared/AppNotificationCenter.vue';
 export type { AppNotification } from './components/shared/AppNotificationCenter.vue';
+export { default as RemoteAutocomplete } from './components/shared/RemoteAutocomplete.vue';
+export type { RemoteAutocompleteLoader, RemoteAutocompleteResult } from './components/shared/RemoteAutocomplete.vue';
+export { default as UiReadonlyField } from './components/shared/UiReadonlyField.vue';
+export { default as UiObjectDetails } from './components/shared/UiObjectDetails.vue';
+export type { UiObjectField } from './components/shared/UiObjectDetails.vue';
+export { default as UiActionBar } from './components/shared/UiActionBar.vue';
+export type { UiAction } from './components/shared/UiActionBar.vue';
 
 // Components - Common
 export { default as AppStepper } from './components/common/AppStepper.vue';
