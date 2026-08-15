@@ -112,6 +112,9 @@
     .v-list { background: transparent !important; color: #c2cedd !important; }
     .v-list-item { min-height: 46px; margin-block: 3px; border-radius: 7px !important; color: #c2cedd !important; }
     .v-list-item:hover { background: rgba(255, 255, 255, .075) !important; color: #fff !important; }
+    // Keep the active accent on the drawer's outer reading edge: right in RTL
+    // and left in LTR. The explicit override below avoids a physical right-side
+    // shadow being retained after the application direction changes at runtime.
     .v-list-item--active { background: rgba(var(--v-theme-primary), .28) !important; color: #fff !important; box-shadow: inset -3px 0 0 rgb(var(--v-theme-primary)); }
     .v-list-group { background: transparent !important; }
     .sidebar-footer { border-top: 1px solid rgba(255, 255, 255, .08); color: #9eacbe !important; }
@@ -168,6 +171,10 @@
   }
 
   @media (max-width: 960px) { .page-wrapper { padding: 18px; } }
+}
+
+[dir='ltr'] .surface-premium-executive .rightSidebar .v-list-item--active {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-primary));
 }
 
 // Vuetify's `rounded` prop creates a `rounded-lg` utility with a 24px radius.
