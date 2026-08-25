@@ -35,7 +35,7 @@ export default defineConfig(({ command, mode }) => {
       ],
       resolve: {
         alias: {
-          '@': path.resolve(__dirname, './src')
+          '@': path.resolve(import.meta.dirname, './src')
         }
       },
       css: {
@@ -51,7 +51,7 @@ export default defineConfig(({ command, mode }) => {
         // Preserve those declarations so linked consumers retain type safety.
         emptyOutDir: !isLibraryWatch,
         lib: {
-          entry: resolve(__dirname, 'src/index.ts'),
+          entry: resolve(import.meta.dirname, 'src/index.ts'),
           name: 'UiKit',
           // CJS must use a `.cjs` extension: the package is `"type": "module"`,
           // so a `.js` CJS file would be parsed as ESM by Node and yield an empty
@@ -147,7 +147,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src')
+        '@': path.resolve(import.meta.dirname, './src')
       }
     },
     css: {
