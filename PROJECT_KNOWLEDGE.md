@@ -206,7 +206,7 @@ Known limitations are its large mixed-responsibility implementation, Router coup
 
 ## 11. Build and package
 
-`npm run build:lib` typechecks, builds ESM/CJS/CSS through Vite, and emits declarations through `vue-tsc`. Output contracts are:
+`bun run build:lib` typechecks, builds ESM/CJS/CSS through Vite, and emits declarations through `vue-tsc`. Output contracts are:
 
 - `dist/ui-kit.es.js`;
 - `dist/ui-kit.cjs`;

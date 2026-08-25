@@ -604,7 +604,7 @@ const axios = getAxiosInstance(); // returns configured instance or default
 
 Two build modes controlled by `BUILD_LIB` env variable:
 
-**Library Mode** (`BUILD_LIB=true`, triggered by `npm run build:lib`):
+**Library Mode** (`BUILD_LIB=true`, triggered by `bun run build:lib`):
 ```
 Input:  src/index.ts
 Output: dist/ui-kit.es.js  (ES Module)
@@ -624,8 +624,8 @@ Multi-env: dev / prelive / live / demo
 
 ### npm Scripts
 
-The repository standardizes on npm 11 and the committed `package-lock.json`.
-`npm run build` builds the demo application; `npm run build:lib` builds the
+The repository standardizes on Bun 1.4.0 and the committed `bun.lock`.
+`bun run build` builds the demo application; `bun run build:lib` builds the
 publishable ESM/CJS package. Components are named imports. Calling `app.use(UiKit)`
 registers only `v-digit-limit`.
 
@@ -644,7 +644,7 @@ registers only `v-digit-limit`.
 | `clean` | Delete `dist/` |
 | `analyze` | Open bundle analyzer |
 
-Before any separately authorized publish, run `npm ci`, `npm run validate`, and
+Before any separately authorized publish, run `bun install --frozen-lockfile`, `bun run validate`, and
 `npm pack --dry-run`. The packed consumer check installs the tarball with Vue,
 Vuetify, Pinia, and Vue Router, then verifies declarations, ESM, CommonJS, CSS, and
 a Vite production build. Client-side table export requires optional `xlsx`. The

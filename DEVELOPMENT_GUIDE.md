@@ -163,13 +163,13 @@ Use the repository's installed dependencies and documented npm workflow. Do not 
 
 | Scope | Command |
 | --- | --- |
-| Lint, read-only | `npm run lint:check` |
-| Type check | `npm run typecheck` |
+| Lint, read-only | `bun run lint:check` |
+| Type check | `bun run typecheck` |
 | Unit/component tests | `npm test` |
-| Coverage | `npm run test:coverage` |
-| Library package | `npm run build:lib` |
-| Packed consumer | `npm run test:consumer` after library build |
-| Full gate | `npm run validate` |
+| Coverage | `bun run test:coverage` |
+| Library package | `bun run build:lib` |
+| Packed consumer | `bun run test:consumer` after library build |
+| Full gate | `bun run validate` |
 | Patch whitespace | `git diff --check` |
 
 Formatting and `lint:fix` write files. Run them only when the task permits edits and review every resulting change.

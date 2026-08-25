@@ -20,7 +20,7 @@ npm install @amirjalili1374/ui-kit
 ```
 
 This repository is developed and validated with Node.js `^20.19.0 || >=22.12.0`
-and npm 11. The committed `package-lock.json` is the canonical lockfile.
+and Bun 1.4.0. The committed `bun.lock` is the canonical lockfile.
 
 ## Peer Dependencies
 
@@ -327,7 +327,7 @@ See [Form presentation components](docs/components/FORM_PRESENTATION.md) for con
 To build the library for distribution:
 
 ```bash
-npm run build:lib
+bun run build:lib
 ```
 
 This runs fail-closed TypeScript checking, builds ESM and CommonJS outputs,
@@ -339,8 +339,8 @@ Output files will be in the `dist` directory:
 - `style.css` - Compiled CSS
 - `index.d.ts` - TypeScript declarations
 
-The normal `npm run build` command builds the demo application. Use
-`npm run build:lib` for the publishable package.
+The normal `bun run build` command builds the demo application. Use
+`bun run build:lib` for the publishable package.
 
 ### Optional Excel export
 
@@ -359,41 +359,41 @@ when client-side export is invoked.
 Before publishing, validate and inspect the packed package:
 
 ```bash
-npm ci
-npm run validate
+bun install --frozen-lockfile
+bun run validate
 npm pack --dry-run
 ```
 
 Publishing remains a manual, separately authorized operation. The `prepublishOnly`
-hook rebuilds the library, but does not replace `npm run validate`.
+hook rebuilds the library, but does not replace `bun run validate`.
 
 ## Development
 
 ### Run Development Server
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 ### Type Checking
 
 ```bash
-npm run typecheck
+bun run typecheck
 ```
 
 ### Linting
 
 ```bash
-npm run lint:check  # read-only
-npm run lint:fix    # explicit auto-fix
+bun run lint:check  # read-only
+bun run lint:fix    # explicit auto-fix
 ```
 
 ### Tests and package consumer validation
 
 ```bash
 npm test
-npm run test:coverage
-npm run test:consumer
+bun run test:coverage
+bun run test:consumer
 ```
 
 `test:consumer` packs the built library, installs the tarball into a fresh temporary
@@ -404,7 +404,7 @@ table selection/helpers, and initial public-component accessibility contracts.
 ### Formatting
 
 ```bash
-npm run format
+bun run format
 ```
 
 ## Updating the Library
@@ -413,9 +413,9 @@ To update and republish the library:
 
 1. Make your changes to components, composables, or utilities
 2. Update the version in `package.json`
-3. Build the library: `npm run build:lib`
+3. Build the library: `bun run build:lib`
 4. Test locally if possible
-5. Run `npm run validate`
+5. Run `bun run validate`
 6. Inspect `npm pack --dry-run`
 7. Publish only through the separately authorized release process
 

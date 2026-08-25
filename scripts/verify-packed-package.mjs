@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { basename, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -10,24 +10,23 @@ const fixtureRoot = join(repositoryRoot, 'tests', 'consumer');
 function run(command, args, cwd) {
   execFileSync(command, args, {
     cwd,
-    stdio: 'inherit',
-    shell: process.platform === 'win32' && command === 'npm'
+    stdio: 'inherit'
   });
 }
 
 if (!existsSync(join(repositoryRoot, 'dist', 'ui-kit.es.js'))) {
-  throw new Error('dist is missing. Run "npm run build:lib" before "npm run test:consumer".');
+  throw new Error('dist is missing. Run "bun run build:lib" before "bun run test:consumer".');
 }
 
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'ui-kit-consumer-'));
 try {
-  const packOutput = execFileSync(
-    'npm',
-    ['pack', '--json', '--ignore-scripts', '--pack-destination', temporaryRoot],
-    { cwd: repositoryRoot, encoding: 'utf8', shell: process.platform === 'win32' }
-  );
-  const [{ filename }] = JSON.parse(packOutput);
-  const tarball = join(temporaryRoot, filename);
+  const filename = execFileSync(
+    'bun',
+    ['pm', 'pack', '--quiet', '--ignore-scripts', '--destination', temporaryRoot],
+    { cwd: repositoryRoot, encoding: 'utf8' }
+  ).trim().split(/\r?\n/).at(-1);
+  if (!filename) throw new Error('Bun did not return the packed archive filename.');
+  const tarball = isAbsolute(filename) ? filename : join(temporaryRoot, filename);
   const consumerRoot = join(temporaryRoot, 'consumer');
   cpSync(fixtureRoot, consumerRoot, { recursive: true });
 
@@ -36,11 +35,11 @@ try {
   consumerPackage.dependencies['@amirjalili1374/ui-kit'] = `file:${tarball.replaceAll('\\', '/')}`;
   writeFileSync(consumerPackagePath, `${JSON.stringify(consumerPackage, null, 2)}\n`);
 
-  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], consumerRoot);
-  run('npm', ['run', 'typecheck'], consumerRoot);
-  run('npm', ['run', 'build'], consumerRoot);
-  run('node', ['--input-type=module', '--eval', "if (!import.meta.resolve('@amirjalili1374/ui-kit').endsWith('ui-kit.es.js')) process.exit(1)"], consumerRoot);
-  run('node', ['--eval', "if (!require.resolve('@amirjalili1374/ui-kit').endsWith('ui-kit.cjs')) process.exit(1)"], consumerRoot);
+  run('bun', ['install', '--ignore-scripts'], consumerRoot);
+  run('bun', ['run', 'typecheck'], consumerRoot);
+  run('bun', ['run', 'build'], consumerRoot);
+  run('bun', ['--eval', "if (!import.meta.resolve('@amirjalili1374/ui-kit').endsWith('ui-kit.es.js')) process.exit(1)"], consumerRoot);
+  run('bun', ['--eval', "if (!require.resolve('@amirjalili1374/ui-kit').endsWith('ui-kit.cjs')) process.exit(1)"], consumerRoot);
 
   const installedPackage = JSON.parse(
     readFileSync(join(consumerRoot, 'node_modules', '@amirjalili1374', 'ui-kit', 'package.json'), 'utf8')

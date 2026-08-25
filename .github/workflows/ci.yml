@@ -12,32 +12,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 24
-          cache: npm
+          bun-version: 1.4.0
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint:check
+        run: bun run lint:check
 
       - name: Type check
-        run: npm run typecheck
+        run: bun run typecheck
 
       - name: Unit and component tests
-        run: npm test
+        run: bun run test
 
       - name: Coverage
-        run: npm run test:coverage
+        run: bun run test:coverage
 
       - name: Build library
-        run: npm run build:lib
+        run: bun run build:lib
 
       - name: Verify packed package and consumer
-        run: npm run test:consumer
+        run: bun run test:consumer
 
       - name: Verify patch whitespace
         run: git diff --check
