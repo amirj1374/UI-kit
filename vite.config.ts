@@ -75,6 +75,10 @@ export default defineConfig(({ command, mode }) => {
             'xlsx',
             'vue3-lottie',
             'vue3-perfect-scrollbar',
+            // Optional chat renderer dependencies remain separate modules so
+            // adding chat primitives does not inflate the UI Kit core bundle.
+            'markdown-it',
+            /^highlight\.js(?:\/|$)/,
             // jalaali-js is bundled, not externalized (to avoid CJS/ESM issues)
             'vue3-persian-datetime-picker',
             '@dsb-norge/vue-keycloak-js'

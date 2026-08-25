@@ -423,6 +423,39 @@ For npm scoped packages, make sure you have the correct permissions.
 
 ## What's Included vs Excluded
 
+### Chat primitives
+
+The package exposes transport- and store-agnostic building blocks for chat UIs:
+
+- `UiChatShell`
+- `UiChatMessage`
+- `UiChatMarkdown`
+- `UiChatComposer`
+- `UiChatPromptNavigator`
+
+The consuming application remains responsible for sessions, REST/SSE/WebSocket
+transport, mention data loading, routing, persistence, and business-specific
+labels. Components communicate through props, slots, and events only.
+
+```vue
+<UiChatShell :jump-visible="showJump" @jump-to-bottom="scrollToBottom">
+  <UiChatMessage
+    v-for="message in messages"
+    :key="message.id"
+    :message="message"
+    @edit="editMessage"
+  />
+
+  <template #navigator>
+    <UiChatPromptNavigator :prompts="prompts" :active-index="activePrompt" @select="scrollToPrompt" />
+  </template>
+
+  <template #composer>
+    <UiChatComposer v-model="input" :streaming="streaming" @send="send" @stop="stop" />
+  </template>
+</UiChatShell>
+```
+
 ### ✅ Included (Generic & Reusable)
 - Global UI components
 - Generic composables (data table, selection, etc.)

@@ -62,6 +62,22 @@ export { default as UiFieldMessage } from './components/form/UiFieldMessage.vue'
 export { default as UiFormActions } from './components/form/UiFormActions.vue';
 export type { UiFieldMessageVariant, UiFormActionsAlign } from './components/form/types';
 
+// Components - Chat primitives (transport/store agnostic)
+export { default as UiChatShell } from './components/chat/UiChatShell.vue';
+export { default as UiChatMessage } from './components/chat/UiChatMessage.vue';
+export { default as UiChatMarkdown } from './components/chat/UiChatMarkdown.vue';
+export { default as UiChatComposer } from './components/chat/UiChatComposer.vue';
+export { default as UiChatPromptNavigator } from './components/chat/UiChatPromptNavigator.vue';
+export type {
+  UiChatRole,
+  UiChatMessageStatus,
+  UiChatMessageModel,
+  UiChatPrompt,
+  UiChatMentionCategory,
+  UiChatMentionOption,
+  UiChatMention
+} from './components/chat/types';
+
 // Components - Layout
 export { default as AppSidebar } from './components/layout/AppSidebar.vue';
 export { default as AppHeader } from './components/layout/AppHeader.vue';

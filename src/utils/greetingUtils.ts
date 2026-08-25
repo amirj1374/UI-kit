@@ -1,7 +1,10 @@
-import type { UserInfoResponse } from '@/types/models/userInfo';
-
 type TimePeriod = 'morning' | 'noon' | 'afternoon' | 'evening';
 type GreetingLocale = 'fa' | 'en';
+
+export interface GreetingUserInfo {
+  authTime?: string | Date;
+  fullName?: string;
+}
 
 interface PeriodEntry {
   readonly period: TimePeriod;
@@ -81,7 +84,7 @@ export class GreetingUtils {
   }
 
   /** Convenience: build greeting from a full UserInfoResponse. */
-  static fromUserInfo(userInfo: Pick<UserInfoResponse, 'authTime' | 'fullName'>, locale?: GreetingLocale): string {
+  static fromUserInfo(userInfo: GreetingUserInfo, locale?: GreetingLocale): string {
     return GreetingUtils.getGreetingWithName(userInfo.authTime, userInfo.fullName, locale);
   }
 }
