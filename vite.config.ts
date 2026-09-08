@@ -67,7 +67,10 @@ export default defineConfig(({ command, mode }) => {
             'vue',
             'vue-router',
             'pinia',
-            'vuetify',
+            // Vuetify auto-imports use subpaths such as `vuetify/components`.
+            // Externalize the whole package namespace; externalizing only the
+            // root entry leaves all component implementations in the kit.
+            /^vuetify(?:\/|$)/,
             'axios',
             '@vueuse/core',
             '@tabler/icons-vue',

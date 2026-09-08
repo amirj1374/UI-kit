@@ -75,25 +75,6 @@ const computedHeaderMenu = computed(() => {
       <IconMenu2 size="20" stroke-width="1.5" />
     </v-btn>
 
-    <!-- HORIZONTAL NAVIGATION (Mobile / Tablet) -->
-    <v-menu v-if="menuOrientation === 'horizontal'" class="hidden-lg-and-up" location="bottom start">
-      <template #activator="{ props: menuProps }">
-        <v-btn
-          v-bind="menuProps"
-          class="text-secondary ms-3"
-          color="lightsecondary"
-          icon
-          rounded="sm"
-          variant="flat"
-          size="small"
-          aria-label="Open navigation menu"
-        >
-          <IconMenu2 size="20" stroke-width="1.5" />
-        </v-btn>
-      </template>
-      <AppHeaderMenu display="menu" :items="computedHeaderMenu" />
-    </v-menu>
-
     <!-- CUSTOMIZER BUTTON -->
     <v-btn
       class="text-secondary mr-2 ml-2"

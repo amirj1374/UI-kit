@@ -2121,7 +2121,7 @@ watch(
     </v-menu>
   </div>
   <!-- Inline Filter Section -->
-  <v-card v-if="props.inlineFilter && formHeaders.length > 0" class="mb-2 pa-2" elevation="1">
+  <v-card v-if="props.inlineFilter && formHeaders.length > 0" class="mb-2 pa-2 lookup-inline-filter" elevation="1">
     <!-- همیشه از headers استفاده می‌کنه، بدون شرط filterComponent -->
     <v-container>
       <v-row>
@@ -2789,7 +2789,10 @@ watch(
   <!-- Filter Dialog -->
   <v-dialog v-model="filterDialog" max-width="1600" content-class="white-list-filter-dialog">
     <v-card>
-      <v-card-title>{{ ui.t('filters') }}</v-card-title>
+      <v-card-title class="d-flex align-center justify-space-between">
+        <span>{{ ui.t('filters') }}</span>
+        <v-btn icon="mdi-close" variant="text" size="small" :aria-label="ui.t('close')" @click="filterDialog = false" />
+      </v-card-title>
       <v-card-text>
         <component
           v-if="props.filterComponent"
