@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.19] - 2026-09-28
+
+### Added
+
+- Added the `compactHeader` preference to the shared Customizer and UI profile payload.
+- Added a styled header-size control to the Customizer's Surfaces/Style tab.
+
 ## [Unreleased]
 
 ### Added

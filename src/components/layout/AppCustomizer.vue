@@ -64,14 +64,14 @@ function reset() { customizer.LOAD_PREFERENCES(undefined); }
     :model-value="customizer.Customizer_drawer" :width="drawerWidth" :theme-mode="mode" :active-theme="customizer.actTheme"
     :colors="colors" :font-theme="customizer.fontTheme" :fonts="fonts" :text-field-border-radius="customizer.textFieldBorderRadius"
     :text-field-variant="customizer.textFieldVariant" :text-field-height="customizer.uiDensity" :text-scale="customizer.textScale"
-    :menu-orientation="customizer.menuOrientation" :surface-style="customizer.surfaceStyle" v-model:content-width="customizer.contentWidth"
+    :menu-orientation="customizer.menuOrientation" :surface-style="customizer.surfaceStyle" :compact-header="customizer.compactHeader" v-model:content-width="customizer.contentWidth"
     :language="customizer.language" :direction="customizer.direction"
     :input-bg="customizer.inputBg" :layout-type="customizer.layoutType" :font-label="font => fontLabels[font] || font"
     @update:model-value="customizer.SET_CUSTOMIZER_DRAWER" @update:theme-mode="customizer.SET_THEME_MODE" @update:active-theme="customizer.SET_THEME"
     @update:font-theme="customizer.SET_FONT" @update:text-field-border-radius="customizer.SET_TEXT_FIELD_BORDER_RADIUS"
     @update:text-field-variant="customizer.SET_TEXT_FIELD_VARIANT" @update:text-field-height="customizer.SET_UI_DENSITY"
     @update:text-scale="customizer.SET_TEXT_SCALE" @update:menu-orientation="customizer.SET_MENU_ORIENTATION"
-    @update:surface-style="customizer.SET_SURFACE_STYLE" @update:direction="customizer.SET_DIRECTION"
+    @update:surface-style="customizer.SET_SURFACE_STYLE" @update:compact-header="customizer.SET_COMPACT_HEADER" @update:direction="customizer.SET_DIRECTION"
     @reset="reset" @apply="emit('save', $event)" @suggest-language-change="emit('suggest-language-change', $event)"
   />
 </template>

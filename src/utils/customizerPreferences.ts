@@ -21,6 +21,7 @@ export interface CustomizerPreferences {
   textScale: number;
   surfaceStyle: SurfaceStyle;
   contentWidth: ContentWidth;
+  compactHeader: boolean;
   language: AppLanguage;
   direction: AppDirection;
 }
@@ -29,7 +30,7 @@ export const customizerPreferenceDefaults: CustomizerPreferences = {
   version: 1, actTheme: 'PurpleTheme', themeMode: 'light', fontTheme: 'vazir', inputBg: false,
   layoutType: 'SideBar', menuOrientation: 'vertical', textFieldBorderRadius: 10,
   textFieldVariant: 'outlined', uiDensity: 'default', textScale: 100,
-  surfaceStyle: 'elevated', contentWidth: 'wide', language: 'fa', direction: 'rtl'
+  surfaceStyle: 'elevated', contentWidth: 'wide', compactHeader: false, language: 'fa', direction: 'rtl'
 };
 
 const variants: TextFieldVariant[] = ['outlined', 'filled', 'solo', 'plain', 'underlined'];
@@ -64,6 +65,7 @@ export function parseCustomizerPreferences(value: unknown): CustomizerPreference
     textScale: numberValue(source.textScale, customizerPreferenceDefaults.textScale, 85, 115),
     surfaceStyle: surfaces.includes(source.surfaceStyle as SurfaceStyle) ? source.surfaceStyle as SurfaceStyle : customizerPreferenceDefaults.surfaceStyle,
     contentWidth: source.contentWidth === 'compact' ? 'compact' : 'wide',
+    compactHeader: typeof source.compactHeader === 'boolean' ? source.compactHeader : customizerPreferenceDefaults.compactHeader,
     language: source.language === 'en' ? 'en' : 'fa',
     direction: source.direction === 'ltr' ? 'ltr' : 'rtl'
   };

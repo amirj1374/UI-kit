@@ -15,6 +15,7 @@ export const useCustomizerStore = defineStore({
     textScale: 100,
     surfaceStyle: 'elevated' as SurfaceStyle,
     contentWidth: 'wide' as ContentWidth,
+    compactHeader: false,
     layoutType: 'SideBar',
     actTheme: 'PurpleTheme',
     loading: false,
@@ -50,6 +51,7 @@ export const useCustomizerStore = defineStore({
     SET_TEXT_SCALE(payload: number) { this.textScale = Math.min(115, Math.max(85, Math.round(payload))); },
     SET_SURFACE_STYLE(payload: string) { this.surfaceStyle = ['elevated', 'rounded', 'tonal', 'premium-executive'].includes(payload) ? payload as typeof this.surfaceStyle : 'elevated'; },
     SET_CONTENT_WIDTH(payload: string) { this.contentWidth = payload === 'compact' ? 'compact' : 'wide'; },
+    SET_COMPACT_HEADER(payload: boolean) { this.compactHeader = Boolean(payload); },
     LOAD_PREFERENCES(serialized: unknown) {
       const preferences = parseCustomizerPreferences(serialized);
       this.fontTheme = preferences.fontTheme; this.inputBg = preferences.inputBg; this.layoutType = preferences.layoutType;
@@ -57,6 +59,7 @@ export const useCustomizerStore = defineStore({
       this.SET_TEXT_FIELD_BORDER_RADIUS(preferences.textFieldBorderRadius); this.SET_TEXT_FIELD_VARIANT(preferences.textFieldVariant);
       this.SET_UI_DENSITY(preferences.uiDensity); this.SET_TEXT_SCALE(preferences.textScale);
       this.SET_SURFACE_STYLE(preferences.surfaceStyle); this.SET_CONTENT_WIDTH(preferences.contentWidth);
+      this.SET_COMPACT_HEADER(preferences.compactHeader);
       this.SET_LANGUAGE(preferences.language); this.SET_DIRECTION(preferences.direction);
     },
     APPLY_PREFERENCES(preferences: CustomizerPreferences) { this.LOAD_PREFERENCES(preferences); },

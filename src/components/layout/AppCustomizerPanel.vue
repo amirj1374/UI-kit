@@ -29,6 +29,7 @@ const props = withDefaults(
     menuOrientation: MenuOrientation;
     surfaceStyle?: SurfaceStyle;
     contentWidth?: ContentWidth;
+    compactHeader: boolean;
     language?: AppLanguage;
     direction?: AppDirection;
     inputBg?: boolean;
@@ -36,7 +37,7 @@ const props = withDefaults(
     width?: number;
     fontLabel?: (font: string) => string;
   }>(),
-  { width: 400, fontLabel: (font: string) => font, surfaceStyle: 'elevated', contentWidth: 'wide', language: 'fa', direction: 'rtl', inputBg: false, layoutType: 'SideBar' }
+  { width: 400, fontLabel: (font: string) => font, surfaceStyle: 'elevated', contentWidth: 'wide', compactHeader: false, language: 'fa', direction: 'rtl', inputBg: false, layoutType: 'SideBar' }
 );
 
 const emit = defineEmits<{
@@ -50,6 +51,7 @@ const emit = defineEmits<{
   'update:textScale': [value: number];
   'update:menuOrientation': [value: MenuOrientation];
   'update:surfaceStyle': [value: SurfaceStyle];
+  'update:compactHeader': [value: boolean];
   'update:contentWidth': [value: ContentWidth];
   'update:direction': [value: AppDirection];
   'suggest-language-change': [language: AppLanguage];
@@ -61,10 +63,10 @@ const activeBaseTheme = computed(() => props.activeTheme.replace(/^Dark/, ''));
 const activeTab = ref('style');
 const copy = computed(() => props.language === 'en'
   ? {
-      title: 'Customize', reset: 'Reset', styleTab: 'Appearance', surfacesTab: 'Surfaces', fontTab: 'Font', themeMode: 'Light / dark mode', colors: 'Color theme', direction: 'Layout direction', rtl: 'Right to left', ltr: 'Left to right', contentWidth: 'Page content width', compact: 'Compact content', wide: 'Wide content', projectStyle: 'Project surface style', projectStyleHint: 'The color theme stays the same; only surfaces, cards, menus, and panels change.', menuLayout: 'Menu layout', menuLayoutHint: 'Choose navigation in the sidebar or top bar.', sidebarMenu: 'Sidebar menu', topMenu: 'Top menu', font: 'Font selection', elevated: 'Elevated', elevatedDescription: 'Cards with a clear shadow and separation', rounded: 'Rounded', roundedDescription: 'Soft edges and rounded cards', tonal: 'Tonal', tonalDescription: 'Flat surfaces with subtle boundaries', executive: 'Executive', executiveDescription: 'Professional shell with dark navigation'
+      title: 'Customize', reset: 'Reset', styleTab: 'Appearance', surfacesTab: 'Surfaces', fontTab: 'Font', themeMode: 'Light / dark mode', colors: 'Color theme', direction: 'Layout direction', rtl: 'Right to left', ltr: 'Left to right', contentWidth: 'Page content width', compact: 'Compact content', wide: 'Wide content', projectStyle: 'Project surface style', projectStyleHint: 'The color theme stays the same; only surfaces, cards, menus, and panels change.', menuLayout: 'Menu layout', menuLayoutHint: 'Choose navigation in the sidebar or top bar.', sidebarMenu: 'Sidebar menu', topMenu: 'Top menu', headerSize: 'Header size', compactHeader: 'Compact header', compactHeaderHint: 'Reduce the top bar height and icon size.', font: 'Font selection', elevated: 'Elevated', elevatedDescription: 'Cards with a clear shadow and separation', rounded: 'Rounded', roundedDescription: 'Soft edges and rounded cards', tonal: 'Tonal', tonalDescription: 'Flat surfaces with subtle boundaries', executive: 'Executive', executiveDescription: 'Professional shell with dark navigation'
     }
   : {
-      title: 'شخصی سازی', reset: 'بارنشانی', styleTab: 'ظاهر', surfacesTab: 'سبک', fontTab: 'فونت', themeMode: 'حالت روز / شب', colors: 'رنگ بندی', direction: 'جهت چیدمان', rtl: 'راست به چپ', ltr: 'چپ به راست', contentWidth: 'عرض محتوای صفحه', compact: 'محتوای کم‌عرض', wide: 'محتوای عریض', projectStyle: 'سبک کلی پروژه', projectStyleHint: 'رنگ‌بندی ثابت می‌ماند؛ فقط جنس سطوح، کارت‌ها، منوها و پنل‌ها تغییر می‌کند.', menuLayout: 'چیدمان منو', menuLayoutHint: 'نمایش ناوبری را در سایدبار یا نوار بالایی انتخاب کنید.', sidebarMenu: 'منوی کناری', topMenu: 'منوی بالایی', font: 'انتخاب فونت', elevated: 'برجسته', elevatedDescription: 'کارت با سایه و تفکیک واضح', rounded: 'گرد', roundedDescription: 'لبه‌های نرم و کارت‌های گرد', tonal: 'صاف', tonalDescription: 'سطوح تخت با مرزبندی ملایم', executive: 'مدیریتی', executiveDescription: 'پوستهٔ حرفه‌ای با ناوبری تیره'
+      title: 'شخصی سازی', reset: 'بارنشانی', styleTab: 'ظاهر', surfacesTab: 'سبک', fontTab: 'فونت', themeMode: 'حالت روز / شب', colors: 'رنگ بندی', direction: 'جهت چیدمان', rtl: 'راست به چپ', ltr: 'چپ به راست', contentWidth: 'عرض محتوای صفحه', compact: 'محتوای کم‌عرض', wide: 'محتوای عریض', projectStyle: 'سبک کلی پروژه', projectStyleHint: 'رنگ‌بندی ثابت می‌ماند؛ فقط جنس سطوح، کارت‌ها، منوها و پنل‌ها تغییر می‌کند.', menuLayout: 'چیدمان منو', menuLayoutHint: 'نمایش ناوبری را در سایدبار یا نوار بالایی انتخاب کنید.', sidebarMenu: 'منوی کناری', topMenu: 'منوی بالایی', headerSize: 'اندازه هدر', compactHeader: 'هدر فشرده', compactHeaderHint: 'ارتفاع نوار بالایی و اندازه آیکن‌های آن را کاهش می‌دهد.', font: 'انتخاب فونت', elevated: 'برجسته', elevatedDescription: 'کارت با سایه و تفکیک واضح', rounded: 'گرد', roundedDescription: 'لبه‌های نرم و کارت‌های گرد', tonal: 'صاف', tonalDescription: 'سطوح تخت با مرزبندی ملایم', executive: 'مدیریتی', executiveDescription: 'پوستهٔ حرفه‌ای با ناوبری تیره'
     });
 const surfaceOptions = computed<Array<{ value: SurfaceStyle; title: string; description: string }>>(() => [
   { value: 'elevated', title: copy.value.elevated, description: copy.value.elevatedDescription }, { value: 'rounded', title: copy.value.rounded, description: copy.value.roundedDescription },
@@ -103,6 +105,7 @@ function applyCustomizer() {
       textScale: props.textScale,
       surfaceStyle: props.surfaceStyle,
       contentWidth: props.contentWidth,
+      compactHeader: props.compactHeader,
       language: props.language,
       direction: props.direction
     })
@@ -259,6 +262,21 @@ function applyCustomizer() {
                       /></v-btn>
                     </div>
                   </div>
+                  <section class="app-customizer-panel__header-size">
+                    <div>
+                      <h6 class="text-subtitle-1 font-weight-bold">{{ copy.headerSize }}</h6>
+                      <p class="app-customizer-panel__hint">{{ copy.compactHeaderHint }}</p>
+                    </div>
+                    <v-switch
+                      :model-value="compactHeader"
+                      color="primary"
+                      density="compact"
+                      hide-details
+                      inset
+                      :label="copy.compactHeader"
+                      @update:model-value="emit('update:compactHeader', Boolean($event))"
+                    />
+                  </section>
                 </section>
               </div>
             </v-tabs-window-item>
@@ -458,6 +476,22 @@ function applyCustomizer() {
 }
 .app-customizer-panel__menu-orientation h6 {
   margin: 0;
+}
+.app-customizer-panel__header-size {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(var(--v-theme-borderLight), 0.5);
+}
+.app-customizer-panel__header-size h6,
+.app-customizer-panel__header-size p {
+  margin: 0;
+}
+.app-customizer-panel__header-size :deep(.v-switch) {
+  flex: 0 0 auto;
 }
 .app-customizer-panel__content-width {
   display: flex !important;
