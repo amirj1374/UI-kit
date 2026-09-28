@@ -73,3 +73,6 @@ function, TypeScript types, props, and emitted events are all unchanged.
   dangling `sourceMappingURL` references that 404'd in consumers' devtools.
 
 [1.9.0]: https://github.com/amirjalili1374/ui-kit/releases/tag/v1.9.0
+## [1.10.20] - 2026-09-28
+
+- Added the compact header preference to the customizer.
