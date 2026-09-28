@@ -218,6 +218,21 @@ function applyCustomizer() {
                     /></v-btn>
                   </div>
                 </section>
+                <section class="app-customizer-panel__header-size">
+                  <div>
+                    <h6 class="text-subtitle-1 font-weight-bold">{{ copy.headerSize }}</h6>
+                    <p class="app-customizer-panel__hint">{{ copy.compactHeaderHint }}</p>
+                  </div>
+                  <v-switch
+                    :model-value="compactHeader"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                    inset
+                    :label="copy.compactHeader"
+                    @update:model-value="emit('update:compactHeader', Boolean($event))"
+                  />
+                </section>
               </div>
             </v-tabs-window-item>
             <v-tabs-window-item value="surfaces">
@@ -262,21 +277,6 @@ function applyCustomizer() {
                       /></v-btn>
                     </div>
                   </div>
-                  <section class="app-customizer-panel__header-size">
-                    <div>
-                      <h6 class="text-subtitle-1 font-weight-bold">{{ copy.headerSize }}</h6>
-                      <p class="app-customizer-panel__hint">{{ copy.compactHeaderHint }}</p>
-                    </div>
-                    <v-switch
-                      :model-value="compactHeader"
-                      color="primary"
-                      density="compact"
-                      hide-details
-                      inset
-                      :label="copy.compactHeader"
-                      @update:model-value="emit('update:compactHeader', Boolean($event))"
-                    />
-                  </section>
                 </section>
               </div>
             </v-tabs-window-item>

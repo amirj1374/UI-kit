@@ -76,3 +76,6 @@ function, TypeScript types, props, and emitted events are all unchanged.
 ## [1.10.20] - 2026-09-28
 
 - Added the compact header preference to the customizer.
+## [1.10.21] - 2026-09-28
+
+- Moved the compact header control to the primary appearance tab for easier discovery.
