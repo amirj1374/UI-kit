@@ -27,10 +27,10 @@ export interface CustomizerPreferences {
 }
 
 export const customizerPreferenceDefaults: CustomizerPreferences = {
-  version: 1, actTheme: 'PurpleTheme', themeMode: 'light', fontTheme: 'vazir', inputBg: false,
+  version: 1, actTheme: 'TerracottaMossTheme', themeMode: 'light', fontTheme: 'vazir', inputBg: false,
   layoutType: 'SideBar', menuOrientation: 'vertical', textFieldBorderRadius: 10,
   textFieldVariant: 'outlined', uiDensity: 'default', textScale: 100,
-  surfaceStyle: 'elevated', contentWidth: 'wide', compactHeader: false, language: 'fa', direction: 'rtl'
+  surfaceStyle: 'premium-executive', contentWidth: 'wide', compactHeader: false, language: 'fa', direction: 'rtl'
 };
 
 const variants: TextFieldVariant[] = ['outlined', 'filled', 'solo', 'plain', 'underlined'];

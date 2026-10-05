@@ -13,11 +13,11 @@ export const useCustomizerStore = defineStore({
     textFieldVariant: 'outlined' as const,
     uiDensity: 'default' as const,
     textScale: 100,
-    surfaceStyle: 'elevated' as SurfaceStyle,
+    surfaceStyle: 'premium-executive' as SurfaceStyle,
     contentWidth: 'wide' as ContentWidth,
     compactHeader: false,
     layoutType: 'SideBar',
-    actTheme: 'PurpleTheme',
+    actTheme: 'TerracottaMossTheme',
     loading: false,
     themeMode: 'light', // 'light' or 'dark'
     menuOrientation: 'vertical' as MenuOrientation,

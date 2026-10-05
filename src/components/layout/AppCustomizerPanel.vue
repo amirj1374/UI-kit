@@ -218,21 +218,6 @@ function applyCustomizer() {
                     /></v-btn>
                   </div>
                 </section>
-                <section class="app-customizer-panel__header-size">
-                  <div>
-                    <h6 class="text-subtitle-1 font-weight-bold">{{ copy.headerSize }}</h6>
-                    <p class="app-customizer-panel__hint">{{ copy.compactHeaderHint }}</p>
-                  </div>
-                  <v-switch
-                    :model-value="compactHeader"
-                    color="primary"
-                    density="compact"
-                    hide-details
-                    inset
-                    :label="copy.compactHeader"
-                    @update:model-value="emit('update:compactHeader', Boolean($event))"
-                  />
-                </section>
               </div>
             </v-tabs-window-item>
             <v-tabs-window-item value="surfaces">
@@ -275,6 +260,28 @@ function applyCustomizer() {
                         class="flex-1"
                         ><span class="sidebar-preview open"
                       /></v-btn>
+                    </div>
+                  </div>
+                  <div class="app-customizer-panel__menu-orientation app-customizer-panel__header-size">
+                    <h6 class="text-subtitle-1 font-weight-bold">{{ copy.headerSize }}</h6>
+                    <p class="app-customizer-panel__hint">{{ copy.compactHeaderHint }}</p>
+                    <div class="d-flex gap-2">
+                      <v-btn
+                        class="menu-orientation-option flex-1"
+                        variant="outlined"
+                        :color="!compactHeader ? 'primary' : 'grey'"
+                        :class="{ active: !compactHeader }"
+                        :aria-label="copy.headerSize"
+                        @click="emit('update:compactHeader', false)"
+                      ><span class="header-preview header-preview--standard" aria-hidden="true" /></v-btn>
+                      <v-btn
+                        class="menu-orientation-option flex-1"
+                        variant="outlined"
+                        :color="compactHeader ? 'primary' : 'grey'"
+                        :class="{ active: compactHeader }"
+                        :aria-label="copy.compactHeader"
+                        @click="emit('update:compactHeader', true)"
+                      ><span class="header-preview header-preview--compact" aria-hidden="true" /></v-btn>
                     </div>
                   </div>
                 </section>
@@ -478,14 +485,33 @@ function applyCustomizer() {
   margin: 0;
 }
 .app-customizer-panel__header-size {
-  display: flex !important;
-  align-items: center;
-  justify-content: space-between;
+  display: grid !important;
+  align-items: initial;
+  justify-content: initial;
   gap: 12px;
   margin-top: 22px;
   padding-top: 20px;
   border-top: 1px solid rgba(var(--v-theme-borderLight), 0.5);
 }
+.header-preview {
+  display: block;
+  width: 45px;
+  height: 30px;
+  border: 2px dashed #ccc;
+  border-radius: 3px;
+  margin: 0 auto;
+  position: relative;
+}
+.header-preview::before {
+  content: '';
+  position: absolute;
+  inset-inline: 2px;
+  top: 2px;
+  background: #027efb;
+  border-radius: 1px;
+}
+.header-preview--standard::before { height: 12px; }
+.header-preview--compact::before { height: 5px; }
 .app-customizer-panel__header-size h6,
 .app-customizer-panel__header-size p {
   margin: 0;
