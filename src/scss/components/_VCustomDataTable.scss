@@ -231,3 +231,161 @@
     &.expanded { background: rgb(var(--v-theme-lightsecondary)); }
   }
 }
+
+.mobile-card-list {
+  display: none;
+  gap: 12px;
+  min-height: 0;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.desktop-data-table { display: block; }
+
+@media (max-width: 959px) {
+  .mobile-card-list { display: grid; }
+  .data-table-container .desktop-data-table { display: none !important; }
+}
+
+.mobile-data-card {
+  border-color: rgba(var(--v-theme-primary), 0.16) !important;
+  border-radius: var(--ui-shell-radius, 12px) !important;
+  background:
+    linear-gradient(145deg, rgba(var(--v-theme-primary), 0.055), transparent 44%),
+    rgb(var(--v-theme-surface));
+  box-shadow: 0 8px 24px rgba(20, 30, 48, 0.07);
+  overflow: hidden;
+
+  &--selected {
+    border-color: rgba(var(--v-theme-primary), 0.7) !important;
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.12), 0 9px 26px rgba(20, 30, 48, 0.09);
+  }
+
+  &__header,
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  &__header { padding: 14px 14px 10px; }
+  &__heading { min-width: 0; }
+  &__heading strong {
+    display: block;
+    margin-top: 2px;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: 0.96rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__eyebrow,
+  &__field span,
+  &__detail-row span {
+    color: rgb(var(--v-theme-lightText));
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  &__summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 14px 12px;
+  }
+
+  &__field {
+    min-width: 0;
+    padding: 9px 10px;
+    background: rgba(var(--v-theme-primary), 0.045);
+    border-radius: calc(var(--ui-shell-radius, 12px) - 3px);
+  }
+
+  &__field b,
+  &__detail-row b {
+    display: block;
+    margin-top: 3px;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: 0.82rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  &__details {
+    margin: 0 14px;
+    padding: 4px 0;
+    border-top: 1px dashed rgba(var(--v-theme-primary), 0.2);
+  }
+
+  &__detail-row {
+    display: grid;
+    grid-template-columns: minmax(100px, 0.75fr) minmax(0, 1.25fr);
+    gap: 12px;
+    align-items: start;
+    padding: 8px 2px;
+    border-bottom: 1px solid rgba(var(--v-theme-borderLight), 0.7);
+  }
+
+  &__detail-row:last-child { border-bottom: 0; }
+  &__detail-row b { margin-top: 0; text-align: end; }
+
+  &__footer {
+    min-height: 46px;
+    padding: 7px 10px 9px;
+    border-top: 1px solid rgba(var(--v-theme-borderLight), 0.72);
+  }
+
+  &__details-button { flex-shrink: 0; }
+  &__details-button svg { transition: transform 0.2s ease; }
+  &__chevron--open { transform: rotate(180deg); }
+
+  &__actions {
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  &__actions::-webkit-scrollbar { display: none; }
+
+  &__empty {
+    padding: 34px 16px;
+    color: rgb(var(--v-theme-lightText));
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .action-buttons {
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .v-btn { margin-inline: 0 !important; }
+    .v-spacer { display: none; }
+    .data-table-settings-button { margin-inline-start: auto !important; }
+  }
+
+  .data-table-container .pagination-wrapper > .d-flex {
+    flex-wrap: wrap;
+    justify-content: center !important;
+    gap: 6px;
+    padding: 8px !important;
+  }
+
+  .data-table-container .pagination-wrapper .v-pagination { width: 100%; }
+  .mobile-card-list { gap: 9px; padding: 5px; }
+  .mobile-data-card { border-radius: 11px !important; box-shadow: 0 4px 14px rgba(20, 30, 48, 0.06); }
+  .mobile-data-card__header { padding: 10px 11px 7px; }
+  .mobile-data-card__summary { gap: 6px; padding: 0 10px 8px; }
+  .mobile-data-card__field { padding: 7px 8px; }
+  .mobile-data-card__details { margin-inline: 10px; }
+  .mobile-data-card__footer { min-height: 40px; padding: 4px 7px 6px; }
+  .mobile-data-card__actions { justify-content: flex-end; }
+  .mobile-data-card__actions .v-btn,
+  .mobile-data-card__details-button { min-height: 32px; padding-inline: 9px; }
+}

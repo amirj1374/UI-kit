@@ -115,7 +115,7 @@ const downloadWithFetch = async () => {
     emit('download', props.url)
     emit('success', props.filename || 'downloaded-file')
   } catch (error) {
-    throw new Error(`Fetch download failed: ${error}`)
+    throw new Error(`Fetch download failed: ${error}`, { cause: error })
   }
 }
 

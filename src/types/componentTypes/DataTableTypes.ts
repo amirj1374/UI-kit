@@ -38,6 +38,10 @@ export interface Header {
   cols?: number | string; // Column span for form layout (default: 12 for mobile, 4 for md and up)
   dir?: 'ltr' | 'rtl'; // Text direction for the input field
   excludeFromForm?: boolean; // If true, field will be shown in table but excluded from create/edit forms (e.g., createdAt, updatedAt)
+  /** Pin this column to the mobile card summary. Lower values appear first. */
+  mobilePriority?: number;
+  /** Exclude this column from the mobile card entirely. */
+  mobileHidden?: boolean;
   // Deprecated: Use type='date' instead
   isDate?: boolean;
   // Deprecated: Use type='textarea' instead
@@ -154,6 +158,14 @@ export interface DataTableProps {
   enableExport?: boolean;
   exportUrl?: string;
   exportFileName?: string;
+  /** Render rows as cards on small screens. Desktop/tablet table rendering is unchanged. */
+  mobileCardView?: boolean;
+  /** Explicit header keys shown in the always-visible part of a mobile card. */
+  mobileCardFields?: string[];
+  /** Header key used as the mobile card title. Defaults to the first summary field. */
+  mobileTitleKey?: string;
+  /** Number of summary fields when mobileCardFields is omitted. */
+  mobileCardFieldCount?: number;
 }
 
 export interface ApiResponse<T = TableItem> {

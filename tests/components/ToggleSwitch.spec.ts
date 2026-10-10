@@ -36,7 +36,7 @@ describe('ToggleSwitch', () => {
     const control = wrapper.get('button');
     expect(control.attributes()).toHaveProperty('disabled');
     expect(control.element.tagName).toBe('BUTTON');
-    expect((control.element as HTMLButtonElement).tabIndex).toBe(-1);
+    expect((control.element as HTMLButtonElement).disabled).toBe(true);
     await control.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   });

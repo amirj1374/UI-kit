@@ -211,5 +211,34 @@ const computedHeaderMenu = computed(() => {
     }
   }
 }
+
+@media (max-width: 600px) {
+  .app-header.topbar,
+  .app-header.topbar.v-toolbar,
+  .app-header.topbar .v-toolbar__content {
+    height: 56px !important;
+    min-height: 56px !important;
+  }
+
+  .app-header.topbar .v-toolbar__content {
+    padding-inline: 10px !important;
+    gap: 6px;
+  }
+
+  .app-header.topbar .v-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    margin-inline: 0 !important;
+    border-radius: 10px !important;
+  }
+
+  .app-header.topbar .v-btn svg,
+  .app-header.topbar .v-btn .v-icon {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+  }
+}
 </style>
 

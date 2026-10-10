@@ -35,6 +35,10 @@ export interface DataTableV2Props extends Omit<DataTableProps, 'routes' | 'filte
   settings?: boolean;
   /** Controlled list of visible data-column keys. */
   visibleColumns?: string[];
+  mobileCardView?: boolean;
+  mobileCardFields?: string[];
+  mobileTitleKey?: string;
+  mobileCardFieldCount?: number;
   axiosInstance?: AxiosInstance;
 }
 

@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia';
 import { parseCustomizerPreferences, type AppDirection, type AppLanguage, type ContentWidth, type CustomizerPreferences, type MenuOrientation, type SurfaceStyle } from '../utils/customizerPreferences';
 
-export const useCustomizerStore = defineStore({
-  id: 'customizer',
+export const useCustomizerStore = defineStore('customizer', {
   state: () => ({
     Sidebar_drawer: true,
     Customizer_drawer: false,

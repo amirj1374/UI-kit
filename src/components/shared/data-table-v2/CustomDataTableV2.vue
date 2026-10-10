@@ -87,7 +87,10 @@ const props = withDefaults(defineProps<Props>(), {
   exportUrl: '',
   exportFileName: '',
   enableInfiniteScroll: false,
-  settings: false
+  settings: false,
+  mobileCardView: true,
+  mobileCardFields: () => [],
+  mobileCardFieldCount: 4
 });
 
 const emit = defineEmits<{
@@ -122,6 +125,7 @@ const snackbar = ref(false);
 const snackbarMessage = ref('');
 const router = useRouter();
 const ui = useUiKit();
+const expandedMobileCards = ref(new Set<string | number>());
 const itemsPerPage = ref(props.pageSize);
 const totalSize = ref(0);
 const totalPages = ref(0);
@@ -238,6 +242,38 @@ const configurableHeaders = computed(() =>
 );
 const sortableHeaders = computed(() => configurableHeaders.value.filter((header) => header.sortable !== false));
 const visibleDataColumnKeys = computed(() => internalVisibleColumns.value ?? configurableHeaders.value.map((header) => header.key));
+const mobileCardsEnabled = computed(() => props.mobileCardView && !props.groupBy);
+const mobileCardHeaders = computed(() =>
+  configurableHeaders.value
+    .filter((header) => !header.mobileHidden && isColumnVisible(header.key))
+    .sort((left, right) => (left.mobilePriority ?? Number.MAX_SAFE_INTEGER) - (right.mobilePriority ?? Number.MAX_SAFE_INTEGER))
+);
+const mobileSummaryHeaders = computed(() => {
+  if (props.mobileCardFields.length > 0) {
+    const order = new Map(props.mobileCardFields.map((key, index) => [key, index]));
+    return mobileCardHeaders.value.filter((header) => order.has(header.key)).sort((a, b) => order.get(a.key)! - order.get(b.key)!);
+  }
+  return mobileCardHeaders.value.slice(0, Math.max(1, props.mobileCardFieldCount));
+});
+const mobileDetailHeaders = computed(() => {
+  const summaryKeys = new Set(mobileSummaryHeaders.value.map((header) => header.key));
+  return mobileCardHeaders.value.filter((header) => !summaryKeys.has(header.key));
+});
+const mobileTitleHeader = computed(() =>
+  mobileCardHeaders.value.find((header) => header.key === props.mobileTitleKey) ?? mobileSummaryHeaders.value[0] ?? mobileCardHeaders.value[0]
+);
+const mobileDisplaySummaryHeaders = computed(() =>
+  mobileSummaryHeaders.value.filter((header) => header.key !== mobileTitleHeader.value?.key)
+);
+
+const isMobileCardExpanded = (item: TableItem): boolean => expandedMobileCards.value.has(getUniqueValue(item));
+const toggleMobileCard = (item: TableItem): void => {
+  const key = getUniqueValue(item);
+  const next = new Set(expandedMobileCards.value);
+  if (next.has(key)) next.delete(key);
+  else next.add(key);
+  expandedMobileCards.value = next;
+};
 const tableSortBy = computed({
   get: () => (sortBy.value ? [sortBy.value] : []),
   set: (value: Array<{ key: string; order: 'asc' | 'desc' }>) => {
@@ -2049,7 +2085,7 @@ watch(
           v-bind="menuProps"
           class="data-table-settings-button"
           color="primary"
-          variant="tonal"
+          variant="flat"
           :aria-label="ui.t('tableSettings')"
         >
           <IconSettings :size="19" />
@@ -2436,15 +2472,140 @@ watch(
           </div>
         </div>
       </div>
+      <!-- Mobile card structure. The desktop table remains the default from md and up. -->
+      <div v-if="mobileCardsEnabled" class="mobile-card-list" role="list">
+        <v-card
+          v-for="item in items"
+          :key="getUniqueValue(item)"
+          class="mobile-data-card"
+          :class="{ 'mobile-data-card--selected': isSelected(item) }"
+          variant="outlined"
+          role="listitem"
+          @click="props.bulkMode && props.selectable && selectSingleItem(item)"
+        >
+          <div class="mobile-data-card__header">
+            <div class="mobile-data-card__heading">
+              <span class="mobile-data-card__eyebrow">{{ mobileTitleHeader?.title }}</span>
+              <strong>
+                {{ mobileTitleHeader ? getTranslatedValue(getNestedValue(item, mobileTitleHeader.key), mobileTitleHeader, item) : getUniqueValue(item) }}
+              </strong>
+            </div>
+            <v-checkbox-btn
+              v-if="props.selectable && !props.bulkMode"
+              :model-value="isSelected(item)"
+              density="compact"
+              :aria-label="`Select row ${getUniqueValue(item)}`"
+              @click.stop
+              @update:model-value="toggleSelection(item)"
+            />
+            <v-radio
+              v-else-if="props.selectable"
+              :model-value="radioGroupValue"
+              :value="getUniqueValue(item)"
+              density="compact"
+              hide-details
+              :aria-label="`Select row ${getUniqueValue(item)}`"
+              @click.stop="selectSingleItem(item)"
+            />
+          </div>
+
+          <div class="mobile-data-card__summary">
+            <div v-for="header in mobileDisplaySummaryHeaders" :key="header.key" class="mobile-data-card__field">
+              <span>{{ header.title }}</span>
+              <b :style="getColumnStyle(header, item)">
+                {{ getTranslatedValue(getNestedValue(item, header.key), header, item) ?? '—' }}
+              </b>
+            </div>
+          </div>
+
+          <v-expand-transition>
+            <div v-if="isMobileCardExpanded(item)" class="mobile-data-card__details">
+              <div v-for="header in mobileDetailHeaders" :key="header.key" class="mobile-data-card__detail-row">
+                <span>{{ header.title }}</span>
+                <b :style="getColumnStyle(header, item)">
+                  {{ getTranslatedValue(getNestedValue(item, header.key), header, item) ?? '—' }}
+                </b>
+              </div>
+            </div>
+          </v-expand-transition>
+
+          <div class="mobile-data-card__footer">
+            <v-btn
+              v-if="mobileDetailHeaders.length"
+              variant="text"
+              color="primary"
+              size="small"
+              class="mobile-data-card__details-button"
+              @click.stop="toggleMobileCard(item)"
+            >
+              {{ isMobileCardExpanded(item) ? ui.t('close') : ui.t('more') }}
+              <IconChevronDown :size="18" :class="{ 'mobile-data-card__chevron--open': isMobileCardExpanded(item) }" />
+            </v-btn>
+
+            <div v-if="hasAnyActions" class="mobile-data-card__actions" @click.stop>
+              <v-btn v-if="props.actions?.includes('edit')" color="blue" size="small" @click="openDialog(item)">{{ ui.t('edit') }}</v-btn>
+              <v-btn v-if="props.actions?.includes('delete')" color="red" size="small" @click="openDeleteDialog(item)">{{ ui.t('delete') }}</v-btn>
+              <v-btn v-if="props.actions?.includes('view')" color="purple" size="small" @click="goToRoute('view', item)">{{ ui.t('view') }}</v-btn>
+              <v-btn
+                v-for="(_routePath, routeKey) in getRoutesForItem(item)"
+                :key="routeKey"
+                color="primary"
+                size="small"
+                @click="goToRoute(routeKey, item)"
+              >
+                {{ String(routeKey) }}
+              </v-btn>
+              <v-btn v-for="(_value, key) in props.downloadLink" :key="key" size="small" @click="download(key, item)">{{ key }}</v-btn>
+              <template v-for="(action, index) in props.customActions" :key="action.title || index">
+                <v-btn
+                  v-if="!action.condition || action.condition(item)"
+                  color="primary"
+                  size="small"
+                  @click="openCustomActionDialog(action, item)"
+                >
+                  {{ action.title }}
+                </v-btn>
+              </template>
+              <template v-if="props.customButtonsFn">
+                <v-btn
+                  v-for="button in props.customButtonsFn(item)"
+                  :key="button.label"
+                  :color="button.color || 'primary'"
+                  size="small"
+                  :disabled="button.disabled"
+                  @click="button.onClick(item)"
+                >
+                  {{ button.label }}
+                </v-btn>
+              </template>
+              <template v-else>
+                <v-btn
+                  v-for="button in props.customButtons"
+                  :key="button.label"
+                  :color="button.color || 'primary'"
+                  size="small"
+                  :disabled="button.disabled"
+                  @click="button.onClick(item)"
+                >
+                  {{ button.label }}
+                </v-btn>
+              </template>
+            </div>
+          </div>
+        </v-card>
+
+        <div v-if="items.length === 0" class="mobile-data-card__empty">{{ ui.t('noRecords') }}</div>
+      </div>
+
       <!-- Regular Table Structure (when not grouped) -->
       <v-data-table
-        v-else
+        v-if="!props.groupBy"
         :headers="normalHeaders"
         :items="items"
         v-model:sort-by="tableSortBy"
         :items-per-page="itemsPerPage"
         hide-default-footer
-        class="elevation-1"
+        class="elevation-1 desktop-data-table"
         :no-data-text="ui.t('noRecords')"
         hover
         :height="props.height"

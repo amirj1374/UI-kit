@@ -35,4 +35,31 @@ describe('CustomDataTableV2 rendering', () => {
     const { wrapper } = await mountDataTable();
     expect(wrapper.text()).toContain('رکوردی یافت نشد');
   });
+
+  it('uses expandable cards on small screens while preserving the table API', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 500 });
+    window.dispatchEvent(new Event('resize'));
+
+    const headers = [
+      { title: 'Name', key: 'name', mobilePriority: 1 },
+      { title: 'Status', key: 'status', mobilePriority: 2 },
+      { title: 'Description', key: 'description' }
+    ];
+    const { wrapper } = await mountDataTable({
+      props: { headers, items: [{ id: 1, name: 'Alpha', status: 'ACTIVE', description: 'Full details' }], mobileCardFieldCount: 2 }
+    });
+    await flushTable();
+
+    expect(wrapper.find('.mobile-card-list').exists()).toBe(true);
+    expect(wrapper.find('.mobile-data-card__details').exists()).toBe(false);
+    const detailsButton = wrapper.find('.mobile-data-card__details-button');
+    await detailsButton.trigger('click');
+    await flushTable();
+    expect(wrapper.find('.mobile-data-card__details').text()).toContain('Full details');
+
+    wrapper.unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@amirjalili1374/ui-kit",
-  "version": "1.10.25",
+  "version": "1.10.34",
   "description": "A reusable UI component library built with Vue 3, Vuetify, and TypeScript",
   "type": "module",
   "sideEffects": [
@@ -69,21 +69,21 @@
   "dependencies": {
     "@dsb-norge/vue-keycloak-js": "^3.0.8",
     "@mdi/js": "^7.4.47",
-    "@tabler/icons-vue": "^3.44.0",
-    "@vueuse/core": "^13.9.0",
-    "axios": "^1.6.8",
+    "@tabler/icons-vue": "^3.49.0",
+    "@vueuse/core": "^15.0.0",
+    "axios": "^1.20.0",
     "highlight.js": "^11.12.0",
-    "jalaali-js": "^1.2.8",
-    "markdown-it": "^15.0.0",
+    "jalaali-js": "^2.0.1",
+    "markdown-it": "^15.0.2",
     "vue3-lottie": "^3.3.1",
     "vue3-perfect-scrollbar": "^2.0.0",
     "vue3-persian-datetime-picker": "^1.2.2"
   },
   "peerDependencies": {
-    "pinia": "^2.3.1",
-    "vue": "^3.4.0",
-    "vue-router": "^4.3.0",
-    "vuetify": "^3.10.0"
+    "pinia": "^4.0.3",
+    "vue": "^3.5.43",
+    "vue-router": "^5.3.0",
+    "vuetify": "^4.1.12"
   },
   "peerDependenciesMeta": {
     "vue-router": {
@@ -94,29 +94,31 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
-    "@tsconfig/node20": "^20.1.9",
+    "@eslint/js": "^10.0.1",
+    "@tsconfig/node20": "^20.1.10",
     "@types/markdown-it": "^14.2.0",
-    "@types/node": "^20.19.43",
-    "@vitejs/plugin-vue": "^6.0.7",
-    "@vitest/coverage-v8": "^4.1.9",
+    "@types/node": "^26.6.5",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "@vitest/coverage-v8": "^5.0.3",
     "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/test-utils": "^2.4.11",
+    "@vue/test-utils": "^2.5.1",
     "@vue/tsconfig": "^0.9.1",
     "cross-env": "^10.1.0",
-    "eslint": "^9.39.0",
-    "eslint-plugin-vue": "^10.9.2",
-    "globals": "^16.4.0",
-    "happy-dom": "^15.11.7",
-    "prettier": "^3.9.1",
+    "eslint": "^10.12.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "globals": "^17.13.0",
+    "happy-dom": "^20.14.6",
+    "prettier": "^3.9.10",
+    "pinia": "^4.0.3",
     "rimraf": "^6.1.3",
-    "sass": "^1.101.0",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.62.0",
-    "vite": "^8.1.0",
+    "sass": "^1.105.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^8.3.4",
     "vite-plugin-vuetify": "^2.1.3",
-    "vitest": "^4.1.9",
-    "vue-router": "^4.6.4",
-    "vue-tsc": "^3.3.5"
+    "vitest": "^5.0.3",
+    "vue-router": "^5.4.0",
+    "vuetify": "^4.2.4",
+    "vue-tsc": "^3.3.12"
   }
 }
