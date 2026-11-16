@@ -142,7 +142,9 @@ let latestRequestId = 0;
 let componentActive = true;
 // Selection & grouping using composable (minimal-risk wiring)
 const selection = useTableSelection(items, {
-  multiSelect: props.bulkMode ? false : props.multiSelect, // Force single select in bulk mode
+  // Bulk actions can operate on more than one row.  Keep the caller's
+  // multiSelect choice instead of forcing radio-style selection.
+  multiSelect: props.multiSelect,
   uniqueKey: props.uniqueKey as any,
   groupBy: props.groupBy as any,
   defaultExpanded: props.defaultExpanded
@@ -159,7 +161,7 @@ function resolveFilter(raw: Record<string, any>) {
 // Override toggleSelection in bulk mode to ensure single selection
 const originalToggleSelection = selection.toggleSelection;
 selection.toggleSelection = (item: any) => {
-  if (props.bulkMode) {
+  if (props.bulkMode && !props.multiSelect) {
     // In bulk mode, always clear and select only this item
     selection.clearSelection();
     selection.selectedItems.value = [item];
@@ -826,6 +828,12 @@ const onExportClick = async () => {
 
 // Method for single item selection in bulk mode
 const selectSingleItem = (item: any) => {
+  if (props.multiSelect) {
+    selection.toggleSelection(item);
+    emit('update:selectedItems', selectedItems.value);
+    emit('selection-change', selectedItems.value);
+    return;
+  }
   // Clear all selections first
   selection.clearSelection();
   // Force select only this item (don't use toggle)
@@ -2298,7 +2306,7 @@ watch(
                           <!-- Selection Checkbox/Radio -->
                           <template v-if="column.key === 'selection'">
                             <v-radio
-                              v-if="props.bulkMode"
+                              v-if="props.bulkMode && !props.multiSelect"
                               :model-value="radioGroupValue"
                               :value="getUniqueValue(item)"
                               @click.stop="selectSingleItem(item)"
@@ -2646,7 +2654,7 @@ watch(
               <!-- Selection Checkbox/Radio -->
               <template v-if="column.key === 'selection'">
                 <v-radio
-                  v-if="props.bulkMode"
+                              v-if="props.bulkMode && !props.multiSelect"
                   :model-value="radioGroupValue"
                   :value="getUniqueValue(item)"
                   @click.stop="selectSingleItem(item)"
