@@ -242,6 +242,29 @@
 
 .desktop-data-table { display: block; }
 
+// Bulk selection must not make rows taller than the compact data-table rows.
+// Vuetify's cell padding is what determines the final row height, so the row
+// height alone is insufficient here.
+.bulk-select-table {
+  .v-table__wrapper tbody > tr.data-row > td,
+  .v-table__wrapper tbody > tr > td {
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 12px !important;
+    line-height: 1.6 !important;
+    vertical-align: middle !important;
+  }
+
+  .v-table__wrapper tbody > tr.data-row {
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .v-table__wrapper .v-selection-control {
+    min-height: 28px !important;
+  }
+}
+
 @media (max-width: 959px) {
   .mobile-card-list { display: grid; }
   .data-table-container .desktop-data-table { display: none !important; }

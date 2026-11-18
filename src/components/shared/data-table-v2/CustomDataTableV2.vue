@@ -2613,7 +2613,7 @@ watch(
         v-model:sort-by="tableSortBy"
         :items-per-page="itemsPerPage"
         hide-default-footer
-        class="elevation-1 desktop-data-table"
+        :class="['elevation-1', 'desktop-data-table', { 'bulk-select-table': props.multiSelect }]"
         :no-data-text="ui.t('noRecords')"
         hover
         :height="props.height"
